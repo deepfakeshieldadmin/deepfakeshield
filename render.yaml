@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: deepfakeshield
+    env: python
+    buildCommand: "bash build.sh"
+    startCommand: "gunicorn deepfakeshield.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
