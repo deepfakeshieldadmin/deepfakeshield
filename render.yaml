@@ -2,6 +2,7 @@ services:
   - type: web
     name: deepfakeshield
     env: python
+    plan: free
     buildCommand: "bash build.sh"
     startCommand: "gunicorn deepfakeshield.wsgi:application"
     envVars:
