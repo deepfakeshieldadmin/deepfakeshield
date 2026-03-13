@@ -1,0 +1,71 @@
+{% load static %}
+<footer class="site-footer">
+    <div class="container">
+        <div class="row g-4 py-5">
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-brand">
+                    <div class="footer-logo d-flex align-items-center gap-2 mb-3">
+                        <span style="font-size: 2rem;">🛡️</span>
+                        <div>
+                            <div style="font-family:'Montserrat',sans-serif; font-weight:800; font-size:1.2rem;">DeepFake Shield</div>
+                            <div style="font-size:0.82rem; color: var(--text-secondary, #666);">Media Authenticity Verification Platform</div>
+                        </div>
+                    </div>
+
+                    <p class="footer-desc" style="line-height:1.8; color:var(--text-secondary,#666);">
+                        Deep Fake Shield is a modern digital authenticity platform designed to detect suspicious, manipulated, and AI-generated content across multiple media formats.
+                    </p>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <span class="tech-badge">AI Detection</span>
+                        <span class="tech-badge">Media Analysis</span>
+                        <span class="tech-badge">Forensic Style Scoring</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+                <h5 class="footer-heading">Navigation</h5>
+                <ul class="footer-links list-unstyled">
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li><a href="{% url 'about' %}">About</a></li>
+                    <li><a href="{% url 'education' %}">Learn</a></li>
+                    <li><a href="{% url 'privacy' %}">Privacy</a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <h5 class="footer-heading">Detection Modules</h5>
+                <ul class="footer-links list-unstyled">
+                    <li><a href="{% url 'upload_image' %}">Image Verification</a></li>
+                    <li><a href="{% url 'upload_video' %}">Video Verification</a></li>
+                    <li><a href="{% url 'upload_audio' %}">Audio Verification</a></li>
+                    <li><a href="{% url 'text_scan' %}">Text Verification</a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <h5 class="footer-heading">Technology Stack</h5>
+                <div class="footer-tech-badges d-flex flex-wrap gap-2">
+                    <span class="tech-badge">Django</span>
+                    <span class="tech-badge">Python</span>
+                    <span class="tech-badge">OpenCV</span>
+                    <span class="tech-badge">NumPy</span>
+                    <span class="tech-badge">Bootstrap 5</span>
+                    <span class="tech-badge">JavaScript</span>
+                    <span class="tech-badge">SQLite</span>
+                    <span class="tech-badge">AOS</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom border-top pt-3 pb-4 d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <p class="mb-2 mb-md-0" style="color:var(--text-secondary,#666);">
+                © 2025 Deep Fake Shield. All rights reserved.
+            </p>
+            <p class="mb-0" style="color:var(--text-secondary,#666);">
+                Built for secure digital verification and trustworthy media analysis.
+            </p>
+        </div>
+    </div>
+</footer>

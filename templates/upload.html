@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Image Scan — Deep Fake Shield{% endblock %}
+
+{% block extra_css %}
+<style>
+    .scan-page-wrap {
+        padding-top: 110px;
+        padding-bottom: 70px;
+    }
+
+    .scan-hero-box {
+        border-radius: 26px;
+        padding: 34px 28px;
+        background:
+            radial-gradient(circle at top left, rgba(0,123,255,0.12), transparent 35%),
+            radial-gradient(circle at bottom right, rgba(111,66,193,0.14), transparent 35%),
+            rgba(255,255,255,0.82);
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 20px 55px rgba(0,0,0,0.08);
+        margin-bottom: 26px;
+    }
+
+    [data-theme="dark"] .scan-hero-box {
+        background:
+            radial-gradient(circle at top left, rgba(0,123,255,0.18), transparent 35%),
+            radial-gradient(circle at bottom right, rgba(111,66,193,0.18), transparent 35%),
+            rgba(18,24,35,0.86);
+        border-color: rgba(255,255,255,0.08);
+    }
+
+    .scan-hero-box h1 {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .scan-hero-box p {
+        color: var(--text-secondary, #666);
+        line-height: 1.8;
+        margin-bottom: 0;
+    }
+
+    .upload-card-main {
+        border-radius: 24px;
+        padding: 28px;
+        background: rgba(255,255,255,0.86);
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.06);
+    }
+
+    [data-theme="dark"] .upload-card-main {
+        background: rgba(18,24,35,0.86);
+        border-color: rgba(255,255,255,0.08);
+    }
+
+    .drop-zone {
+        border: 2px dashed rgba(0,123,255,0.22);
+        border-radius: 22px;
+        padding: 45px 24px;
+        text-align: center;
+        background: rgba(0,123,255,0.03);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .drop-zone:hover {
+        transform: translateY(-4px);
+        background: rgba(0,123,255,0.05);
+        box-shadow: 0 14px 28px rgba(0,123,255,0.08);
+    }
+
+    .drop-zone h3 {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        margin-top: 16px;
+        margin-bottom: 10px;
+    }
+
+    .drop-zone p {
+        color: var(--text-secondary, #666);
+        margin-bottom: 14px;
+    }
+
+    .upload-icon-hero {
+        width: 90px;
+        height: 90px;
+        margin: 0 auto;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #007bff, #6f42c1);
+        color: #fff;
+        font-size: 2rem;
+        box-shadow: 0 16px 35px rgba(0,123,255,0.22);
+    }
+
+    .format-tags {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .format-tag {
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(0,123,255,0.08);
+        border: 1px solid rgba(0,123,255,0.12);
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .preview-box {
+        margin-top: 22px;
+        display: none;
+    }
+
+    .preview-box img {
+        width: 100%;
+        max-height: 420px;
+        object-fit: contain;
+        border-radius: 18px;
+        border: 1px solid rgba(0,0,0,0.06);
+        background: #fff;
+    }
+
+    .preview-meta {
+        margin-top: 12px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        color: var(--text-secondary, #666);
+        font-size: 0.92rem;
+    }
+
+    .scan-btn-main {
+        margin-top: 24px;
+        width: 100%;
+        padding: 15px 18px;
+        border: none;
+        border-radius: 14px;
+        font-weight: 800;
+        color: #fff;
+        background: linear-gradient(135deg, #007bff, #6f42c1);
+        box-shadow: 0 14px 30px rgba(0,123,255,0.18);
+    }
+
+    .placeholder-note {
+        margin-top: 20px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: rgba(0,123,255,0.04);
+        border: 1px dashed rgba(0,123,255,0.14);
+        color: var(--text-secondary, #5f6e82);
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="scan-page-wrap">
+    <div class="container">
+        <div class="scan-hero-box" data-aos="fade-up">
+            <h1>Image Authenticity Scan</h1>
+            <p>
+                Upload an image to detect manipulation, suspicious visual patterns, AI-style artifacts, EXIF information, compression behavior, and face detection consistency.
+            </p>
+        </div>
+
+        <div class="upload-card-main" data-aos="zoom-in">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <label for="id_image" class="drop-zone">
+                    <div class="upload-icon-hero">
+                        <i class="bi bi-cloud-arrow-up-fill"></i>
+                    </div>
+                    <h3>Upload or Drop an Image</h3>
+                    <p>Select a media file for authenticity analysis</p>
+                    <div class="format-tags">
+                        <span class="format-tag">JPG</span>
+                        <span class="format-tag">JPEG</span>
+                        <span class="format-tag">PNG</span>
+                        <span class="format-tag">BMP</span>
+                        <span class="format-tag">WEBP</span>
+                        <span class="format-tag">TIFF</span>
+                    </div>
+                </label>
+
+                <div style="display:none;">
+                    {{ form.image }}
+                </div>
+
+                {% if form.errors %}
+                <div class="alert alert-danger rounded-4 mt-3">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="preview-box" id="previewBox">
+                    <img id="previewImage" src="" alt="Preview">
+                    <div class="preview-meta">
+                        <span id="previewName"></span>
+                        <span id="previewSize"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="scan-btn-main">
+                    <i class="bi bi-search-heart-fill me-2"></i> Analyze Image
+                </button>
+            </form>
+
+        </div>
+    </div>
+</section>
+
+<script>
+const imageInput = document.getElementById('id_image');
+const previewBox = document.getElementById('previewBox');
+const previewImage = document.getElementById('previewImage');
+const previewName = document.getElementById('previewName');
+const previewSize = document.getElementById('previewSize');
+
+if (imageInput) {
+    imageInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+
+        previewBox.style.display = 'block';
+        previewName.textContent = 'File: ' + file.name;
+        previewSize.textContent = 'Size: ' + (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+</script>
+{% endblock %}

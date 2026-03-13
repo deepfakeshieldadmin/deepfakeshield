@@ -1,0 +1,476 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home — Deep Fake Shield{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-home {
+        padding: 115px 0 80px;
+        position: relative;
+    }
+
+    .hero-panel {
+        background: rgba(15, 22, 34, 0.82);
+        border: 1px solid rgba(255,255,255,0.08);
+        backdrop-filter: blur(18px);
+        border-radius: 28px;
+        padding: 42px 30px;
+        box-shadow: 0 28px 70px rgba(0,0,0,0.24);
+    }
+
+    html[data-theme="light"] .hero-panel {
+        background: rgba(255,255,255,0.84);
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 18px 50px rgba(0,0,0,0.08);
+    }
+
+    .hero-badge-home {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border-radius: 999px;
+        background: rgba(0,191,255,0.08);
+        border: 1px solid rgba(0,191,255,0.15);
+        color: var(--primary-color);
+        font-weight: 700;
+        font-size: 0.84rem;
+        margin-bottom: 18px;
+    }
+
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #00ff95;
+        box-shadow: 0 0 10px #00ff95;
+        animation: pulseDot 1.9s infinite;
+    }
+
+    @keyframes pulseDot {
+        0%,100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.6); opacity: 0.45; }
+    }
+
+    .hero-title-home {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 900;
+        font-size: clamp(2.3rem, 5vw, 4.8rem);
+        line-height: 1.08;
+        margin-bottom: 18px;
+    }
+
+    .hero-desc-home {
+        font-size: 1.05rem;
+        line-height: 1.9;
+        color: var(--text-secondary);
+        max-width: 680px;
+        margin-bottom: 26px;
+    }
+
+    .hero-btn-row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+
+    .hero-btn-main,
+    .hero-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 22px;
+        border-radius: 14px;
+        text-decoration: none;
+        font-weight: 800;
+    }
+
+    .hero-btn-main {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+        color: #fff;
+        box-shadow: 0 16px 34px rgba(0,191,255,0.18);
+    }
+
+    .hero-btn-secondary {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08);
+        color: var(--text-primary);
+    }
+
+    html[data-theme="light"] .hero-btn-secondary {
+        background: rgba(255,255,255,0.75);
+        border: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .hero-meta-box {
+        margin-top: 22px;
+        padding: 16px 18px;
+        border-radius: 18px;
+        background: rgba(0,191,255,0.05);
+        border: 1px dashed rgba(0,191,255,0.14);
+        color: var(--text-secondary);
+        line-height: 1.8;
+    }
+
+    .hero-visual-card {
+        border-radius: 28px;
+        padding: 30px 24px;
+        background:
+            radial-gradient(circle at top left, rgba(0,191,255,0.12), transparent 35%),
+            radial-gradient(circle at bottom right, rgba(123,77,255,0.12), transparent 35%),
+            rgba(15, 22, 34, 0.82);
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 24px 60px rgba(0,0,0,0.24);
+        text-align: center;
+    }
+
+    html[data-theme="light"] .hero-visual-card {
+        background:
+            radial-gradient(circle at top left, rgba(0,123,255,0.08), transparent 35%),
+            radial-gradient(circle at bottom right, rgba(111,66,193,0.08), transparent 35%),
+            rgba(255,255,255,0.84);
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 16px 46px rgba(0,0,0,0.08);
+    }
+
+    .shield-glow-home {
+        font-size: 6.4rem;
+        line-height: 1;
+        filter: drop-shadow(0 0 24px rgba(0,191,255,0.35));
+        animation: floatShield 3s ease-in-out infinite;
+    }
+
+    @keyframes floatShield {
+        0%,100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .scan-mini-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 22px;
+    }
+
+    .scan-mini-card {
+        padding: 16px 14px;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08);
+        font-weight: 700;
+    }
+
+    html[data-theme="light"] .scan-mini-card {
+        background: rgba(255,255,255,0.75);
+        border: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .features-section,
+    .how-section,
+    .cta-section {
+        padding: 78px 0;
+    }
+
+    .section-title {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 900;
+        font-size: clamp(2rem, 4vw, 3.1rem);
+        margin-bottom: 12px;
+        text-align: center;
+    }
+
+    .section-subtitle {
+        text-align: center;
+        max-width: 780px;
+        margin: 0 auto 38px;
+        color: var(--text-secondary);
+        line-height: 1.9;
+    }
+
+    .feature-card {
+        height: 100%;
+        border-radius: 22px;
+        padding: 28px 24px;
+        background: rgba(15,22,34,0.82);
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 18px 46px rgba(0,0,0,0.22);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    html[data-theme="light"] .feature-card {
+        background: rgba(255,255,255,0.86);
+        border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.06);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 24px 54px rgba(0,0,0,0.24);
+    }
+
+    .feature-icon {
+        font-size: 2.8rem;
+        margin-bottom: 16px;
+        display: inline-block;
+    }
+
+    .feature-card h3 {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .feature-card p {
+        color: var(--text-secondary);
+        line-height: 1.8;
+    }
+
+    .feature-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        font-weight: 800;
+        margin-top: 10px;
+    }
+
+    .step-card {
+        text-align: center;
+        padding: 26px 18px;
+    }
+
+    .step-number {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 1.3rem;
+        box-shadow: 0 14px 30px rgba(0,191,255,0.18);
+    }
+
+    .step-card h5 {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 800;
+    }
+
+    .step-card p {
+        color: var(--text-secondary);
+        line-height: 1.8;
+    }
+
+    .cta-box {
+        border-radius: 28px;
+        padding: 48px 34px;
+        text-align: center;
+        color: #fff;
+        background:
+            radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 25%),
+            radial-gradient(circle at bottom right, rgba(255,107,53,0.10), transparent 25%),
+            linear-gradient(135deg, rgba(0,191,255,0.18), rgba(123,77,255,0.24));
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 26px 60px rgba(0,0,0,0.24);
+    }
+
+    .cta-box h2 {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 900;
+        margin-bottom: 14px;
+    }
+
+    .cta-box p {
+        max-width: 760px;
+        margin: 0 auto 20px;
+        opacity: 0.92;
+        line-height: 1.85;
+    }
+
+    .btn-cta-main {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 26px;
+        border-radius: 14px;
+        text-decoration: none;
+        font-weight: 800;
+        background: #fff;
+        color: #0d6efd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero-home">
+    <div class="container">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-7" data-aos="fade-right">
+                <div class="hero-panel">
+                    <div class="hero-badge-home">
+                        <span class="pulse-dot"></span>
+                        Advanced Authenticity Analysis Platform
+                    </div>
+
+                    <h1 class="hero-title-home">
+                        Verify <span class="gradient-text">Digital Media</span><br>
+                        Before It Misleads
+                    </h1>
+
+                    <p class="hero-desc-home">
+                        Deep Fake Shield is a multi-module verification platform designed to inspect images, videos, audio, and text for authenticity-related indicators. It combines metadata checks, pattern analysis, signal heuristics, and structured scoring to help users assess whether content appears trustworthy or suspicious.
+                    </p>
+
+                    <div class="hero-btn-row">
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="hero-btn-main">
+                            <i class="bi bi-speedometer2"></i> Open Dashboard
+                        </a>
+                        {% else %}
+                        <a href="{% url 'signup' %}" class="hero-btn-main">
+                            <i class="bi bi-person-plus-fill"></i> Get Started
+                        </a>
+                        <a href="{% url 'login' %}" class="hero-btn-secondary">
+                            <i class="bi bi-box-arrow-in-right"></i> Sign In
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="hero-meta-box">
+                        The platform is built to make authenticity analysis more accessible, understandable, and actionable through a clear workflow, visual scoring system, and detailed scan reports.
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5" data-aos="zoom-in">
+                <div class="hero-visual-card">
+                    <div class="shield-glow-home">◈</div>
+                    <h4 class="mt-3 fw-bold" style="font-family:'Montserrat',sans-serif;">Core Verification Modules</h4>
+                    <div class="scan-mini-grid">
+                        <div class="scan-mini-card">📸 Image Analysis</div>
+                        <div class="scan-mini-card">🎬 Video Review</div>
+                        <div class="scan-mini-card">🎵 Audio Signals</div>
+                        <div class="scan-mini-card">📝 Text Detection</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="features-section">
+    <div class="container">
+        <h2 class="section-title" data-aos="fade-up">Core Detection Features</h2>
+        <p class="section-subtitle" data-aos="fade-up">
+            A structured digital verification workflow powered by practical forensic-style checks and accessible reporting.
+        </p>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="50">
+                <div class="feature-card">
+                    <span class="feature-icon">🖼️</span>
+                    <h3>Image Verification</h3>
+                    <p>Inspect visual patterns, metadata, compression behavior, face detection, and suspicious image characteristics.</p>
+                    <a href="{% url 'upload_image' %}" class="feature-link">Open Image Scan <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-card">
+                    <span class="feature-icon">🎞️</span>
+                    <h3>Video Verification</h3>
+                    <p>Break videos into frames and analyze visual consistency to identify possible manipulation patterns.</p>
+                    <a href="{% url 'upload_video' %}" class="feature-link">Open Video Scan <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="150">
+                <div class="feature-card">
+                    <span class="feature-icon">🎧</span>
+                    <h3>Audio Verification</h3>
+                    <p>Inspect clipping, flatness, and energy behavior to highlight potentially synthetic or altered audio content.</p>
+                    <a href="{% url 'upload_audio' %}" class="feature-link">Open Audio Scan <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-card">
+                    <span class="feature-icon">🧠</span>
+                    <h3>Text Verification</h3>
+                    <p>Review repetition, phrase style, punctuation density, and structured writing patterns associated with AI text.</p>
+                    <a href="{% url 'text_scan' %}" class="feature-link">Open Text Scan <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="how-section">
+    <div class="container">
+        <h2 class="section-title" data-aos="fade-up">How It Works</h2>
+        <p class="section-subtitle" data-aos="fade-up">
+            A simple workflow designed for fast analysis, understandable results, and practical digital verification.
+        </p>
+
+        <div class="row">
+            <div class="col-md-3" data-aos="zoom-in" data-aos-delay="50">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h5>Upload</h5>
+                    <p>Select the media or text you want to evaluate.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3" data-aos="zoom-in" data-aos-delay="100">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h5>Analyze</h5>
+                    <p>The system runs structured checks depending on content type.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3" data-aos="zoom-in" data-aos-delay="150">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h5>Score</h5>
+                    <p>An authenticity score and classification are generated.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3" data-aos="zoom-in" data-aos-delay="200">
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h5>Report</h5>
+                    <p>Review the explanation, technical metrics, and downloadable PDF summary.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-box" data-aos="fade-up">
+            <h2>Move Beyond Guesswork</h2>
+            <p>
+                Whether you are checking suspicious media, studying authenticity signals, or exploring how digital verification works, Deep Fake Shield provides a more structured and transparent experience.
+            </p>
+
+            {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="btn-cta-main">
+                <i class="bi bi-speedometer2"></i> Continue to Dashboard
+            </a>
+            {% else %}
+            <a href="{% url 'signup' %}" class="btn-cta-main">
+                <i class="bi bi-rocket-takeoff-fill"></i> Create an Account
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

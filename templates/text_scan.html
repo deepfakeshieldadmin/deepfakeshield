@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Text Scan — Deep Fake Shield{% endblock %}
+
+{% block content %}
+<section class="scan-page-wrap">
+    <div class="container">
+        <div class="scan-hero-box" data-aos="fade-up">
+            <h1>Text Authenticity Scan</h1>
+            <p>Paste text to detect AI-writing patterns, repetition, punctuation behavior, and sentence variance.</p>
+        </div>
+
+        <div class="upload-card-main" data-aos="zoom-in">
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.text }}
+
+                {% if form.errors %}
+                <div class="alert alert-danger rounded-4 mt-3">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <button type="submit" class="scan-btn-main mt-3">
+                    <i class="bi bi-file-earmark-text-fill me-2"></i> Analyze Text
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

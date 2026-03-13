@@ -1,0 +1,36 @@
+<div id="cookieBanner" class="cookie-banner" style="display:none;">
+    <div class="cookie-content">
+        <div class="cookie-icon">🍪</div>
+        <div class="cookie-text">
+            <h4>Privacy Preferences</h4>
+            <p>
+                We use local storage to save language, theme, and interface preferences so your experience stays consistent across visits.
+            </p>
+        </div>
+        <div class="cookie-actions">
+            <button class="cookie-accept-btn" onclick="acceptCookies()">Accept</button>
+            <button class="cookie-decline-btn" onclick="declineCookies()">Dismiss</button>
+        </div>
+    </div>
+</div>
+
+<script>
+if (!localStorage.getItem('cookiesAccepted')) {
+    setTimeout(() => {
+        const banner = document.getElementById('cookieBanner');
+        if (banner) banner.style.display = 'flex';
+    }, 1800);
+}
+
+function acceptCookies() {
+    localStorage.setItem('cookiesAccepted', 'true');
+    const banner = document.getElementById('cookieBanner');
+    if (banner) banner.style.display = 'none';
+}
+
+function declineCookies() {
+    localStorage.setItem('cookiesAccepted', 'false');
+    const banner = document.getElementById('cookieBanner');
+    if (banner) banner.style.display = 'none';
+}
+</script>

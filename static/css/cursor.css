@@ -1,0 +1,69 @@
+/* ═══════════════════════════════════════════════════════════
+   DEEP FAKE SHIELD — CURSOR STYLES
+   Additional CSS for custom cursor system
+   ═══════════════════════════════════════════════════════════ */
+
+/* Hide default cursor when custom cursor is active */
+[data-cursor="fire"],
+[data-cursor="matrix"],
+[data-cursor="tech"],
+[data-cursor="minimal"] {
+    cursor: none !important;
+}
+
+[data-cursor="fire"] *,
+[data-cursor="matrix"] *,
+[data-cursor="tech"] *,
+[data-cursor="minimal"] * {
+    cursor: none !important;
+}
+
+/* Cursor canvas should not block interactions */
+#cursorCanvas {
+    pointer-events: none !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999999;
+}
+
+/* Fire cursor glow on interactive elements */
+[data-cursor="fire"] a:hover,
+[data-cursor="fire"] button:hover {
+    text-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
+}
+
+[data-cursor="matrix"] a:hover,
+[data-cursor="matrix"] button:hover {
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+[data-cursor="tech"] a:hover,
+[data-cursor="tech"] button:hover {
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+/* Ensure cursor elements are above everything */
+#customPointerDot,
+#customPointerRing {
+    pointer-events: none !important;
+}
+
+/* Smooth transition when switching cursor styles */
+body {
+    transition: cursor 0.2s ease;
+}
+
+/* Mobile: disable custom cursor */
+@media (hover: none) and (pointer: coarse) {
+    #cursorCanvas,
+    #customPointerDot,
+    #customPointerRing {
+        display: none !important;
+    }
+
+    body,
+    body * {
+        cursor: auto !important;
+    }
+}

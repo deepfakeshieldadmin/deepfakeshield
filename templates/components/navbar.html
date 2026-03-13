@@ -1,0 +1,170 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg fixed-top glass-navbar" id="mainNavbar">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+            <span class="brand-icon">🛡️</span>
+            <span class="brand-text">
+                <span class="brand-name">DeepFake</span>
+                <span class="brand-highlight">Shield</span>
+            </span>
+        </a>
+
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <i class="bi bi-list fs-2"></i>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav mx-auto align-items-lg-center">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">
+                        <i class="bi bi-house-door-fill me-1"></i> Home
+                    </a>
+                </li>
+
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'dashboard' %}">
+                        <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                    </a>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-shield-check me-1"></i> Scan
+                    </a>
+                    <ul class="dropdown-menu glass-dropdown">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'upload_image' %}">
+                                <i class="bi bi-image-fill me-2"></i> Image Scan
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'upload_video' %}">
+                                <i class="bi bi-camera-video-fill me-2"></i> Video Scan
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'upload_audio' %}">
+                                <i class="bi bi-music-note-beamed me-2"></i> Audio Scan
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'text_scan' %}">
+                                <i class="bi bi-file-earmark-text-fill me-2"></i> Text Scan
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                {% endif %}
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'education' %}">
+                        <i class="bi bi-journal-richtext me-1"></i> Learn
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'about' %}">
+                        <i class="bi bi-info-circle-fill me-1"></i> About
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'privacy' %}">
+                        <i class="bi bi-shield-lock-fill me-1"></i> Privacy
+                    </a>
+                </li>
+            </ul>
+
+            <div class="navbar-right d-flex align-items-center gap-2 flex-wrap">
+                <!-- Language -->
+                <div class="dropdown">
+                    <button class="nav-icon-btn dropdown-toggle" data-bs-toggle="dropdown" title="Language">
+                        <i class="bi bi-translate"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end glass-dropdown">
+                        <li><a class="dropdown-item" href="#" onclick="changeLanguage('en')">🇬🇧 English</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="changeLanguage('hi')">🇮🇳 हिन्दी</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="changeLanguage('mr')">🇮🇳 मराठी</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="changeLanguage('te')">🇮🇳 తెలుగు</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="changeLanguage('ta')">🇮🇳 தமிழ்</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="changeLanguage('kn')">🇮🇳 ಕನ್ನಡ</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="changeLanguage('fr')">🇫🇷 Français</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="changeLanguage('ja')">🇯🇵 日本語</a></li>
+                    </ul>
+                </div>
+
+                <!-- Preferences -->
+                <div class="dropdown">
+                    <button class="nav-icon-btn dropdown-toggle" data-bs-toggle="dropdown" title="Preferences">
+                        <i class="bi bi-sliders"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end glass-dropdown" style="min-width: 280px;">
+                        <li class="dropdown-header fw-bold">Theme Presets</li>
+                        <li><a class="dropdown-item" href="#" onclick="setThemePreset('tech-blue')">💙 Tech Blue</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setThemePreset('matrix-green')">💚 Matrix Green</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setThemePreset('cyber-purple')">💜 Cyber Purple</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setThemePreset('neon-sunset')">🌇 Neon Sunset</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setThemePreset('minimal-light')">🤍 Minimal Light</a></li>
+
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="dropdown-header fw-bold">Cursor Effects</li>
+                        <li><a class="dropdown-item" href="#" onclick="setCursorStyle('default')">🔹 Default</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setCursorStyle('shadow-fire')">🔥 Shadow Fire</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setCursorStyle('katana')">⚔️ Katana Slash</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setCursorStyle('binary')">💻 Binary Rain</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setCursorStyle('circuit')">🔌 Circuit Pulse</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setCursorStyle('pixel')">🎮 Pixel Trail</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setCursorStyle('lightning')">⚡ Lightning</a></li>
+                    </ul>
+                </div>
+
+                <!-- Dark Mode -->
+                <button class="nav-icon-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+                    <i class="bi bi-moon-stars" id="themeIcon"></i>
+                </button>
+
+                {% if user.is_authenticated %}
+                <div class="dropdown">
+                    <button class="nav-user-btn dropdown-toggle" data-bs-toggle="dropdown">
+                        <div class="user-avatar">
+                            {{ user.first_name|first|default:user.username|first }}
+                        </div>
+                        <span class="user-name d-none d-md-inline">{{ user.first_name|default:user.username }}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end glass-dropdown">
+                        <li class="dropdown-header">
+                            <strong>{{ user.get_full_name|default:user.username }}</strong><br>
+                            <small class="text-muted">{{ user.email }}</small>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'dashboard' %}">
+                                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'upload_image' %}">
+                                <i class="bi bi-plus-circle me-2"></i> New Scan
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                <i class="bi bi-box-arrow-right me-2"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {% else %}
+                <a href="{% url 'login' %}" class="nav-auth-btn nav-login-btn">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                </a>
+                <a href="{% url 'signup' %}" class="nav-auth-btn nav-signup-btn">
+                    <i class="bi bi-person-plus-fill me-1"></i> Sign Up
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Audio Result — Deep Fake Shield{% endblock %}
+
+{% block content %}
+<section class="result-page-wrap">
+    <div class="container">
+        <div class="result-top-card" data-aos="fade-up">
+            <h1 style="font-family:'Montserrat',sans-serif; font-weight:800;">Audio Analysis Result</h1>
+            <p class="text-muted">Filename: {{ scan.original_filename }}</p>
+
+            <div class="result-score
+                {% if scan.classification == 'authentic' %}text-success
+                {% elif scan.classification == 'likely_real' %}text-info
+                {% elif scan.classification == 'suspicious' %}text-warning
+                {% else %}text-danger{% endif %}">
+                {{ scan.authenticity_score|floatformat:1 }}%
+            </div>
+
+            <div class="score-badge-big score-{{ scan.classification }}">
+                {{ scan.get_classification_display|default:scan.classification }}
+            </div>
+        </div>
+
+        <div class="result-block" data-aos="fade-up">
+            <h3 class="result-heading">Audio Metrics</h3>
+            {% if scan.analysis_details %}
+            <div class="metric-grid">
+                {% for key, value in scan.analysis_details.items %}
+                <div class="metric-card">
+                    <strong>{{ key }}</strong>
+                    <span>{{ value }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">No audio metrics available.</p>
+            {% endif %}
+        </div>
+
+        <div class="result-block" data-aos="fade-up">
+            <h3 class="result-heading">Explanation</h3>
+            <p style="white-space: pre-line;">{{ scan.explanation }}</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

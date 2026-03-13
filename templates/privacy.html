@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Privacy — Deep Fake Shield{% endblock %}
+
+{% block content %}
+<section style="padding-top: 110px; padding-bottom: 70px;">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <span class="brand-placeholder-badge">Policy & Academic Use</span>
+            <h1 class="mt-3" style="font-family:'Montserrat',sans-serif; font-size:clamp(2rem,4vw,3rem); font-weight:800;">
+                Privacy <span class="gradient-text">Policy</span>
+            </h1>
+            <p class="mt-3 mx-auto" style="max-width:760px; color:var(--text-secondary,#666); line-height:1.8;">
+                This project stores and processes user data only for educational, testing, and project demonstration purposes.
+            </p>
+        </div>
+
+        <div class="project-note-box mb-4" data-aos="fade-up">
+            <h4 style="font-family:'Montserrat',sans-serif; font-weight:700;">Academic Notice</h4>
+            <p style="margin-bottom:0; line-height:1.8;">
+                Deep Fake Shield is an academic platform. It is designed for educational demonstration, awareness, and basic forensic-style analysis. It is not intended to replace official forensic verification systems.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="project-note-box h-100">
+                    <h4 style="font-family:'Montserrat',sans-serif; font-weight:700;">What Data Is Collected</h4>
+                    <ul style="line-height:1.9; margin-bottom:0;">
+                        <li>User registration details such as username and email</li>
+                        <li>Uploaded image, video, and audio files</li>
+                        <li>Submitted text for analysis</li>
+                        <li>Generated scan results and authenticity reports</li>
+                        <li>User preferences like theme, language, and cursor settings</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="project-note-box h-100">
+                    <h4 style="font-family:'Montserrat',sans-serif; font-weight:700;">How Data Is Used</h4>
+                    <ul style="line-height:1.9; margin-bottom:0;">
+                        <li>To perform media verification and scoring</li>
+                        <li>To display dashboard scan history</li>
+                        <li>To generate downloadable PDF reports</li>
+                        <li>To improve project demonstration and analysis flow</li>
+                        <li>To support academic review by teachers or evaluators</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-6" data-aos="zoom-in">
+                <div class="project-note-box h-100">
+                    <h4 style="font-family:'Montserrat',sans-serif; font-weight:700;">Storage Information</h4>
+                    <p style="line-height:1.8;">
+                        This platform uses a PostgreSQL and cloud storage.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endblock %}
