@@ -1,20 +1,32 @@
-Django>=4.2,<5.0
-gunicorn>=21.2.0
-psycopg2-binary>=2.9.9
-whitenoise>=6.6.0
-dj-database-url>=2.1.0
-python-dotenv>=1.0.0
+Django==4.2.16
+gunicorn==21.2.0
+whitenoise==6.7.0
+psycopg2-binary==2.9.9
+dj-database-url==2.2.0
+python-dotenv==1.0.1
 
-numpy>=1.26.0
-Pillow>=10.2.0
-opencv-python-headless>=4.9.0.80
-exifread>=3.0.0
-scikit-learn>=1.4.0
+# Image Processing
+numpy==1.26.4
+Pillow==10.4.0
+opencv-python-headless==4.10.0.84
+exifread==3.0.0
+scikit-learn==1.5.2
 
-torch>=2.2.0
-torchvision>=0.17.0
+# Audio Processing
+librosa==0.10.2.post1
+soundfile==0.12.1
 
-librosa>=0.10.1
-soundfile>=0.12.1
-moviepy>=1.0.3
-reportlab>=4.1.0
+# Video Processing
+moviepy==1.0.3
+
+# PDF Reports
+reportlab==4.2.2
+
+# Optional: Deep Learning (CPU-only)
+torch==2.2.2+cpu
+torchvision==0.17.2+cpu
+
+# Note: torch CPU wheels need special index:
+# pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# If torch is too large for deployment, remove these two lines.
+# The system works without them (deep_feature_score defaults to 50.0).

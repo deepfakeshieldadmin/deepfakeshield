@@ -1,144 +1,232 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Image Result | DeepFake Shield{% endblock %}
+{% block body_class %}result-page{% endblock %}
 
 {% block content %}
-<section class="container py-5">
-    <div class="text-center mb-4">
-        <div class="section-badge">
-            <i class="bi bi-file-earmark-check me-2"></i>Scan Complete
+<section class="result-section">
+    <div class="container">
+        <!-- Result Header -->
+        <div class="result-header" data-aos="fade-down">
+            <a href="{% url 'core:dashboard' %}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1 class="result-page-title">
+                <i class="fas fa-image"></i> Image Analysis Result
+            </h1>
         </div>
-        <h1 class="premium-section-title">Image Analysis Result</h1>
-        <p class="premium-section-desc mx-auto">Detailed authenticity assessment for the uploaded image.</p>
-    </div>
 
-    <div class="row g-4 align-items-start">
-        <div class="col-lg-5">
-            <div class="glass-card-premium p-4 h-100">
-                <h4 class="mb-3"><i class="bi bi-image me-2"></i>Processed Image</h4>
-
-                {% if scan.processed_file %}
-                    <img src="{{ scan.processed_file.url }}" alt="Processed image"
-                         class="img-fluid rounded-4 shadow-sm w-100 result-preview-img">
-                {% elif scan.uploaded_file %}
-                    <img src="{{ scan.uploaded_file.url }}" alt="Uploaded image"
-                         class="img-fluid rounded-4 shadow-sm w-100 result-preview-img">
-                {% endif %}
-
-                <div class="mt-4">
-                    <h5><i class="bi bi-eye me-2"></i>Image Description</h5>
-                    <p class="mb-0">{{ result.scene_description|default:"No description available." }}</p>
+        <!-- Score Card -->
+        <div class="score-hero-card score-hero-{{ scan.score_color }}" data-aos="zoom-in">
+            <div class="score-hero-bg"></div>
+            <div class="score-hero-content">
+                <div class="score-circle-wrap">
+                    <div class="score-circle" data-score="{{ scan.authenticity_score }}">
+                        <svg viewBox="0 0 120 120" class="score-ring-svg">
+                            <circle cx="60" cy="60" r="54" class="score-ring-bg"/>
+                            <circle cx="60" cy="60" r="54" class="score-ring-fill"
+                                    stroke-dasharray="339.292"
+                                    stroke-dashoffset="{{ score_offset|default:'339.292' }}"
+                                    style="stroke-dashoffset: calc(339.292 - (339.292 * {{ scan.authenticity_score }}) / 100)"/>
+                        </svg>
+                        <div class="score-value">
+                            <span class="score-number">{{ scan.authenticity_score|floatformat:1 }}</span>
+                            <span class="score-percent">%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="score-info">
+                    <div class="score-classification">
+                        <span class="classification-badge badge-{{ scan.score_color }}">
+                            {% if scan.score_color == 'success' %}<i class="fas fa-check-circle"></i>
+                            {% elif scan.score_color == 'warning' %}<i class="fas fa-exclamation-triangle"></i>
+                            {% else %}<i class="fas fa-times-circle"></i>{% endif %}
+                            {{ scan.score_label }}
+                        </span>
+                    </div>
+                    <div class="score-verdict">{{ scan.real_vs_fake }}</div>
+                    <div class="score-file">
+                        <i class="fas fa-file"></i> {{ scan.original_filename }}
+                    </div>
+                    <div class="score-date">
+                        <i class="fas fa-clock"></i> {{ scan.created_at|date:"F d, Y H:i" }}
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-7">
-            <div class="glass-card-premium p-4 h-100">
-                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
-                    <div>
-                        <h2 class="mb-2">{{ scan.original_filename }}</h2>
-                        <div class="d-flex flex-wrap gap-2">
-                            <span class="badge rounded-pill px-3 py-2 bg-warning text-dark">
-                                {{ scan.classification_display|default:scan.classification }}
-                            </span>
-                            <span class="badge rounded-pill px-3 py-2 {% if result.real_vs_fake == 'Real' %}bg-success{% elif result.real_vs_fake == 'Fake' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
-                                {{ result.real_vs_fake|default:"Uncertain" }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="score-badge-circle">
-                        <span>{{ scan.authenticity_score }}</span>
+        <!-- Result Content Grid -->
+        <div class="result-grid">
+            <!-- Processed Image -->
+            {% if scan.processed_file %}
+            <div class="result-card result-image-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-eye"></i> Processed Image</h3>
+                    <span class="result-card-badge">Face Detection</span>
+                </div>
+                <div class="result-card-body">
+                    <div class="result-image-wrap">
+                        <img src="{{ scan.processed_file.url }}" alt="Analyzed image with face detection" class="result-image" loading="lazy">
                     </div>
                 </div>
-
-                <div class="row g-3 mb-4">
-                    <div class="col-md-3 col-6">
-                        <div class="mini-stat-box">
-                            <small>Faces</small>
-                            <strong>{{ result.face_count|default:0 }}</strong>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-6">
-                        <div class="mini-stat-box">
-                            <small>EXIF</small>
-                            <strong>{% if result.exif_present %}Present{% else %}Missing{% endif %}</strong>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-6">
-                        <div class="mini-stat-box">
-                            <small>Compression</small>
-                            <strong>{{ result.compression_label|default:"Normal" }}</strong>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-6">
-                        <div class="mini-stat-box">
-                            <small>Artifacts</small>
-                            <strong>{{ result.artifact_label|default:"Low" }}</strong>
-                        </div>
+            </div>
+            {% elif scan.uploaded_file %}
+            <div class="result-card result-image-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-eye"></i> Uploaded Image</h3>
+                </div>
+                <div class="result-card-body">
+                    <div class="result-image-wrap">
+                        <img src="{{ scan.uploaded_file.url }}" alt="Uploaded image" class="result-image" loading="lazy">
                     </div>
                 </div>
+            </div>
+            {% endif %}
 
-                <div class="mb-4">
-                    <h4><i class="bi bi-chat-left-text me-2"></i>Explanation</h4>
-                    <p>{{ scan.explanation }}</p>
-                    <p><strong>Summary:</strong> {{ result.analysis_summary|default:"No summary available." }}</p>
+            <!-- Description -->
+            {% if scan.description %}
+            <div class="result-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-info-circle"></i> Image Description</h3>
                 </div>
-
-                <div class="mb-4">
-                    <h4><i class="bi bi-table me-2"></i>Detailed Metrics</h4>
-                    <div class="table-responsive">
-                        <table class="table align-middle premium-table">
-                            <tbody>
-                                <tr><th>Camera Make</th><td>{{ result.camera_make|default:"Not found" }}</td></tr>
-                                <tr><th>Camera Model</th><td>{{ result.camera_model|default:"Not found" }}</td></tr>
-                                <tr><th>Face Count</th><td>{{ result.face_count|default:0 }}</td></tr>
-                                <tr><th>Face Detector</th><td>{{ result.face_detector_used|default:"N/A" }}</td></tr>
-                                <tr><th>Face Quality Score</th><td>{{ result.face_quality_score|default:"0" }}</td></tr>
-                                <tr><th>AI Artifact Score</th><td>{{ result.ai_artifact_score|default:"0" }}</td></tr>
-                                <tr><th>Compression Noise</th><td>{{ result.compression_noise_score|default:"0" }}</td></tr>
-                                <tr><th>Noise Score</th><td>{{ result.noise_score|default:"0" }}</td></tr>
-                                <tr><th>Edge Score</th><td>{{ result.edge_score|default:"0" }}</td></tr>
-                                <tr><th>Texture Score</th><td>{{ result.texture_score|default:"0" }}</td></tr>
-                                <tr><th>Color Score</th><td>{{ result.color_score|default:"0" }}</td></tr>
-                                <tr><th>Deep Feature Score</th><td>{{ result.deep_feature_score|default:"0" }}</td></tr>
-                                <tr><th>Screenshot Likelihood</th><td>{{ result.screenshot_likelihood|default:"0" }}</td></tr>
-                                <tr><th>Synthetic Smoothness</th><td>{{ result.synthetic_smoothness_score|default:"0" }}</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="result-card-body">
+                    <p class="result-description">{{ scan.description }}</p>
                 </div>
+            </div>
+            {% endif %}
 
-                {% if result.exif_data %}
-                <div class="mb-4">
-                    <h4><i class="bi bi-info-circle me-2"></i>EXIF Metadata</h4>
-                    <div class="exif-scroll-box">
-                        {% for key, value in result.exif_data.items %}
-                            <div class="exif-row">
-                                <strong>{{ key }}</strong>
-                                <span>{{ value }}</span>
+            <!-- Explanation -->
+            {% if scan.explanation %}
+            <div class="result-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-microscope"></i> Analysis Details</h3>
+                </div>
+                <div class="result-card-body">
+                    <p class="result-explanation">{{ scan.explanation }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Summary -->
+            {% if scan.summary %}
+            <div class="result-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-file-alt"></i> Summary</h3>
+                </div>
+                <div class="result-card-body">
+                    <p class="result-summary">{{ scan.summary }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Detailed Metrics -->
+            {% if scan.detailed_results %}
+            <div class="result-card result-metrics-card" data-aos="fade-up" data-aos-delay="500">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-chart-bar"></i> Detailed Metrics</h3>
+                </div>
+                <div class="result-card-body">
+                    <div class="metrics-grid">
+                        {% for key, value in scan.detailed_results.items %}
+                            {% if key != 'processed_image_bytes' and key != 'face_boxes' and key != 'exif_data' and key != 'screenshot_reasons' and key != 'filename' %}
+                            <div class="metric-item" data-aos="fade-left" data-aos-delay="{{ forloop.counter0 }}0">
+                                <span class="metric-label">{{ key|cut:"_"|title }}</span>
+                                <span class="metric-value">
+                                    {% if value == True %}
+                                        <i class="fas fa-check-circle text-success"></i> Yes
+                                    {% elif value == False %}
+                                        <i class="fas fa-times-circle text-danger"></i> No
+                                    {% else %}
+                                        {{ value }}
+                                    {% endif %}
+                                </span>
                             </div>
+                            {% endif %}
                         {% endfor %}
                     </div>
                 </div>
-                {% endif %}
+            </div>
 
-                <div class="d-flex flex-wrap gap-3">
-                    <a href="{% url 'upload_image' %}" class="btn btn-outline-glow">
-                        <i class="bi bi-arrow-repeat me-2"></i>Scan Another Image
-                    </a>
-
-                    {% if scan.report_file %}
-                    <a href="{{ scan.report_file.url }}" class="btn btn-glow" target="_blank" download>
-                        <i class="bi bi-file-earmark-pdf-fill me-2"></i>Download PDF Report
-                    </a>
+            <!-- EXIF Data -->
+            {% with exif=scan.detailed_results.exif_data %}
+            {% if exif %}
+            <div class="result-card" data-aos="fade-up" data-aos-delay="600">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-camera"></i> EXIF Metadata</h3>
+                    <span class="result-card-badge">
+                        {% if scan.detailed_results.exif_present %}Present{% else %}Not Found{% endif %}
+                    </span>
+                </div>
+                <div class="result-card-body">
+                    {% if scan.detailed_results.camera_make != 'Unknown' %}
+                    <div class="exif-info">
+                        <div class="exif-item">
+                            <span class="exif-label">Camera Make</span>
+                            <span class="exif-value">{{ scan.detailed_results.camera_make }}</span>
+                        </div>
+                        <div class="exif-item">
+                            <span class="exif-label">Camera Model</span>
+                            <span class="exif-value">{{ scan.detailed_results.camera_model }}</span>
+                        </div>
+                    </div>
                     {% endif %}
 
-                    <a href="{% url 'dashboard' %}" class="btn btn-ghost-premium">
-                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                    </a>
+                    <div class="exif-details-toggle">
+                        <button class="btn btn-ghost btn-sm" onclick="toggleExifDetails()">
+                            <i class="fas fa-chevron-down"></i> Show All EXIF Data
+                        </button>
+                    </div>
+                    <div class="exif-details" id="exif-details" style="display: none;">
+                        <div class="exif-table">
+                            {% for key, value in exif.items %}
+                            <div class="exif-row">
+                                <span class="exif-key">{{ key }}</span>
+                                <span class="exif-val">{{ value|truncatechars:80 }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
+            {% endif %}
+            {% endwith %}
+            {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="result-actions" data-aos="fade-up" data-aos-delay="700">
+            <a href="{% url 'core:download_report' scan.id %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-file-pdf"></i>
+                <span>Download PDF Report</span>
+            </a>
+            <a href="{% url 'core:upload_image' %}" class="btn btn-outline btn-lg">
+                <i class="fas fa-plus"></i>
+                <span>New Scan</span>
+            </a>
+            <a href="{% url 'core:dashboard' %}" class="btn btn-ghost btn-lg">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleExifDetails() {
+    const details = document.getElementById('exif-details');
+    const btn = event.currentTarget;
+    const icon = btn.querySelector('i');
+    if (details.style.display === 'none') {
+        details.style.display = 'block';
+        icon.className = 'fas fa-chevron-up';
+        btn.querySelector('span') || btn.childNodes[1];
+    } else {
+        details.style.display = 'none';
+        icon.className = 'fas fa-chevron-down';
+    }
+}
+</script>
 {% endblock %}

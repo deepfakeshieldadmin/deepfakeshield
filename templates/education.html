@@ -1,69 +1,162 @@
 {% extends 'base.html' %}
-{% block title %}Education | DeepFake Shield{% endblock %}
+{% load static %}
+
+{% block title %}Learn About Deepfakes | DeepFake Shield{% endblock %}
+{% block body_class %}education-page{% endblock %}
 
 {% block content %}
-<section class="py-5">
+<section class="page-hero">
     <div class="container">
-        <div class="text-center mb-5">
-            <div class="section-badge">
-                <i class="bi bi-mortarboard-fill me-2"></i>Educational Insights
-            </div>
-            <h1 class="premium-section-title">How Authenticity Detection Works</h1>
-            <p class="premium-section-desc mx-auto">
-                DeepFake Shield combines metadata, visual analysis, audio features, and text heuristics to estimate media authenticity.
-            </p>
+        <div class="page-hero-content" data-aos="fade-up">
+            <span class="page-overline"><i class="fas fa-graduation-cap"></i> EDUCATION</span>
+            <h1 class="page-title">Understanding Deepfakes</h1>
+            <p class="page-subtitle">Learn about synthetic media, detection techniques, and how to protect yourself</p>
         </div>
+    </div>
+</section>
 
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-3">
-                <div class="glass-card-premium p-4 h-100">
-                    <h4>EXIF Metadata</h4>
-                    <p>
-                        Camera images often contain EXIF data such as device make, model, and capture settings.
-                        Missing EXIF can indicate screenshots, edited images, or AI-generated content.
-                    </p>
-                </div>
+<section class="content-section">
+    <div class="container">
+        <!-- What Are Deepfakes -->
+        <div class="content-card" data-aos="fade-up">
+            <div class="content-card-header">
+                <div class="content-card-icon"><i class="fas fa-question-circle"></i></div>
+                <h2>What Are Deepfakes?</h2>
             </div>
-
-            <div class="col-md-6 col-lg-3">
-                <div class="glass-card-premium p-4 h-100">
-                    <h4>Artifacts</h4>
-                    <p>
-                        Synthetic images can contain visual artifacts such as abnormal frequency distribution,
-                        unnatural smoothness, or compression inconsistencies.
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-3">
-                <div class="glass-card-premium p-4 h-100">
-                    <h4>Audio Features</h4>
-                    <p>
-                        Audio is checked using RMS energy, spectral flatness, clipping ratio, harmonic structure,
-                        and other signal-level characteristics.
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-3">
-                <div class="glass-card-premium p-4 h-100">
-                    <h4>Text Heuristics</h4>
-                    <p>
-                        AI text often shows unusual repetition, low burstiness, predictable punctuation patterns,
-                        and lower sentence diversity than natural writing.
-                    </p>
+            <div class="content-card-body">
+                <p>Deepfakes are synthetic media generated using artificial intelligence techniques, particularly deep learning. They can create highly realistic but fabricated images, videos, audio recordings, and text that are increasingly difficult to distinguish from genuine content.</p>
+                <p>The term "deepfake" combines "deep learning" and "fake," reflecting the AI technology used to create convincing forgeries.</p>
+                <div class="edu-highlight-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p><strong>Important:</strong> By 2025, an estimated 90% of online content could be synthetically generated, making detection tools like DeepFake Shield essential for verifying media authenticity.</p>
                 </div>
             </div>
         </div>
 
-        <div class="glass-card-premium p-4 mt-5">
-            <h3 class="mb-3">Score Interpretation</h3>
-            <ul class="score-meaning-list">
-                <li><span class="badge bg-danger">0–39</span> Likely Fake / AI Generated</li>
-                <li><span class="badge bg-warning text-dark">40–74</span> Suspicious / Possibly Edited</li>
-                <li><span class="badge bg-info text-dark">75–99</span> Likely Real</li>
-                <li><span class="badge bg-success">100</span> Highly Authentic</li>
-            </ul>
+        <!-- Types of Deepfakes -->
+        <div class="content-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="content-card-header">
+                <div class="content-card-icon"><i class="fas fa-layer-group"></i></div>
+                <h2>Types of Synthetic Media</h2>
+            </div>
+            <div class="content-card-body">
+                <div class="type-grid">
+                    <div class="type-card" data-aos="flip-left" data-aos-delay="100">
+                        <div class="type-icon"><i class="fas fa-image"></i></div>
+                        <h4>Image Deepfakes</h4>
+                        <p>AI-generated faces, manipulated photographs, face swaps, and synthetically created scenes using GANs or diffusion models.</p>
+                        <div class="type-examples">
+                            <span class="type-tag">GANs</span>
+                            <span class="type-tag">Stable Diffusion</span>
+                            <span class="type-tag">DALL-E</span>
+                            <span class="type-tag">Midjourney</span>
+                        </div>
+                    </div>
+                    <div class="type-card" data-aos="flip-left" data-aos-delay="200">
+                        <div class="type-icon"><i class="fas fa-video"></i></div>
+                        <h4>Video Deepfakes</h4>
+                        <p>Face-swapped videos, lip-sync manipulation, full-body puppetry, and synthetically generated video sequences.</p>
+                        <div class="type-examples">
+                            <span class="type-tag">Face Swap</span>
+                            <span class="type-tag">Lip Sync</span>
+                            <span class="type-tag">Full Body</span>
+                        </div>
+                    </div>
+                    <div class="type-card" data-aos="flip-left" data-aos-delay="300">
+                        <div class="type-icon"><i class="fas fa-microphone"></i></div>
+                        <h4>Audio Deepfakes</h4>
+                        <p>Cloned voices, synthetic speech, manipulated audio recordings using text-to-speech and voice conversion technology.</p>
+                        <div class="type-examples">
+                            <span class="type-tag">Voice Cloning</span>
+                            <span class="type-tag">TTS</span>
+                            <span class="type-tag">Voice Conversion</span>
+                        </div>
+                    </div>
+                    <div class="type-card" data-aos="flip-left" data-aos-delay="400">
+                        <div class="type-icon"><i class="fas fa-file-alt"></i></div>
+                        <h4>Text Deepfakes</h4>
+                        <p>AI-generated articles, essays, comments, and messages produced by large language models like GPT.</p>
+                        <div class="type-examples">
+                            <span class="type-tag">ChatGPT</span>
+                            <span class="type-tag">GPT-4</span>
+                            <span class="type-tag">Claude</span>
+                            <span class="type-tag">Gemini</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detection Techniques -->
+        <div class="content-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="content-card-header">
+                <div class="content-card-icon"><i class="fas fa-search"></i></div>
+                <h2>How Detection Works</h2>
+            </div>
+            <div class="content-card-body">
+                <div class="technique-list">
+                    <div class="technique-item" data-aos="fade-left" data-aos-delay="100">
+                        <div class="technique-icon"><i class="fas fa-fingerprint"></i></div>
+                        <div class="technique-content">
+                            <h4>Metadata Analysis</h4>
+                            <p>Examining EXIF data, compression artifacts, and digital fingerprints left by cameras vs AI generators.</p>
+                        </div>
+                    </div>
+                    <div class="technique-item" data-aos="fade-left" data-aos-delay="200">
+                        <div class="technique-icon"><i class="fas fa-wave-square"></i></div>
+                        <div class="technique-content">
+                            <h4>Frequency Analysis</h4>
+                            <p>AI-generated images often show distinct patterns in the frequency domain that differ from natural photographs.</p>
+                        </div>
+                    </div>
+                    <div class="technique-item" data-aos="fade-left" data-aos-delay="300">
+                        <div class="technique-icon"><i class="fas fa-user-check"></i></div>
+                        <div class="technique-content">
+                            <h4>Biological Consistency</h4>
+                            <p>Checking for natural facial features, eye reflections, skin texture, and anatomical consistency.</p>
+                        </div>
+                    </div>
+                    <div class="technique-item" data-aos="fade-left" data-aos-delay="400">
+                        <div class="technique-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="technique-content">
+                            <h4>Statistical Patterns</h4>
+                            <p>Analyzing noise distributions, color histograms, and pixel-level statistics for anomalies.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- How to Protect Yourself -->
+        <div class="content-card" data-aos="fade-up" data-aos-delay="300">
+            <div class="content-card-header">
+                <div class="content-card-icon"><i class="fas fa-user-shield"></i></div>
+                <h2>Protecting Yourself</h2>
+            </div>
+            <div class="content-card-body">
+                <div class="tips-grid">
+                    <div class="tip-item" data-aos="zoom-in" data-aos-delay="100">
+                        <div class="tip-number">1</div>
+                        <h4>Verify Sources</h4>
+                        <p>Always check the original source of media before sharing. Cross-reference with trusted outlets.</p>
+                    </div>
+                    <div class="tip-item" data-aos="zoom-in" data-aos-delay="200">
+                        <div class="tip-number">2</div>
+                        <h4>Look for Anomalies</h4>
+                        <p>Check for unnatural lighting, blurry edges around faces, or inconsistent shadows and reflections.</p>
+                    </div>
+                    <div class="tip-item" data-aos="zoom-in" data-aos-delay="300">
+                        <div class="tip-number">3</div>
+                        <h4>Use Detection Tools</h4>
+                        <p>Utilize tools like DeepFake Shield to run automated analysis on suspicious media content.</p>
+                    </div>
+                    <div class="tip-item" data-aos="zoom-in" data-aos-delay="400">
+                        <div class="tip-number">4</div>
+                        <h4>Stay Informed</h4>
+                        <p>Keep up with the latest developments in AI-generated content and deepfake detection research.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>

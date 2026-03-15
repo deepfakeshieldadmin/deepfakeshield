@@ -1,1 +1,1 @@
-# Core app init
+# DeepFake Shield - Core Application

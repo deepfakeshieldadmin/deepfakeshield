@@ -1,3 +1,1 @@
-document.addEventListener("DOMContentLoaded", function () {
-    console.log("Cursor system disabled for stability.");
-});
+/* Cursor sparkle trail is inlined in base.html for guaranteed execution */

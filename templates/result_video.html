@@ -1,118 +1,175 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Video Result | DeepFake Shield{% endblock %}
+{% block body_class %}result-page{% endblock %}
 
 {% block content %}
-<section class="container py-5">
-    <div class="text-center mb-4">
-        <div class="section-badge">
-            <i class="bi bi-film me-2"></i>Video Scan Complete
+<section class="result-section">
+    <div class="container">
+        <div class="result-header" data-aos="fade-down">
+            <a href="{% url 'core:dashboard' %}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1 class="result-page-title">
+                <i class="fas fa-video"></i> Video Analysis Result
+            </h1>
         </div>
-        <h1 class="premium-section-title">Video <span class="title-gradient">Analysis</span> Result</h1>
-        <p class="premium-section-desc mx-auto">Frame-level authenticity analysis with temporal scoring.</p>
-    </div>
 
-    <div class="glass-card-premium p-4">
-        <div class="result-header-premium mb-4">
-            <div>
-                <h3 class="mb-1">{{ scan.original_filename }}</h3>
-                <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <span class="result-classification-badge badge-{{ score_color|default:'info' }}">
-                        {{ scan.classification_display|default:scan.classification }}
-                    </span>
-                    {% if result.real_vs_fake %}
-                    <span class="badge {% if result.real_vs_fake == 'Real' %}bg-success{% elif result.real_vs_fake == 'Fake' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
-                        {{ result.real_vs_fake }}
-                    </span>
-                    {% endif %}
+        <!-- Score Card -->
+        <div class="score-hero-card score-hero-{{ scan.score_color }}" data-aos="zoom-in">
+            <div class="score-hero-bg"></div>
+            <div class="score-hero-content">
+                <div class="score-circle-wrap">
+                    <div class="score-circle" data-score="{{ scan.authenticity_score }}">
+                        <svg viewBox="0 0 120 120" class="score-ring-svg">
+                            <circle cx="60" cy="60" r="54" class="score-ring-bg"/>
+                            <circle cx="60" cy="60" r="54" class="score-ring-fill"
+                                    style="stroke-dashoffset: calc(339.292 - (339.292 * {{ scan.authenticity_score }}) / 100)"/>
+                        </svg>
+                        <div class="score-value">
+                            <span class="score-number">{{ scan.authenticity_score|floatformat:1 }}</span>
+                            <span class="score-percent">%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="score-info">
+                    <div class="score-classification">
+                        <span class="classification-badge badge-{{ scan.score_color }}">
+                            {% if scan.score_color == 'success' %}<i class="fas fa-check-circle"></i>
+                            {% elif scan.score_color == 'warning' %}<i class="fas fa-exclamation-triangle"></i>
+                            {% else %}<i class="fas fa-times-circle"></i>{% endif %}
+                            {{ scan.score_label }}
+                        </span>
+                    </div>
+                    <div class="score-verdict">{{ scan.real_vs_fake }}</div>
+                    <div class="score-file"><i class="fas fa-file-video"></i> {{ scan.original_filename }}</div>
+                    <div class="score-date"><i class="fas fa-clock"></i> {{ scan.created_at|date:"F d, Y H:i" }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="result-grid">
+            <!-- Video Info -->
+            {% if scan.detailed_results.detailed_metrics %}
+            <div class="result-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-film"></i> Video Information</h3>
+                </div>
+                <div class="result-card-body">
+                    <div class="video-info-grid">
+                        <div class="video-info-item">
+                            <span class="vi-label">Duration</span>
+                            <span class="vi-value">{{ scan.detailed_results.detailed_metrics.duration_seconds|default:"N/A" }}s</span>
+                        </div>
+                        <div class="video-info-item">
+                            <span class="vi-label">Resolution</span>
+                            <span class="vi-value">{{ scan.detailed_results.detailed_metrics.resolution|default:"N/A" }}</span>
+                        </div>
+                        <div class="video-info-item">
+                            <span class="vi-label">FPS</span>
+                            <span class="vi-value">{{ scan.detailed_results.detailed_metrics.fps|default:"N/A" }}</span>
+                        </div>
+                        <div class="video-info-item">
+                            <span class="vi-label">Total Frames</span>
+                            <span class="vi-value">{{ scan.detailed_results.detailed_metrics.total_frames|default:"N/A" }}</span>
+                        </div>
+                        <div class="video-info-item">
+                            <span class="vi-label">Frames Analyzed</span>
+                            <span class="vi-value">{{ scan.detailed_results.detailed_metrics.frames_analyzed|default:"N/A" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Frame Scores -->
+            {% if scan.detailed_results.frame_scores %}
+            <div class="result-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-th"></i> Frame Analysis Scores</h3>
+                </div>
+                <div class="result-card-body">
+                    <div class="frame-scores-grid">
+                        {% for frame in scan.detailed_results.frame_scores %}
+                        <div class="frame-score-item" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0 }}50">
+                            <div class="frame-label">Frame {{ frame.frame_index }}</div>
+                            <div class="frame-score-bar">
+                                <div class="frame-score-fill {% if frame.score >= 75 %}fill-success{% elif frame.score >= 40 %}fill-warning{% else %}fill-danger{% endif %}"
+                                     style="width: {{ frame.score }}%">
+                                </div>
+                            </div>
+                            <div class="frame-score-value">{{ frame.score }}%</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Analysis Scores -->
+            <div class="result-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-chart-bar"></i> Analysis Scores</h3>
+                </div>
+                <div class="result-card-body">
+                    <div class="metrics-grid">
+                        {% if scan.detailed_results.detailed_metrics %}
+                        <div class="metric-item">
+                            <span class="metric-label">Average Frame Score</span>
+                            <span class="metric-value">{{ scan.detailed_results.detailed_metrics.average_frame_score|default:"N/A" }}%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Temporal Consistency</span>
+                            <span class="metric-value">{{ scan.detailed_results.detailed_metrics.temporal_variation_score|default:"N/A" }}%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Face Consistency</span>
+                            <span class="metric-value">{{ scan.detailed_results.detailed_metrics.face_consistency_score|default:"N/A" }}%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Motion Realism</span>
+                            <span class="metric-value">{{ scan.detailed_results.detailed_metrics.motion_realism_score|default:"N/A" }}%</span>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 
-            <div class="result-score-ring-wrap">
-                <svg class="result-score-svg" viewBox="0 0 120 120">
-                    <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="8"/>
-                    <circle cx="60" cy="60" r="52" fill="none" stroke="url(#videoGrad)" stroke-width="8"
-                            stroke-linecap="round"
-                            stroke-dasharray="326.72"
-                            stroke-dashoffset="{{ score_dashoffset|default:'80' }}"
-                            class="result-score-ring-animated"/>
-                    <defs>
-                        <linearGradient id="videoGrad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stop-color="var(--accent)"/>
-                            <stop offset="100%" stop-color="var(--accent-2)"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
-                <div class="result-score-value">{{ scan.authenticity_score }}</div>
+            <!-- Explanation -->
+            {% if scan.explanation %}
+            <div class="result-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-microscope"></i> Analysis Details</h3>
+                </div>
+                <div class="result-card-body">
+                    <p class="result-explanation">{{ scan.explanation }}</p>
+                </div>
             </div>
-        </div>
+            {% endif %}
 
-        <div class="result-explanation-box mb-4">
-            <h5><i class="bi bi-chat-left-text me-2"></i>Explanation</h5>
-            <p>{{ scan.explanation }}</p>
-            {% if result.analysis_summary %}
-            <p class="mt-2 mb-0"><strong>Summary:</strong> {{ result.analysis_summary }}</p>
+            {% if scan.summary %}
+            <div class="result-card" data-aos="fade-up" data-aos-delay="500">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-file-alt"></i> Summary</h3>
+                </div>
+                <div class="result-card-body">
+                    <p class="result-summary">{{ scan.summary }}</p>
+                </div>
+            </div>
             {% endif %}
         </div>
 
-        <div class="result-details-table mb-4">
-            <h5><i class="bi bi-table me-2"></i>Video Metrics</h5>
-            <div class="table-responsive">
-                <table class="table premium-table">
-                    <tbody>
-                        <tr><th>Resolution</th><td>{{ result.resolution|default:"Unknown" }}</td></tr>
-                        <tr><th>FPS</th><td>{{ result.fps|default:"0" }}</td></tr>
-                        <tr><th>Duration</th><td>{{ result.duration|default:"0" }} sec</td></tr>
-                        <tr><th>Total Frames</th><td>{{ result.total_frames|default:"0" }}</td></tr>
-                        <tr><th>Frames Analyzed</th><td>{{ result.frames_analyzed|default:"0" }}</td></tr>
-                        <tr><th>Temporal Variation Score</th><td>{{ result.temporal_variation_score|default:"0" }}</td></tr>
-                        <tr><th>Face Consistency Score</th><td>{{ result.face_consistency_score|default:"0" }}</td></tr>
-                        <tr><th>Motion Score</th><td>{{ result.motion_score|default:"0" }}</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        {% if frame_scores %}
-        <div class="result-details-table mb-4">
-            <h5><i class="bi bi-collection-play me-2"></i>Frame Scores</h5>
-            <div class="table-responsive">
-                <table class="table premium-table">
-                    <thead>
-                        <tr>
-                            <th>Frame</th>
-                            <th>Score</th>
-                            <th>Faces</th>
-                            <th>Verdict</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in frame_scores %}
-                        <tr>
-                            <td>{{ item.frame }}</td>
-                            <td>{{ item.score }}</td>
-                            <td>{{ item.face_count }}</td>
-                            <td>{{ item.real_vs_fake }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        {% endif %}
-
-        <div class="result-actions">
-            <a href="{% url 'upload_video' %}" class="btn btn-outline-glow">
-                <i class="bi bi-arrow-repeat me-2"></i>Scan Another Video
+        <!-- Actions -->
+        <div class="result-actions" data-aos="fade-up" data-aos-delay="600">
+            <a href="{% url 'core:download_report' scan.id %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-file-pdf"></i> Download PDF Report
             </a>
-
-            {% if scan.report_file %}
-            <a href="{{ scan.report_file.url }}" class="btn btn-glow" target="_blank" download>
-                <i class="bi bi-file-earmark-pdf-fill me-2"></i>Download PDF Report
+            <a href="{% url 'core:upload_video' %}" class="btn btn-outline btn-lg">
+                <i class="fas fa-plus"></i> New Scan
             </a>
-            {% endif %}
-
-            <a href="{% url 'dashboard' %}" class="btn btn-ghost-premium">
-                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+            <a href="{% url 'core:dashboard' %}" class="btn btn-ghost btn-lg">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
             </a>
         </div>
     </div>

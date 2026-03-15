@@ -1,19 +1,36 @@
 {% extends 'base.html' %}
-{% block title %}Verification Sent | DeepFake Shield{% endblock %}
+{% load static %}
+
+{% block title %}Verification Email Sent | DeepFake Shield{% endblock %}
+{% block body_class %}auth-page{% endblock %}
 
 {% block content %}
-<section class="py-5">
+<section class="auth-section">
     <div class="container">
-        <div class="row justify-content-center min-vh-75 align-items-center">
-            <div class="col-lg-7">
-                <div class="glass-card-premium p-5 text-center">
-                    <div class="brand-icon-box mx-auto mb-4">
-                        <i class="bi bi-envelope-check-fill"></i>
-                    </div>
-                    <h1 class="mb-3">Verification Email Sent</h1>
-                    <p class="mb-0 text-muted">
-                        A verification email has been sent to your registered address. Please check your inbox and click the verification link.
-                    </p>
+        <div class="auth-container" data-aos="fade-up" data-aos-duration="800">
+            <div class="auth-card status-card">
+                <div class="status-icon status-info" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="status-icon-ring"></div>
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h1 class="auth-title" data-aos="fade-up" data-aos-delay="300">Check Your Email</h1>
+                <p class="auth-subtitle" data-aos="fade-up" data-aos-delay="400">
+                    We've sent a verification link to your email address.
+                    Please click the link to verify your account and start using DeepFake Shield.
+                </p>
+
+                <div class="status-tips" data-aos="fade-up" data-aos-delay="500">
+                    <h4><i class="fas fa-lightbulb"></i> Tips</h4>
+                    <ul>
+                        <li>Check your spam/junk folder if you don't see the email</li>
+                        <li>The verification link expires in 24 hours</li>
+                        <li>You can log in immediately — verification is recommended but not required</li>
+                    </ul>
+                </div>
+
+                <div class="auth-footer" data-aos="fade-up" data-aos-delay="600">
+                    <p>Didn't receive the email? <a href="{% url 'core:resend_verification' %}" class="auth-link">Resend verification</a></p>
+                    <p><a href="{% url 'core:login' %}" class="auth-link-secondary">Go to Login</a></p>
                 </div>
             </div>
         </div>

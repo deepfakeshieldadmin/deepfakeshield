@@ -1,72 +1,134 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}About | DeepFake Shield{% endblock %}
+{% block body_class %}about-page{% endblock %}
 
 {% block content %}
-<section class="py-5">
+<section class="page-hero">
     <div class="container">
-        <div class="text-center mb-5">
-            <div class="section-badge">
-                <i class="bi bi-info-circle-fill me-2"></i>About the Project
-            </div>
-            <h1 class="premium-section-title">About DeepFake Shield</h1>
-            <p class="premium-section-desc mx-auto">
-                A practical media authenticity verification platform built using Django, computer vision,
-                signal processing, and heuristic AI for engineering-level demonstration and deployment.
-            </p>
+        <div class="page-hero-content" data-aos="fade-up">
+            <span class="page-overline"><i class="fas fa-info-circle"></i> ABOUT</span>
+            <h1 class="page-title">About DeepFake Shield</h1>
+            <p class="page-subtitle">Understanding the technology behind real-time media authenticity verification</p>
         </div>
+    </div>
+</section>
 
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="glass-card-premium p-4 h-100">
-                    <h3 class="mb-3"><i class="bi bi-bullseye me-2"></i>Project Objective</h3>
-                    <p>
-                        DeepFake Shield is designed to verify the authenticity of digital media including images,
-                        videos, audio, and text. It helps identify suspicious or AI-generated content using a hybrid
-                        approach combining metadata, visual artifacts, signal analysis, and backend intelligence.
-                    </p>
-                    <p class="mb-0">
-                        The project is intended to be stable, educational, deployable, and presentation-ready for
-                        final-year engineering and board exam demonstrations.
-                    </p>
-                </div>
+<section class="content-section">
+    <div class="container">
+        <div class="content-card" data-aos="fade-up">
+            <div class="content-card-header">
+                <div class="content-card-icon"><i class="fas fa-bullseye"></i></div>
+                <h2>Our Mission</h2>
             </div>
-
-            <div class="col-lg-6">
-                <div class="glass-card-premium p-4 h-100">
-                    <h3 class="mb-3"><i class="bi bi-diagram-3-fill me-2"></i>System Modules</h3>
-                    <ul class="footer-links">
-                        <li>Image Authenticity Detection</li>
-                        <li>Video Frame-Based Analysis</li>
-                        <li>Audio Signal Authenticity Detection</li>
-                        <li>Text AI Pattern Analysis</li>
-                        <li>User Authentication & Scan History</li>
-                        <li>PDF Report Generation</li>
-                        <li>Admin Review Panel</li>
-                    </ul>
-                </div>
+            <div class="content-card-body">
+                <p>DeepFake Shield is a comprehensive Real-Time Media Authenticity Verification System. It addresses the growing challenge of synthetic media — commonly known as deepfakes — that threatens trust in digital content worldwide.</p>
+                <p>Our system employs a hybrid approach combining traditional computer vision techniques, signal processing, natural language processing, and optional deep learning to analyze media across four modalities: images, videos, audio, and text.</p>
             </div>
         </div>
 
-        <div class="row g-4 mt-1">
-            <div class="col-md-4">
-                <div class="clean-stat-card">
-                    <div class="clean-stat-icon"><i class="bi bi-cpu-fill"></i></div>
-                    <h3>Hybrid</h3>
-                    <p>AI + Heuristic Detection</p>
+        <div class="content-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="content-card-header">
+                <div class="content-card-icon"><i class="fas fa-project-diagram"></i></div>
+                <h2>System Architecture</h2>
+            </div>
+            <div class="content-card-body">
+                <div class="arch-grid">
+                    <div class="arch-item" data-aos="zoom-in" data-aos-delay="100">
+                        <i class="fab fa-python"></i>
+                        <h4>Backend</h4>
+                        <p>Django 4.2 with PostgreSQL, Gunicorn, WhiteNoise</p>
+                    </div>
+                    <div class="arch-item" data-aos="zoom-in" data-aos-delay="200">
+                        <i class="fas fa-brain"></i>
+                        <h4>AI Engine</h4>
+                        <p>OpenCV, NumPy, scikit-learn, librosa, optional PyTorch</p>
+                    </div>
+                    <div class="arch-item" data-aos="zoom-in" data-aos-delay="300">
+                        <i class="fas fa-paint-brush"></i>
+                        <h4>Frontend</h4>
+                        <p>Responsive HTML5, CSS3, JavaScript with AOS animations</p>
+                    </div>
+                    <div class="arch-item" data-aos="zoom-in" data-aos-delay="400">
+                        <i class="fas fa-cloud"></i>
+                        <h4>Deployment</h4>
+                        <p>Render, Oracle Cloud, Azure — multi-platform ready</p>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="clean-stat-card">
-                    <div class="clean-stat-icon"><i class="bi bi-database-fill"></i></div>
-                    <h3>PostgreSQL</h3>
-                    <p>Production Database Ready</p>
+        </div>
+
+        <div class="content-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="content-card-header">
+                <div class="content-card-icon"><i class="fas fa-microscope"></i></div>
+                <h2>Detection Methodology</h2>
+            </div>
+            <div class="content-card-body">
+                <div class="methodology-list">
+                    <div class="method-item" data-aos="fade-right" data-aos-delay="100">
+                        <div class="method-number">01</div>
+                        <div class="method-content">
+                            <h4>Metadata Forensics</h4>
+                            <p>EXIF data extraction, camera identification, software footprint analysis, GPS and timestamp verification.</p>
+                        </div>
+                    </div>
+                    <div class="method-item" data-aos="fade-right" data-aos-delay="200">
+                        <div class="method-number">02</div>
+                        <div class="method-content">
+                            <h4>Statistical Analysis</h4>
+                            <p>Noise pattern evaluation, compression artifact analysis, frequency domain inspection, color distribution verification.</p>
+                        </div>
+                    </div>
+                    <div class="method-item" data-aos="fade-right" data-aos-delay="300">
+                        <div class="method-number">03</div>
+                        <div class="method-content">
+                            <h4>Computer Vision</h4>
+                            <p>Face detection and quality scoring, edge coherence analysis, texture realism evaluation, Gabor filter responses.</p>
+                        </div>
+                    </div>
+                    <div class="method-item" data-aos="fade-right" data-aos-delay="400">
+                        <div class="method-number">04</div>
+                        <div class="method-content">
+                            <h4>NLP & Signal Processing</h4>
+                            <p>AI phrase detection, burstiness scoring, spectral flatness analysis, harmonic-percussive separation.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="clean-stat-card">
-                    <div class="clean-stat-icon"><i class="bi bi-file-earmark-pdf-fill"></i></div>
-                    <h3>Reports</h3>
-                    <p>Downloadable PDF Output</p>
+        </div>
+
+        <div class="content-card" data-aos="fade-up" data-aos-delay="300">
+            <div class="content-card-header">
+                <div class="content-card-icon"><i class="fas fa-shield-halved"></i></div>
+                <h2>Why DeepFake Shield?</h2>
+            </div>
+            <div class="content-card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Multi-Modal</span>
+                        <span class="info-value">Image, Video, Audio & Text detection</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">CPU Friendly</span>
+                        <span class="info-value">No GPU required — runs on any hardware</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Hybrid AI</span>
+                        <span class="info-value">Combines 15+ analysis metrics per scan</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">PDF Reports</span>
+                        <span class="info-value">Professional downloadable analysis reports</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Cloud Ready</span>
+                        <span class="info-value">Deploy on Render, Oracle Cloud, or Azure</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Open Architecture</span>
+                        <span class="info-value">Django + PostgreSQL + WhiteNoise stack</span>
+                    </div>
                 </div>
             </div>
         </div>

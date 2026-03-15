@@ -1,47 +1,81 @@
 {% extends 'base.html' %}
-{% block title %}Privacy | DeepFake Shield{% endblock %}
+{% load static %}
+
+{% block title %}Privacy Policy | DeepFake Shield{% endblock %}
+{% block body_class %}privacy-page{% endblock %}
 
 {% block content %}
-<section class="py-5">
+<section class="page-hero">
     <div class="container">
-        <div class="text-center mb-5">
-            <div class="section-badge">
-                <i class="bi bi-shield-lock-fill me-2"></i>Privacy Policy
-            </div>
-            <h1 class="premium-section-title">Privacy & Data Handling</h1>
-            <p class="premium-section-desc mx-auto">
-                This page explains how uploaded files, scan results, and account data are handled within the DeepFake Shield system.
-            </p>
+        <div class="page-hero-content" data-aos="fade-up">
+            <span class="page-overline"><i class="fas fa-lock"></i> PRIVACY</span>
+            <h1 class="page-title">Privacy Policy</h1>
+            <p class="page-subtitle">How we handle your data and protect your privacy</p>
         </div>
+    </div>
+</section>
 
-        <div class="glass-card-premium p-4">
-            <div class="mb-4">
-                <h3>Uploaded Media</h3>
-                <p>
-                    Uploaded files are used only for authenticity analysis and result generation. They may be stored
-                    in the media directory for scan history and PDF reporting.
-                </p>
-            </div>
+<section class="content-section">
+    <div class="container">
+        <div class="content-card policy-card" data-aos="fade-up">
+            <div class="content-card-body">
+                <div class="policy-section" data-aos="fade-up" data-aos-delay="100">
+                    <h3><i class="fas fa-database"></i> Data Collection</h3>
+                    <p>DeepFake Shield collects the following information:</p>
+                    <ul>
+                        <li>Account information (username, email address)</li>
+                        <li>Uploaded media files for analysis purposes</li>
+                        <li>Analysis results and scan history</li>
+                        <li>Session data for authentication</li>
+                    </ul>
+                </div>
 
-            <div class="mb-4">
-                <h3>Authentication Data</h3>
-                <p>
-                    User accounts are managed through Django authentication. Passwords are hashed securely and are never stored in plain text.
-                </p>
-            </div>
+                <div class="policy-section" data-aos="fade-up" data-aos-delay="200">
+                    <h3><i class="fas fa-cogs"></i> How We Use Your Data</h3>
+                    <p>Your data is used exclusively for:</p>
+                    <ul>
+                        <li>Processing and analyzing uploaded media files</li>
+                        <li>Maintaining your scan history and dashboard</li>
+                        <li>Generating analysis reports</li>
+                        <li>Account authentication and security</li>
+                    </ul>
+                </div>
 
-            <div class="mb-4">
-                <h3>Scan History</h3>
-                <p>
-                    Scan results are stored for the logged-in user to provide historical access, result viewing, and PDF report downloads.
-                </p>
-            </div>
+                <div class="policy-section" data-aos="fade-up" data-aos-delay="300">
+                    <h3><i class="fas fa-shield-alt"></i> Data Security</h3>
+                    <p>We implement industry-standard security measures including:</p>
+                    <ul>
+                        <li>HTTPS encryption for all data transmission</li>
+                        <li>Hashed password storage using Django's secure hashing</li>
+                        <li>CSRF protection on all forms</li>
+                        <li>Session-based authentication with secure cookies</li>
+                    </ul>
+                </div>
 
-            <div class="mb-0">
-                <h3>Project Limitation</h3>
-                <p class="mb-0">
-                    DeepFake Shield provides practical authenticity estimation, not final forensic proof. Decisions should not rely only on the generated score.
-                </p>
+                <div class="policy-section" data-aos="fade-up" data-aos-delay="400">
+                    <h3><i class="fas fa-trash-alt"></i> Data Retention</h3>
+                    <p>Uploaded media files and analysis results are stored securely and associated with your account. You may request deletion of your data by contacting the system administrator.</p>
+                </div>
+
+                <div class="policy-section" data-aos="fade-up" data-aos-delay="500">
+                    <h3><i class="fas fa-cookie-bite"></i> Cookies</h3>
+                    <p>We use essential cookies only for:</p>
+                    <ul>
+                        <li>Session management and authentication</li>
+                        <li>CSRF token protection</li>
+                        <li>Theme preference storage</li>
+                    </ul>
+                    <p>No third-party tracking cookies are used.</p>
+                </div>
+
+                <div class="policy-section" data-aos="fade-up" data-aos-delay="600">
+                    <h3><i class="fas fa-envelope"></i> Contact</h3>
+                    <p>For privacy-related inquiries, please contact the system administrator through the admin panel or project team.</p>
+                </div>
+
+                <div class="policy-footer" data-aos="fade-up" data-aos-delay="700">
+                    <p><strong>Last Updated:</strong> 2024 | <strong>Version:</strong> 1.0.0</p>
+                </div>
             </div>
         </div>
     </div>

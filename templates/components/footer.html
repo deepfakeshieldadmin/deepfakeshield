@@ -1,106 +1,85 @@
-<footer class="premium-footer" data-aos="fade-up" data-aos-duration="1000">
-    <div class="footer-glow-top"></div>
+{% load static %}
+<footer class="footer" id="site-footer">
+    <div class="footer-glow"></div>
 
-    <div class="container py-5">
-        <div class="row g-5">
-            <!-- Brand Column -->
-            <div class="col-lg-4">
-                <div class="footer-brand" data-aos="fade-right" data-aos-delay="100">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="footer-brand-icon">
-                            <i class="bi bi-shield-shaded"></i>
-                        </div>
-                        <div>
-                            <h4 class="mb-0 fw-800">DeepFake Shield</h4>
-                            <small class="text-white-50">Authenticity Verification System</small>
-                        </div>
+    <div class="footer-main">
+        <div class="container">
+            <div class="footer-grid">
+                <!-- Brand Column -->
+                <div class="footer-col footer-brand" data-aos="fade-up" data-aos-duration="600">
+                    <div class="footer-logo">
+                        <i class="fas fa-shield-halved"></i>
+                        <span>DeepFake<span class="highlight">Shield</span></span>
                     </div>
-                    <p class="footer-desc">
-                        Real-time media authenticity verification platform powered by heuristic AI analysis for image, video, audio, and text content.
+                    <p class="footer-description">
+                        Real-Time Media Authenticity Verification System.
+                        Protecting truth in the age of synthetic media using
+                        advanced hybrid AI analysis.
                     </p>
-                    <div class="footer-socials">
-                        <a href="#" class="footer-social-btn" aria-label="GitHub">
-                            <i class="bi bi-github"></i>
+                    <div class="footer-social">
+                        <a href="#" class="social-link" aria-label="GitHub">
+                            <i class="fab fa-github"></i>
                         </a>
-                        <a href="#" class="footer-social-btn" aria-label="Globe">
-                            <i class="bi bi-globe2"></i>
+                        <a href="#" class="social-link" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
                         </a>
-                        <a href="#" class="footer-social-btn" aria-label="Email">
-                            <i class="bi bi-envelope-fill"></i>
+                        <a href="#" class="social-link" aria-label="Twitter">
+                            <i class="fab fa-x-twitter"></i>
                         </a>
-                        <a href="#" class="footer-social-btn" aria-label="Shield">
-                            <i class="bi bi-shield-check"></i>
+                        <a href="#" class="social-link" aria-label="Email">
+                            <i class="fas fa-envelope"></i>
                         </a>
                     </div>
                 </div>
-            </div>
 
-            <!-- Nav Links -->
-            <div class="col-md-4 col-lg-2" data-aos="fade-up" data-aos-delay="200">
-                <h6 class="footer-heading">Navigation</h6>
-                <ul class="footer-links-list">
-                    <li><a href="{% url 'home' %}"><i class="bi bi-chevron-right me-1"></i>Home</a></li>
-                    <li><a href="{% url 'dashboard' %}"><i class="bi bi-chevron-right me-1"></i>Dashboard</a></li>
-                    <li><a href="{% url 'about' %}"><i class="bi bi-chevron-right me-1"></i>About</a></li>
-                    <li><a href="{% url 'privacy' %}"><i class="bi bi-chevron-right me-1"></i>Privacy</a></li>
-                </ul>
-            </div>
-
-            <!-- Detection Links -->
-            <div class="col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="300">
-                <h6 class="footer-heading">Detection Modules</h6>
-                <ul class="footer-links-list">
-                    <li><a href="{% url 'upload_image' %}"><i class="bi bi-image me-1"></i>Image Scan</a></li>
-                    <li><a href="{% url 'upload_video' %}"><i class="bi bi-film me-1"></i>Video Scan</a></li>
-                    <li><a href="{% url 'upload_audio' %}"><i class="bi bi-mic me-1"></i>Audio Scan</a></li>
-                    <li><a href="{% url 'text_scan' %}"><i class="bi bi-file-text me-1"></i>Text Scan</a></li>
-                </ul>
-            </div>
-
-            <!-- Tech Stack -->
-            <div class="col-md-4 col-lg-3" data-aos="fade-left" data-aos-delay="400">
-                <h6 class="footer-heading">Technology Stack</h6>
-                <div class="footer-tech-pills">
-                    <span class="tech-pill">Django</span>
-                    <span class="tech-pill">PostgreSQL</span>
-                    <span class="tech-pill">OpenCV</span>
-                    <span class="tech-pill">NumPy</span>
-                    <span class="tech-pill">Pillow</span>
-                    <span class="tech-pill">Bootstrap 5</span>
-                    <span class="tech-pill">WhiteNoise</span>
-                    <span class="tech-pill">Render</span>
-                    <span class="tech-pill">AOS</span>
-                    <span class="tech-pill">Typed.js</span>
+                <!-- Quick Links -->
+                <div class="footer-col" data-aos="fade-up" data-aos-duration="600" data-aos-delay="100">
+                    <h4 class="footer-heading">Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'core:home' %}"><i class="fas fa-chevron-right"></i> Home</a></li>
+                        <li><a href="{% url 'core:about' %}"><i class="fas fa-chevron-right"></i> About</a></li>
+                        <li><a href="{% url 'core:education' %}"><i class="fas fa-chevron-right"></i> Education</a></li>
+                        <li><a href="{% url 'core:privacy' %}"><i class="fas fa-chevron-right"></i> Privacy Policy</a></li>
+                    </ul>
                 </div>
 
-                <div class="footer-score-legend mt-3">
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <span class="score-dot score-dot-danger"></span>
-                        <small>0–39: Likely Fake</small>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <span class="score-dot score-dot-warning"></span>
-                        <small>40–74: Suspicious</small>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <span class="score-dot score-dot-info"></span>
-                        <small>75–99: Likely Real</small>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="score-dot score-dot-success"></span>
-                        <small>100: Highly Authentic</small>
+                <!-- Detection Tools -->
+                <div class="footer-col" data-aos="fade-up" data-aos-duration="600" data-aos-delay="200">
+                    <h4 class="footer-heading">Detection Tools</h4>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'core:upload_image' %}"><i class="fas fa-image"></i> Image Scanner</a></li>
+                        <li><a href="{% url 'core:upload_video' %}"><i class="fas fa-video"></i> Video Scanner</a></li>
+                        <li><a href="{% url 'core:upload_audio' %}"><i class="fas fa-microphone"></i> Audio Scanner</a></li>
+                        <li><a href="{% url 'core:text_scan' %}"><i class="fas fa-file-alt"></i> Text Scanner</a></li>
+                    </ul>
+                </div>
+
+                <!-- Technology -->
+                <div class="footer-col" data-aos="fade-up" data-aos-duration="600" data-aos-delay="300">
+                    <h4 class="footer-heading">Technology</h4>
+                    <div class="tech-badges">
+                        <span class="tech-badge"><i class="fab fa-python"></i> Python</span>
+                        <span class="tech-badge"><i class="fas fa-code"></i> Django</span>
+                        <span class="tech-badge"><i class="fas fa-database"></i> PostgreSQL</span>
+                        <span class="tech-badge"><i class="fas fa-brain"></i> OpenCV</span>
+                        <span class="tech-badge"><i class="fas fa-robot"></i> Hybrid AI</span>
+                        <span class="tech-badge"><i class="fas fa-microchip"></i> CPU-Only</span>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <hr class="footer-premium-divider">
-
-        <div class="footer-bottom">
-            <p class="mb-0">© 2026 DeepFake Shield. All rights reserved.</p>
-            <p class="mb-0 footer-tagline">Protecting authenticity in the age of synthetic media</p>
         </div>
     </div>
 
-    <div class="footer-gradient-line"></div>
+    <div class="footer-bottom">
+        <div class="container">
+            <div class="footer-bottom-content">
+                <p class="footer-copyright">
+                    &copy; 2024 DeepFake Shield. All rights reserved.
+                </p>
+                <p class="footer-version">
+                    <span class="made-with-love">Made with <i class="fas fa-heart heart-icon"></i> by DeepFake Shield Team</span>
+                </p>
+            </div>
+        </div>
+    </div>
 </footer>

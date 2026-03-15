@@ -1,0 +1,15 @@
+Django==4.2.16
+gunicorn==21.2.0
+whitenoise==6.7.0
+psycopg2-binary==2.9.9
+dj-database-url==2.2.0
+python-dotenv==1.0.1
+numpy==1.26.4
+Pillow==10.4.0
+opencv-python-headless==4.10.0.84
+exifread==3.0.0
+scikit-learn==1.5.2
+librosa==0.10.2.post1
+soundfile==0.12.1
+moviepy==1.0.3
+reportlab==4.2.2

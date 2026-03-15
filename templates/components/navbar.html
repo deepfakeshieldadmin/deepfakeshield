@@ -1,96 +1,128 @@
-<nav class="navbar navbar-expand-lg sticky-top premium-navbar" id="mainNav">
-    <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
-            <div class="nav-brand-icon-wrap">
-                <div class="nav-brand-icon-inner">
-                    <i class="bi bi-shield-lock-fill"></i>
-                </div>
+{% load static %}
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <a href="{% url 'core:landing' %}" class="nav-logo">
+            <div class="logo-icon">
+                <i class="fas fa-shield-halved"></i>
+                <div class="logo-pulse"></div>
             </div>
-            <div class="nav-brand-text">
-                <span class="nav-brand-title">DeepFakeShield</span>
-                <span class="nav-brand-sub">Authenticity Verification</span>
+            <div class="logo-text">
+                <span class="logo-title">DeepFake<span class="logo-highlight">Shield</span></span>
+                <span class="logo-subtitle">Media Authenticity</span>
             </div>
         </a>
 
-        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
-            <span class="text-white"><i class="bi bi-list fs-3"></i></span>
-        </button>
+        <div class="nav-links" id="nav-links">
+            <a href="{% url 'core:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                <i class="fas fa-home"></i><span>Home</span>
+            </a>
+            <a href="{% url 'core:about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+                <i class="fas fa-info-circle"></i><span>About</span>
+            </a>
+            <a href="{% url 'core:education' %}" class="nav-link {% if request.resolver_match.url_name == 'education' %}active{% endif %}">
+                <i class="fas fa-graduation-cap"></i><span>Learn</span>
+            </a>
 
-        <div class="collapse navbar-collapse" id="navContent">
-            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
-                <li class="nav-item">
-                    <a class="nav-link nav-link-premium" href="{% url 'home' %}">
-                        <i class="bi bi-house-fill me-1"></i>Home
-                    </a>
-                </li>
+            {% if user.is_authenticated %}
+            <div class="nav-dropdown">
+                <button class="nav-link dropdown-trigger">
+                    <i class="fas fa-search-plus"></i><span>Scan</span>
+                    <i class="fas fa-chevron-down dropdown-arrow"></i>
+                </button>
+                <div class="dropdown-menu">
+                    <a href="{% url 'core:upload_image' %}" class="dropdown-item"><i class="fas fa-image"></i><span>Image Scan</span></a>
+                    <a href="{% url 'core:upload_video' %}" class="dropdown-item"><i class="fas fa-video"></i><span>Video Scan</span></a>
+                    <a href="{% url 'core:upload_audio' %}" class="dropdown-item"><i class="fas fa-microphone"></i><span>Audio Scan</span></a>
+                    <a href="{% url 'core:text_scan' %}" class="dropdown-item"><i class="fas fa-file-alt"></i><span>Text Scan</span></a>
+                </div>
+            </div>
+            <a href="{% url 'core:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+            </a>
+            {% if user.is_staff %}
+            <a href="{% url 'admin:index' %}" class="nav-link nav-admin" target="_blank">
+                <i class="fas fa-cog"></i><span>Admin</span>
+            </a>
+            {% endif %}
+            {% endif %}
+        </div>
 
-                {% if request.user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link nav-link-premium" href="{% url 'dashboard' %}">
-                        <i class="bi bi-speedometer2 me-1"></i>Dashboard
-                    </a>
-                </li>
-                {% endif %}
+        <div class="nav-right">
+            <!-- GOOGLE TRANSLATE WIDGET -->
+            <div id="google_translate_element" style="display:inline-block;"></div>
 
-                <li class="nav-item dropdown">
-                    <a class="nav-link nav-link-premium dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                        <i class="bi bi-cpu-fill me-1"></i>Detect
-                    </a>
-                    <ul class="dropdown-menu premium-dropdown">
-                        <li><a class="dropdown-item" href="{% url 'upload_image' %}"><i class="bi bi-image-fill me-2"></i>Image Scan</a></li>
-                        <li><a class="dropdown-item" href="{% url 'upload_video' %}"><i class="bi bi-film me-2"></i>Video Scan</a></li>
-                        <li><a class="dropdown-item" href="{% url 'upload_audio' %}"><i class="bi bi-soundwave me-2"></i>Audio Scan</a></li>
-                        <li><a class="dropdown-item" href="{% url 'text_scan' %}"><i class="bi bi-file-earmark-text-fill me-2"></i>Text Scan</a></li>
-                    </ul>
-                </li>
+            <!-- Theme Toggle -->
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                <div class="theme-toggle-track">
+                    <i class="fas fa-moon theme-icon-dark"></i>
+                    <i class="fas fa-sun theme-icon-light"></i>
+                    <div class="theme-toggle-thumb"></div>
+                </div>
+            </button>
 
-                <li class="nav-item">
-                    <a class="nav-link nav-link-premium" href="{% url 'about' %}">
-                        <i class="bi bi-info-circle-fill me-1"></i>About
-                    </a>
-                </li>
+            {% if user.is_authenticated %}
+            <div class="nav-dropdown user-dropdown">
+                <button class="user-avatar-btn dropdown-trigger">
+                    <div class="user-avatar"><span>{{ user.username.0|upper }}</span></div>
+                    <span class="user-name-text">{{ user.username }}</span>
+                    <i class="fas fa-chevron-down dropdown-arrow"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <div class="dropdown-header">
+                        <div class="dropdown-user-info">
+                            <span class="dropdown-user-name">{{ user.username }}</span>
+                            <span class="dropdown-user-email">{{ user.email }}</span>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="{% url 'core:dashboard' %}" class="dropdown-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'admin:index' %}" class="dropdown-item" target="_blank"><i class="fas fa-cog"></i><span>Admin Panel</span></a>
+                    {% endif %}
+                    <div class="dropdown-divider"></div>
+                    <a href="{% url 'core:logout' %}" class="dropdown-item dropdown-item-danger"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+                </div>
+            </div>
+            {% else %}
+            <div class="auth-buttons">
+                <a href="{% url 'core:login' %}" class="btn btn-ghost btn-sm"><i class="fas fa-sign-in-alt"></i><span>Login</span></a>
+                <a href="{% url 'core:signup' %}" class="btn btn-primary btn-sm"><i class="fas fa-user-plus"></i><span>Sign Up</span></a>
+            </div>
+            {% endif %}
 
-                <li class="nav-item">
-                    <button id="navPreferencesBtn" class="btn btn-nav-pref">
-                        <i class="bi bi-stars me-1"></i>Personalize
-                    </button>
-                </li>
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
+    </div>
 
-                {% if request.user.is_authenticated %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link nav-link-premium dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
-                        <div class="nav-user-avatar">{{ request.user.username|slice:":1"|upper }}</div>
-                        <span>{{ request.user.username }}</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end premium-dropdown">
-                        <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
-                        {% if request.user.is_staff or request.user.is_superuser %}
-                        <li><a class="dropdown-item" href="/admin/"><i class="bi bi-person-badge me-2"></i>Admin Panel</a></li>
-                        {% endif %}
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form method="post" action="{% url 'logout' %}">
-                                {% csrf_token %}
-                                <button class="dropdown-item text-danger">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="btn btn-nav-login" href="{% url 'login' %}">
-                        <i class="bi bi-box-arrow-in-right me-1"></i>Login
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="btn btn-glow btn-nav-signup" href="{% url 'signup' %}">
-                        <i class="bi bi-person-plus-fill me-1"></i>Sign Up
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-inner">
+            <a href="{% url 'core:home' %}" class="mobile-nav-link"><i class="fas fa-home"></i><span>Home</span></a>
+            <a href="{% url 'core:about' %}" class="mobile-nav-link"><i class="fas fa-info-circle"></i><span>About</span></a>
+            <a href="{% url 'core:education' %}" class="mobile-nav-link"><i class="fas fa-graduation-cap"></i><span>Learn</span></a>
+            {% if user.is_authenticated %}
+            <div class="mobile-menu-divider"></div>
+            <p class="mobile-menu-label">Scan Media</p>
+            <a href="{% url 'core:upload_image' %}" class="mobile-nav-link"><i class="fas fa-image"></i><span>Image</span></a>
+            <a href="{% url 'core:upload_video' %}" class="mobile-nav-link"><i class="fas fa-video"></i><span>Video</span></a>
+            <a href="{% url 'core:upload_audio' %}" class="mobile-nav-link"><i class="fas fa-microphone"></i><span>Audio</span></a>
+            <a href="{% url 'core:text_scan' %}" class="mobile-nav-link"><i class="fas fa-file-alt"></i><span>Text</span></a>
+            <div class="mobile-menu-divider"></div>
+            <a href="{% url 'core:dashboard' %}" class="mobile-nav-link"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+            {% if user.is_staff %}
+            <a href="{% url 'admin:index' %}" class="mobile-nav-link" target="_blank"><i class="fas fa-cog"></i><span>Admin</span></a>
+            {% endif %}
+            <div class="mobile-menu-divider"></div>
+            <a href="{% url 'core:logout' %}" class="mobile-nav-link mobile-nav-link-danger"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+            {% else %}
+            <div class="mobile-menu-divider"></div>
+            <a href="{% url 'core:login' %}" class="mobile-nav-link"><i class="fas fa-sign-in-alt"></i><span>Login</span></a>
+            <a href="{% url 'core:signup' %}" class="mobile-nav-link"><i class="fas fa-user-plus"></i><span>Sign Up</span></a>
+            {% endif %}
         </div>
     </div>
 </nav>

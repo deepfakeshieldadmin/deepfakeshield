@@ -1,49 +1,45 @@
 #!/usr/bin/env bash
+# DeepFake Shield - Build Script for Render Deployment
+
 set -o errexit
 
 echo "========================================="
-echo "  DeepFake Shield — Build Script"
+echo "  DeepFake Shield - Build Starting"
 echo "========================================="
 
-echo ">> Upgrading pip..."
-pip install --upgrade pip setuptools wheel
+# Upgrade pip
+pip install --upgrade pip
 
-echo ">> Installing dependencies..."
-pip install -r requirements.txt
+# Install dependencies (use minimal if torch causes issues)
+if [ -f requirements-minimal.txt ]; then
+    echo "Installing minimal requirements..."
+    pip install -r requirements-minimal.txt
+else
+    echo "Installing full requirements..."
+    pip install -r requirements.txt
+fi
 
-echo ">> Collecting static files..."
+# Try installing torch separately with CPU index (optional)
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu 2>/dev/null || echo "PyTorch not installed (optional - system works without it)"
+
+# Collect static files
+echo "Collecting static files..."
 python manage.py collectstatic --no-input
 
-echo ">> Running database migrations..."
-python manage.py migrate
+# Run database migrations
+echo "Running migrations..."
+python manage.py migrate --no-input
 
-echo ">> Creating superuser..."
-python manage.py shell << 'PYTHON_SCRIPT'
-import os
-from django.contrib.auth.models import User
+# Create media directories
+echo "Creating media directories..."
+mkdir -p media/uploads media/processed media/reports
 
-su_username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'Admin')
-su_email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'deepfakeshield.admin@gmail.com')
-su_password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'Pavilion@44')
+# Create superuser if environment variables are set
+if [ -n "$DJANGO_SUPERUSER_USERNAME" ]; then
+    echo "Creating superuser..."
+    python manage.py createsuperuser --no-input 2>/dev/null || echo "Superuser already exists"
+fi
 
-if not User.objects.filter(username=su_username).exists():
-    User.objects.create_superuser(
-        username=su_username,
-        email=su_email,
-        password=su_password
-    )
-    print(f'[SUCCESS] Superuser "{su_username}" created!')
-else:
-    # Update password in case it changed
-    user = User.objects.get(username=su_username)
-    user.set_password(su_password)
-    user.email = su_email
-    user.is_staff = True
-    user.is_superuser = True
-    user.save()
-    print(f'[INFO] Superuser "{su_username}" already exists. Password updated.')
-
-PYTHON_SCRIPT
-
-echo ">> Build complete!"
+echo "========================================="
+echo "  DeepFake Shield - Build Complete!"
 echo "========================================="

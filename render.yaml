@@ -1,10 +1,36 @@
+# DeepFake Shield - Render Blueprint
+# Deploy with: render blueprint sync
+
 services:
   - type: web
     name: deepfakeshield
-    env: python
-    plan: free
-    buildCommand: "bash build.sh"
-    startCommand: "gunicorn deepfakeshield.wsgi:application"
+    runtime: python
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: gunicorn deepfakeshield.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: deepfakeshield-db
+          property: connectionString
+      - key: DB_SSL_REQUIRE
+        value: "True"
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: "3.11.0"
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: "Admin"
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: "deepfakeshield.admin@gmail.com"
+      - key: DJANGO_SUPERUSER_PASSWORD
+        value: "Pavilion@44"
+
+databases:
+  - name: deepfakeshield-db
+    plan: free
+    databaseName: deepfakeshield
+    user: deepfakeshield_user

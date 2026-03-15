@@ -1,184 +1,100 @@
-/* ============================================
-   DEEPFAKE SHIELD — CURSOR CSS
-   Standalone cursor styles (backup)
-   ============================================ */
+/* ═══════════════════════════════════════════════════════════════
+   DeepFake Shield — Cursor Trail Animation
+   Standard arrow cursor + animated trailing glow dot/ring
+   Desktop only. Touch devices use native cursor.
+   ═══════════════════════════════════════════════════════════════ */
 
-/* Custom Cursor Dot */
+/* Trail dot — follows mouse with delay */
 .cursor-dot {
     position: fixed;
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
+    background: #667eea;
     border-radius: 50%;
-    background: #fff;
     pointer-events: none;
-    z-index: 9992;
-    transition: transform .1s ease, width .2s, height .2s;
-    mix-blend-mode: difference;
-    display: none;
+    z-index: 999999;
+    opacity: 0;
+    transition: width 0.2s, height 0.2s, opacity 0.3s, background 0.2s;
     transform: translate(-50%, -50%);
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.6),
+                0 0 30px rgba(102, 126, 234, 0.3);
+    mix-blend-mode: screen;
 }
 
-/* Custom Cursor Ring */
+/* Trail ring — follows with more delay */
 .cursor-ring {
     position: fixed;
     width: 36px;
     height: 36px;
-    border: 2px solid rgba(255, 255, 255, 0.25);
+    border: 2px solid rgba(102, 126, 234, 0.3);
     border-radius: 50%;
     pointer-events: none;
-    z-index: 9991;
-    transition: width .3s ease, height .3s ease, border-color .3s ease, opacity .3s ease;
-    display: none;
+    z-index: 999998;
+    opacity: 0;
+    transition: width 0.35s ease, height 0.35s ease,
+                border-color 0.3s ease, opacity 0.3s ease;
     transform: translate(-50%, -50%);
 }
 
-/* Show custom cursor only when active */
-.cursor-active .cursor-dot,
-.cursor-active .cursor-ring {
-    display: block;
-}
-
-/* Hide cursor effects on links/buttons hover — enlarge ring */
-.cursor-active a:hover ~ .cursor-ring,
-.cursor-active button:hover ~ .cursor-ring {
-    width: 56px;
-    height: 56px;
-    border-color: var(--accent);
-}
-
-/* Cursor Layer */
-#cursor-layer {
+/* Container hidden by default */
+.custom-cursor {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    z-index: 999999;
     pointer-events: none;
-    z-index: 9990;
-    overflow: hidden;
 }
 
-/* ---- Particle Base ---- */
-.cursor-particle {
-    position: fixed;
-    pointer-events: none;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
+/* Active state — shown by JS */
+.custom-cursor.active .cursor-dot,
+.custom-cursor.active .cursor-ring {
+    opacity: 1;
 }
 
-/* Fire */
-.cp-fire {
-    width: 8px;
-    height: 12px;
-    border-radius: 50% 50% 50% 0;
-    transform: translate(-50%, -50%) rotate(-45deg);
-    animation: cpFire .5s ease forwards;
-}
-
-/* Matrix */
-.cp-matrix {
-    width: 4px;
-    height: 12px;
-    border-radius: 2px;
-    animation: cpMatrix .6s ease forwards;
-}
-
-/* Tech Pulse */
-.cp-tech {
-    width: 6px;
-    height: 6px;
-    border: 1px solid rgba(0, 210, 255, 0.5);
-    border-radius: 50%;
-    background: transparent;
-    animation: cpTech .5s ease forwards;
-}
-
-/* Minimal */
-.cp-minimal {
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    animation: cpMinimal .4s ease forwards;
-}
-
-/* Katana */
-.cp-katana {
-    width: 20px;
-    height: 2px;
-    border-radius: 1px;
-    animation: cpKatana .4s ease forwards;
-}
-
-/* Binary */
-.cp-binary {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    background: none !important;
-    animation: cpBinary .6s ease forwards;
-}
-
-/* Lightning */
-.cp-lightning {
-    width: 2px;
+/* Hover on clickable elements — ring expands, dot grows */
+.custom-cursor.hovering .cursor-dot {
+    width: 14px;
     height: 14px;
-    border-radius: 0;
-    animation: cpLightning .3s ease forwards;
+    background: #fff;
+    box-shadow: 0 0 25px rgba(102, 126, 234, 0.9),
+                0 0 50px rgba(118, 75, 162, 0.4);
+}
+.custom-cursor.hovering .cursor-ring {
+    width: 50px;
+    height: 50px;
+    border-color: rgba(102, 126, 234, 0.6);
+    border-width: 2px;
 }
 
-/* ---- Animations ---- */
-@keyframes cpFire {
-    0% { opacity: .9; transform: translate(-50%, -50%) rotate(-45deg) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -50%) rotate(-45deg) scale(.2) translateY(-20px); }
+/* Click — shrink effect */
+.custom-cursor.clicking .cursor-dot {
+    width: 5px;
+    height: 5px;
+    background: #764ba2;
+}
+.custom-cursor.clicking .cursor-ring {
+    width: 25px;
+    height: 25px;
+    border-width: 3px;
+    border-color: #764ba2;
 }
 
-@keyframes cpMatrix {
-    0% { opacity: .8; transform: translate(-50%, -50%); }
-    100% { opacity: 0; transform: translate(-50%, -50%) translateY(18px); }
-}
+/* IMPORTANT: Keep standard cursor everywhere */
+/* The trail effect is ADDITIONAL to the normal arrow cursor */
+/* We do NOT hide the default cursor */
 
-@keyframes cpTech {
-    0% { opacity: .7; transform: translate(-50%, -50%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(3); }
-}
-
-@keyframes cpMinimal {
-    0% { opacity: .6; transform: translate(-50%, -50%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(.1); }
-}
-
-@keyframes cpKatana {
-    0% { opacity: .8; transform: translate(-50%, -50%) rotate(-30deg) scaleX(1); }
-    100% { opacity: 0; transform: translate(-50%, -50%) rotate(-30deg) scaleX(3.5); }
-}
-
-@keyframes cpBinary {
-    0% { opacity: .8; }
-    100% { opacity: 0; transform: translateY(-18px); }
-}
-
-@keyframes cpLightning {
-    0% { opacity: .9; transform: scaleY(1); }
-    100% { opacity: 0; transform: scaleY(0); }
-}
-
-/* ---- SMARTPHONE: Hide cursor effects ---- */
-@media (hover: none) and (pointer: coarse) {
+/* Disable trail on mobile/touch */
+@media (hover: none), (pointer: coarse) {
+    .custom-cursor,
     .cursor-dot,
-    .cursor-ring,
-    #cursor-layer,
-    .cursor-particle {
+    .cursor-ring {
         display: none !important;
     }
-    body.cursor-active {
-        cursor: auto !important;
-    }
 }
-
-/* Also hide on small screens */
 @media (max-width: 768px) {
+    .custom-cursor,
     .cursor-dot,
-    .cursor-ring,
-    #cursor-layer {
+    .cursor-ring {
         display: none !important;
-    }
-    body {
-        cursor: auto !important;
     }
 }

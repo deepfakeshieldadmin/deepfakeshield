@@ -1,209 +1,399 @@
-import re
-import string
-from collections import Counter
-import numpy as np
+"""
+DeepFake Shield - Text Authenticity Detection Engine
+Detects AI-generated text using statistical NLP features.
+CPU-friendly, no external API required.
+"""
 
+import re
+import math
+import string
+import logging
+from collections import Counter
+
+logger = logging.getLogger(__name__)
+
+# Common English stopwords
 STOPWORDS = {
-    'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-    'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-    'should', 'may', 'might', 'shall', 'can', 'need', 'to', 'of', 'in',
-    'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through',
-    'during', 'before', 'after', 'above', 'below', 'between', 'out',
-    'off', 'over', 'under', 'again', 'further', 'then', 'once', 'and',
-    'but', 'or', 'nor', 'not', 'so', 'yet', 'both', 'either', 'neither',
-    'each', 'every', 'all', 'any', 'few', 'more', 'most', 'other',
-    'some', 'such', 'no', 'only', 'own', 'same', 'than', 'too', 'very',
-    'just', 'because', 'if', 'when', 'where', 'how', 'what', 'which',
-    'who', 'whom', 'this', 'that', 'these', 'those', 'i', 'me', 'my',
-    'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours',
-    'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she',
-    'her', 'hers', 'herself', 'it', 'its', 'itself', 'they', 'them',
-    'their', 'theirs', 'themselves', 'also', 'however', 'therefore',
-    'moreover', 'furthermore', 'although', 'though', 'while', 'whereas',
-    'nevertheless', 'nonetheless', 'thus', 'hence',
+    'the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'i',
+    'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at',
+    'this', 'but', 'his', 'by', 'from', 'they', 'we', 'say', 'her',
+    'she', 'or', 'an', 'will', 'my', 'one', 'all', 'would', 'there',
+    'their', 'what', 'so', 'up', 'out', 'if', 'about', 'who', 'get',
+    'which', 'go', 'me', 'when', 'make', 'can', 'like', 'time', 'no',
+    'just', 'him', 'know', 'take', 'people', 'into', 'year', 'your',
+    'good', 'some', 'could', 'them', 'see', 'other', 'than', 'then',
+    'now', 'look', 'only', 'come', 'its', 'over', 'think', 'also',
+    'back', 'after', 'use', 'two', 'how', 'our', 'work', 'first',
+    'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these',
+    'give', 'day', 'most', 'us', 'is', 'are', 'was', 'were', 'been',
+    'being', 'has', 'had', 'having', 'does', 'did', 'doing', 'am',
+    'very', 'much', 'more', 'such', 'should', 'may', 'might', 'must',
+    'shall', 'need', 'dare', 'ought', 'used', 'however', 'therefore',
+    'furthermore', 'moreover', 'additionally', 'consequently', 'thus',
+    'hence', 'nevertheless', 'nonetheless', 'meanwhile', 'subsequently',
 }
+
+# AI-typical phrases (common in ChatGPT, etc.)
+AI_PHRASES = [
+    'it is important to note',
+    'it is worth noting',
+    'in conclusion',
+    'in summary',
+    'to summarize',
+    'it should be noted',
+    'one might argue',
+    'on the other hand',
+    'it is evident that',
+    'this suggests that',
+    'it can be argued',
+    'it is crucial',
+    'plays a crucial role',
+    'it is essential',
+    'in today\'s world',
+    'in the modern era',
+    'serves as a testament',
+    'a myriad of',
+    'delve into',
+    'delve deeper',
+    'multifaceted',
+    'tapestry',
+    'landscape of',
+    'realm of',
+    'paradigm',
+    'foster',
+    'leverage',
+    'navigate the complexities',
+    'in light of',
+    'with that being said',
+    'it goes without saying',
+    'needless to say',
+    'at the end of the day',
+    'when it comes to',
+    'as a matter of fact',
+    'by and large',
+    'for the most part',
+    'in a nutshell',
+    'comprehensive',
+    'robust',
+    'seamlessly',
+    'holistic',
+    'synergy',
+    'cutting-edge',
+    'state-of-the-art',
+    'groundbreaking',
+    'innovative',
+    'revolutionize',
+]
 
 
 def analyze_text(text):
+    """
+    Main text analysis function.
+    Analyzes text for AI-generated content indicators.
+    """
+    logger.info(f"Starting text analysis ({len(text)} characters)")
+
     results = {
+        'text_length': len(text),
         'word_count': 0,
         'sentence_count': 0,
-        'repetition_score': 0,
-        'stopword_ratio': 0,
-        'punctuation_density': 0,
-        'sentence_variance': 0,
-        'avg_word_length': 0,
-        'unique_word_ratio': 0,
-        'avg_sentence_length': 0,
         'paragraph_count': 0,
-        'burstiness_score': 0,
+        'repetition_score': 0.0,
+        'stopword_ratio': 0.0,
+        'punctuation_density': 0.0,
+        'sentence_variance': 0.0,
+        'avg_sentence_length': 0.0,
+        'avg_word_length': 0.0,
+        'unique_word_ratio': 0.0,
+        'burstiness_score': 0.0,
+        'ai_phrase_count': 0,
+        'ai_phrase_density': 0.0,
+        'vocabulary_richness': 0.0,
+        'authenticity_score': 0.0,
+        'real_vs_fake': 'Unknown',
+        'classification': 'suspicious',
+        'summary': '',
+        'explanation': '',
         'description': '',
-        'analysis_summary': '',
-        'real_vs_fake': 'Uncertain',
+        'detailed_metrics': {},
     }
 
-    if not text or len(text.strip()) < 20:
-        results['description'] = 'Text is too short for meaningful analysis.'
-        results['analysis_summary'] = 'The input text length is insufficient for authenticity analysis.'
-        return results, 50
+    try:
+        if not text or len(text.strip()) < 50:
+            results['explanation'] = 'Text is too short for reliable analysis.'
+            results['summary'] = 'Insufficient text for analysis (minimum 50 characters).'
+            results['authenticity_score'] = 50.0
+            return results
 
-    text = text.strip()
-    words = text.split()
-    word_count = len(words)
-    results['word_count'] = word_count
+        text_clean = text.strip()
 
-    sentences = re.split(r'[.!?]+', text)
-    sentences = [s.strip() for s in sentences if s.strip()]
-    sentence_count = len(sentences)
-    results['sentence_count'] = sentence_count
+        # ── Basic Metrics ──
+        words = re.findall(r'\b[a-zA-Z\']+\b', text_clean.lower())
+        word_count = len(words)
+        results['word_count'] = word_count
 
-    paragraphs = [p.strip() for p in text.split('\n') if p.strip()]
-    results['paragraph_count'] = len(paragraphs)
+        if word_count < 10:
+            results['explanation'] = 'Too few words for reliable analysis.'
+            results['summary'] = 'Insufficient word count for analysis.'
+            results['authenticity_score'] = 50.0
+            return results
 
-    words_lower = [w.lower().strip(string.punctuation) for w in words]
-    words_clean = [w for w in words_lower if w]
+        # Sentences
+        sentences = re.split(r'[.!?]+', text_clean)
+        sentences = [s.strip() for s in sentences if len(s.strip()) > 3]
+        sentence_count = len(sentences)
+        results['sentence_count'] = max(1, sentence_count)
 
-    word_counts = Counter(words_clean)
-    repeated_content_words = sum(
-        1 for w, c in word_counts.items()
-        if c > 1 and w not in STOPWORDS and len(w) > 3
-    )
-    total_content_words = sum(
-        1 for w in words_clean if w not in STOPWORDS and len(w) > 3
-    )
-    repetition = repeated_content_words / max(total_content_words, 1)
-    results['repetition_score'] = round(repetition, 4)
+        # Paragraphs
+        paragraphs = [p.strip() for p in text_clean.split('\n\n') if p.strip()]
+        if not paragraphs:
+            paragraphs = [p.strip() for p in text_clean.split('\n') if p.strip()]
+        results['paragraph_count'] = max(1, len(paragraphs))
 
-    stopword_count = sum(1 for w in words_clean if w in STOPWORDS)
-    stopword_ratio = stopword_count / max(len(words_clean), 1)
-    results['stopword_ratio'] = round(stopword_ratio, 4)
+        # ── Word-level Analysis ──
 
-    punct_count = sum(1 for c in text if c in string.punctuation)
-    punct_density = punct_count / max(len(text), 1)
-    results['punctuation_density'] = round(punct_density, 4)
+        # Average word length
+        if words:
+            avg_word_len = sum(len(w) for w in words) / len(words)
+        else:
+            avg_word_len = 0
+        results['avg_word_length'] = round(avg_word_len, 2)
 
-    sentence_lengths = [len(s.split()) for s in sentences] if sentences else [word_count]
-    sentence_variance = float(np.std(sentence_lengths)) if sentence_lengths else 0
-    avg_sentence_length = float(np.mean(sentence_lengths)) if sentence_lengths else 0
-    results['sentence_variance'] = round(sentence_variance, 2)
-    results['avg_sentence_length'] = round(avg_sentence_length, 2)
+        # Unique word ratio (vocabulary diversity)
+        unique_words = set(words)
+        unique_ratio = len(unique_words) / word_count if word_count > 0 else 0
+        results['unique_word_ratio'] = round(unique_ratio, 4)
 
-    avg_word_length = sum(len(w) for w in words_clean) / max(len(words_clean), 1)
-    results['avg_word_length'] = round(avg_word_length, 2)
+        # Vocabulary richness (Yule's K-like measure)
+        word_freq = Counter(words)
+        freq_spectrum = Counter(word_freq.values())
+        n = word_count
+        if n > 0:
+            m2 = sum(i * i * freq_spectrum[i] for i in freq_spectrum)
+            vocab_richness = (m2 - n) / (n * n) if n > 1 else 0
+        else:
+            vocab_richness = 0
+        results['vocabulary_richness'] = round(vocab_richness, 6)
 
-    unique_word_ratio = len(set(words_clean)) / max(len(words_clean), 1)
-    results['unique_word_ratio'] = round(unique_word_ratio, 4)
+        # ── Repetition Score ──
+        # Measure n-gram repetition
+        bigrams = [' '.join(words[i:i + 2]) for i in range(len(words) - 1)]
+        trigrams = [' '.join(words[i:i + 3]) for i in range(len(words) - 2)]
 
-    burstiness = sentence_variance / avg_sentence_length if avg_sentence_length > 0 else 0
-    results['burstiness_score'] = round(float(burstiness), 4)
+        bigram_counts = Counter(bigrams)
+        trigram_counts = Counter(trigrams)
 
-    score = _calculate_text_score(results)
+        repeated_bigrams = sum(1 for c in bigram_counts.values() if c > 2)
+        repeated_trigrams = sum(1 for c in trigram_counts.values() if c > 1)
 
-    if score >= 75:
-        results['real_vs_fake'] = 'Real'
-    elif score <= 39:
-        results['real_vs_fake'] = 'Fake'
-    else:
-        results['real_vs_fake'] = 'Uncertain'
+        repetition_score = 0.0
+        if bigrams:
+            repetition_score += (repeated_bigrams / len(bigrams)) * 100
+        if trigrams:
+            repetition_score += (repeated_trigrams / len(trigrams)) * 50
+        results['repetition_score'] = round(min(100.0, repetition_score), 2)
 
-    results['analysis_summary'] = _generate_text_summary(score)
-    results['description'] = _generate_text_description(results, score)
+        # ── Stopword Ratio ──
+        stopword_count = sum(1 for w in words if w in STOPWORDS)
+        stopword_ratio = stopword_count / word_count if word_count > 0 else 0
+        results['stopword_ratio'] = round(stopword_ratio, 4)
 
-    return results, score
+        # ── Punctuation Density ──
+        punct_count = sum(1 for c in text_clean if c in string.punctuation)
+        punct_density = punct_count / len(text_clean) if len(text_clean) > 0 else 0
+        results['punctuation_density'] = round(punct_density, 4)
 
+        # ── Sentence Analysis ──
+        sentence_lengths = [len(re.findall(r'\b\w+\b', s)) for s in sentences if s]
+        if sentence_lengths:
+            avg_sentence_len = sum(sentence_lengths) / len(sentence_lengths)
+            sentence_variance = (
+                sum((l - avg_sentence_len) ** 2 for l in sentence_lengths) / len(sentence_lengths)
+            ) if len(sentence_lengths) > 1 else 0.0
+        else:
+            avg_sentence_len = 0
+            sentence_variance = 0
 
-def _calculate_text_score(results):
-    score = 50
+        results['avg_sentence_length'] = round(avg_sentence_len, 2)
+        results['sentence_variance'] = round(sentence_variance, 2)
 
-    repetition = results.get('repetition_score', 0)
-    stopword_ratio = results.get('stopword_ratio', 0)
-    punctuation_density = results.get('punctuation_density', 0)
-    sentence_variance = results.get('sentence_variance', 0)
-    unique_word_ratio = results.get('unique_word_ratio', 0)
-    burstiness = results.get('burstiness_score', 0)
-    word_count = results.get('word_count', 0)
+        # ── Burstiness Score ──
+        # Human text has "bursty" sentence lengths; AI tends to be uniform
+        if len(sentence_lengths) > 2:
+            diffs = [abs(sentence_lengths[i] - sentence_lengths[i - 1]) for i in range(1, len(sentence_lengths))]
+            burstiness = sum(diffs) / len(diffs) if diffs else 0
+            max_burst = max(diffs) if diffs else 0
+            burstiness_score = min(100.0, (burstiness / max(1, avg_sentence_len)) * 100)
+        else:
+            burstiness_score = 50.0
+        results['burstiness_score'] = round(burstiness_score, 2)
 
-    if repetition < 0.10:
-        score += 15
-    elif repetition < 0.22:
-        score += 8
-    elif repetition > 0.35:
-        score -= 18
-    elif repetition > 0.25:
-        score -= 8
+        # ── AI Phrase Detection ──
+        text_lower = text_clean.lower()
+        ai_phrase_matches = 0
+        matched_phrases = []
+        for phrase in AI_PHRASES:
+            count = text_lower.count(phrase)
+            if count > 0:
+                ai_phrase_matches += count
+                matched_phrases.append(phrase)
 
-    if 0.32 < stopword_ratio < 0.50:
-        score += 10
-    elif stopword_ratio > 0.58:
-        score -= 14
-    elif stopword_ratio < 0.20:
-        score -= 6
+        results['ai_phrase_count'] = ai_phrase_matches
+        results['ai_phrase_density'] = round(
+            (ai_phrase_matches / max(1, sentence_count)) * 100, 2
+        )
 
-    if 0.02 < punctuation_density < 0.08:
-        score += 8
-    elif punctuation_density < 0.015:
-        score -= 10
-    elif punctuation_density > 0.12:
-        score -= 6
+        # ═══════════════════════════════════════
+        # AUTHENTICITY SCORING
+        # ═══════════════════════════════════════
 
-    if sentence_variance > 8:
-        score += 14
-    elif sentence_variance > 4:
-        score += 7
-    elif sentence_variance < 2:
-        score -= 14
+        score = 50.0  # Base score
 
-    if unique_word_ratio > 0.65:
-        score += 10
-    elif unique_word_ratio < 0.40:
-        score -= 10
+        # 1. Sentence variance (human text is more varied)
+        if sentence_variance > 30:
+            score += 12.0  # High variance = human-like
+        elif sentence_variance > 15:
+            score += 8.0
+        elif sentence_variance > 5:
+            score += 3.0
+        elif sentence_variance < 3 and sentence_count > 5:
+            score -= 10.0  # Very uniform = AI-like
 
-    if burstiness > 0.30:
-        score += 8
-    elif burstiness < 0.10:
-        score -= 8
+        # 2. Burstiness (human text is bursty)
+        if burstiness_score > 40:
+            score += 10.0
+        elif burstiness_score > 20:
+            score += 5.0
+        elif burstiness_score < 10 and sentence_count > 5:
+            score -= 8.0
 
-    if word_count > 200:
-        score += 5
-    elif word_count < 50:
-        score -= 5
+        # 3. Unique word ratio
+        if unique_ratio > 0.7:
+            score += 8.0  # Rich vocabulary
+        elif unique_ratio > 0.5:
+            score += 5.0
+        elif unique_ratio < 0.3 and word_count > 100:
+            score -= 8.0  # Very repetitive
 
-    return int(round(max(0, min(100, score))))
+        # 4. AI phrase density
+        if ai_phrase_matches == 0:
+            score += 8.0
+        elif ai_phrase_matches <= 2:
+            score += 2.0
+        elif ai_phrase_matches <= 5:
+            score -= 5.0
+        else:
+            score -= 12.0  # Heavy AI phrasing
 
+        # 5. Stopword ratio (AI tends to use more functional language)
+        if 0.35 < stopword_ratio < 0.55:
+            score += 5.0  # Normal range
+        elif stopword_ratio > 0.6:
+            score -= 5.0  # Too many stopwords
+        elif stopword_ratio < 0.25:
+            score -= 3.0  # Unusually low
 
-def _generate_text_summary(score):
-    if score >= 75:
-        verdict = "likely human-written"
-    elif score <= 39:
-        verdict = "likely AI-generated"
-    else:
-        verdict = "suspicious or mixed"
+        # 6. Average word length
+        if 4.0 < avg_word_len < 6.0:
+            score += 5.0  # Normal English
+        elif avg_word_len > 7.0:
+            score -= 3.0  # Unusually complex
 
-    return (
-        f"The text was analyzed using repetition, stopword usage, punctuation density, "
-        f"sentence variance, vocabulary diversity, and burstiness. Overall, the text appears {verdict}."
-    )
+        # 7. Punctuation density
+        if 0.03 < punct_density < 0.10:
+            score += 3.0
+        elif punct_density > 0.15:
+            score -= 3.0
 
+        # 8. Repetition
+        if repetition_score < 5:
+            score += 5.0
+        elif repetition_score > 20:
+            score -= 8.0
 
-def _generate_text_description(results, score):
-    parts = []
-    parts.append(
-        f"Text contains {results.get('word_count', 0)} words in "
-        f"{results.get('sentence_count', 0)} sentences across "
-        f"{results.get('paragraph_count', 0)} paragraph(s)."
-    )
-    parts.append(f"Average sentence length: {results.get('avg_sentence_length', 0)} words.")
-    parts.append(f"Sentence variance: {results.get('sentence_variance', 0)}.")
-    parts.append(f"Repetition score: {results.get('repetition_score', 0)}.")
-    parts.append(f"Stopword ratio: {results.get('stopword_ratio', 0)}.")
-    parts.append(f"Unique word ratio: {results.get('unique_word_ratio', 0)}.")
-    parts.append(f"Burstiness score: {results.get('burstiness_score', 0)}.")
+        # 9. Average sentence length
+        if 10 < avg_sentence_len < 25:
+            score += 5.0  # Natural range
+        elif avg_sentence_len > 35:
+            score -= 5.0  # Very long sentences
 
-    if score >= 75:
-        parts.append("The linguistic structure appears varied and natural.")
-    elif score <= 39:
-        parts.append("The linguistic structure appears repetitive and more consistent with AI-generated text.")
-    else:
-        parts.append("The text contains mixed characteristics and should be interpreted carefully.")
+        # Clamp score
+        final_score = max(0.0, min(100.0, round(score, 1)))
+        results['authenticity_score'] = final_score
 
-    return " ".join(parts)
+        # Classification
+        if final_score >= 75:
+            results['classification'] = 'likely_real'
+            results['real_vs_fake'] = 'Likely Human-Written'
+        elif final_score >= 40:
+            results['classification'] = 'suspicious'
+            results['real_vs_fake'] = 'Suspicious / Mixed Signals'
+        else:
+            results['classification'] = 'likely_fake'
+            results['real_vs_fake'] = 'Likely AI-Generated'
+
+        # Description
+        results['description'] = (
+            f"Text analysis: {word_count} words, {sentence_count} sentences, "
+            f"{results['paragraph_count']} paragraph(s)."
+        )
+
+        # Explanation
+        explanations = []
+
+        if sentence_variance > 15:
+            explanations.append("Sentence length variation is consistent with human writing.")
+        elif sentence_variance < 5 and sentence_count > 5:
+            explanations.append("Sentences have unusually uniform length, typical of AI-generated text.")
+
+        if burstiness_score > 30:
+            explanations.append("Text shows natural burstiness in sentence structure.")
+        elif burstiness_score < 15 and sentence_count > 5:
+            explanations.append("Text lacks natural burstiness, suggesting algorithmic generation.")
+
+        if ai_phrase_matches > 3:
+            explanations.append(
+                f"Detected {ai_phrase_matches} AI-typical phrases "
+                f"(e.g., '{matched_phrases[0] if matched_phrases else 'N/A'}')."
+            )
+        elif ai_phrase_matches == 0:
+            explanations.append("No common AI-typical phrases detected.")
+
+        if unique_ratio > 0.6:
+            explanations.append("Vocabulary diversity is consistent with human authorship.")
+        elif unique_ratio < 0.35 and word_count > 100:
+            explanations.append("Low vocabulary diversity suggests potential AI generation.")
+
+        results['explanation'] = " ".join(explanations) if explanations else "Analysis completed with mixed indicators."
+
+        results['summary'] = (
+            f"Text Authenticity Score: {final_score:.1f}/100 — "
+            f"{results['classification'].replace('_', ' ').title()}. "
+            f"{results['explanation']}"
+        )
+
+        results['detailed_metrics'] = {
+            'word_count': word_count,
+            'sentence_count': sentence_count,
+            'paragraph_count': results['paragraph_count'],
+            'avg_sentence_length': round(avg_sentence_len, 2),
+            'avg_word_length': round(avg_word_len, 2),
+            'sentence_variance': round(sentence_variance, 2),
+            'unique_word_ratio': round(unique_ratio, 4),
+            'stopword_ratio': round(stopword_ratio, 4),
+            'punctuation_density': round(punct_density, 4),
+            'repetition_score': round(repetition_score, 2),
+            'burstiness_score': round(burstiness_score, 2),
+            'ai_phrase_count': ai_phrase_matches,
+            'ai_phrase_density': round(results['ai_phrase_density'], 2),
+            'vocabulary_richness': round(vocab_richness, 6),
+        }
+
+        logger.info(f"Text analysis complete: score={final_score}")
+
+    except Exception as e:
+        logger.error(f"Text analysis failed: {e}", exc_info=True)
+        results['explanation'] = f'Text analysis encountered an error: {str(e)}'
+        results['summary'] = 'Text analysis could not be completed.'
+
+    return results

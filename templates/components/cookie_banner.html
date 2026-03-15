@@ -1,14 +1,23 @@
-<div id="cookieBanner" class="cookie-banner-premium">
-    <div class="cookie-inner">
-        <div class="cookie-icon-wrap">
-            <i class="bi bi-shield-lock-fill"></i>
+<!-- Cookie Consent Banner -->
+<div class="cookie-banner" id="cookie-banner" style="display: none;">
+    <div class="cookie-content" data-aos="fade-up" data-aos-duration="500">
+        <div class="cookie-icon">
+            <i class="fas fa-cookie-bite"></i>
         </div>
         <div class="cookie-text">
-            <strong>Privacy & Preferences</strong>
-            <p class="mb-0">This site uses local storage and session cookies for theme, language, and scan preferences.</p>
+            <p>
+                <strong>Cookie Notice:</strong> We use essential cookies to ensure proper functionality
+                of the application. No tracking cookies are used. Your scan data is processed
+                securely and stored only for your account.
+            </p>
         </div>
         <div class="cookie-actions">
-            <button id="acceptCookiesBtn" class="btn btn-glow btn-sm">Accept All</button>
+            <button class="btn btn-primary btn-sm" id="cookie-accept">
+                <i class="fas fa-check"></i> Accept
+            </button>
+            <a href="{% url 'core:privacy' %}" class="btn btn-ghost btn-sm">
+                <i class="fas fa-external-link-alt"></i> Privacy Policy
+            </a>
         </div>
     </div>
 </div>

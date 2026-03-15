@@ -1,214 +1,130 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" data-theme="tech-blue">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="DeepFake Shield - Real-Time Media Authenticity Verification System.">
+    <meta name="theme-color" content="#0a0e27">
     <title>{% block title %}DeepFake Shield{% endblock %}</title>
-    <meta name="description" content="DeepFake Shield - Real-Time Media Authenticity Verification System">
-    <meta name="theme-color" content="#0a0e1a">
 
-    <!-- Fonts -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-
-    <!-- AOS -->
-    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
-
-    <!-- Custom CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" href="{% static 'css/animations.css' %}">
     <link rel="stylesheet" href="{% static 'css/auth.css' %}">
     <link rel="stylesheet" href="{% static 'css/scan_pages.css' %}">
-    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
-    <link rel="stylesheet" href="{% static 'css/cursor.css' %}">
 
+    <style>
+        .cursor-sparkle{position:fixed;pointer-events:none;z-index:999999;border-radius:50%;animation:sFade .7s ease-out forwards}
+        @keyframes sFade{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.1) translateY(-15px)}}
+        .click-ring{position:fixed;pointer-events:none;z-index:999999;border-radius:50%;border:2px solid rgba(102,126,234,.6);animation:ringPop .5s ease-out forwards}
+        @keyframes ringPop{0%{opacity:1;transform:translate(-50%,-50%) scale(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(3)}}
+        body{top:0!important}
+        .goog-te-banner-frame,.skiptranslate,#goog-gt-tt,.goog-te-balloon-frame{display:none!important}
+        iframe.goog-te-banner-frame{display:none!important}
+        .goog-te-gadget{font-size:0!important}
+        .goog-te-gadget .goog-te-combo{font-family:var(--font-primary)!important;font-size:.78rem!important;padding:4px 6px!important;border:1px solid var(--border-primary)!important;border-radius:6px!important;background:var(--bg-input)!important;color:var(--text-primary)!important;outline:none!important;cursor:pointer!important;max-width:110px!important;height:28px!important}
+        .goog-te-gadget .goog-te-combo:focus{border-color:var(--accent-primary)!important}
+        .goog-te-gadget>span,.goog-logo-link{display:none!important}
+        @media(max-width:768px){#google_translate_element{display:none!important}}
+    </style>
     {% block extra_css %}{% endblock %}
 </head>
-<body class="theme-tech-blue">
-    <!-- Cursor Layer -->
-    <div id="cursor-layer"></div>
-    <div id="cursor-dot" class="cursor-dot"></div>
-    <div id="cursor-ring" class="cursor-ring"></div>
+<body class="{% block body_class %}{% endblock %}">
 
-    <!-- Background Effects -->
-    <div class="bg-mesh-gradient"></div>
-    <div class="bg-grid-overlay"></div>
-    <div class="bg-noise-overlay"></div>
-    <div class="site-bg-orb orb-1"></div>
-    <div class="site-bg-orb orb-2"></div>
-    <div class="site-bg-orb orb-3"></div>
-    <div class="site-bg-orb orb-4"></div>
-    <div class="site-bg-orb orb-5"></div>
+    <!-- Loader -->
+    <div class="page-loader" id="page-loader">
+        <div class="loader-content">
+            <div class="shield-icon-loader"><i class="fas fa-shield-halved"></i></div>
+            <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+            <p class="loader-text">Initializing Shield Protocol...</p>
+        </div>
+    </div>
 
-    <!-- Floating Particles Container -->
-    <div id="floatingParticles" class="floating-particles-container"></div>
-
-    {% if request.path != '/' %}
-        {% include 'components/navbar.html' %}
-    {% endif %}
+    {% include 'components/navbar.html' %}
 
     {% if messages %}
-    <div class="container pt-3" style="position:relative; z-index:10;">
+    <div class="alerts-container" id="alerts-container">
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show glass-alert-premium shadow-lg" role="alert" data-aos="fade-down" data-aos-duration="600">
-            <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %} fs-5"></i>
-                <span>{{ message }}</span>
+        <div class="alert alert-{{ message.tags }}" data-aos="fade-down" data-aos-duration="500">
+            <div class="alert-icon">
+                {% if message.tags == 'success' %}<i class="fas fa-check-circle"></i>
+                {% elif message.tags == 'error' %}<i class="fas fa-exclamation-circle"></i>
+                {% elif message.tags == 'warning' %}<i class="fas fa-exclamation-triangle"></i>
+                {% else %}<i class="fas fa-info-circle"></i>{% endif %}
             </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="alert-content"><span class="alert-text">{{ message }}</span></div>
+            <button class="alert-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
         </div>
         {% endfor %}
     </div>
     {% endif %}
 
-    <main class="main-wrapper">
-        {% block content %}{% endblock %}
-    </main>
+    <main class="main-content" id="main-content">{% block content %}{% endblock %}</main>
 
-    {% if request.path != '/' %}
-        {% include 'components/footer.html' %}
-    {% endif %}
-
+    {% include 'components/footer.html' %}
     {% include 'components/cookie_banner.html' %}
 
-    <!-- Preferences Side Panel -->
-    <div id="preferencesOverlay" class="preferences-overlay"></div>
-    <div id="preferencesPanel" class="preferences-panel shadow-2xl">
-        <div class="preferences-header">
-            <div class="d-flex align-items-center gap-2">
-                <div class="pref-header-icon"><i class="bi bi-sliders2"></i></div>
-                <div>
-                    <h5 class="mb-0">Preferences</h5>
-                    <small class="text-white-50">Customize your experience</small>
-                </div>
-            </div>
-            <button class="btn btn-sm btn-ghost-light" id="closePreferencesBtn">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </div>
+    <button class="scroll-top-btn" id="scroll-top-btn" aria-label="Scroll to top"><i class="fas fa-chevron-up"></i></button>
 
-        <div class="preferences-body">
-            <div class="preferences-section">
-                <label class="pref-label"><i class="bi bi-palette me-2"></i>Theme Preset</label>
-                <div class="theme-grid" id="themeGrid">
-                    <button class="theme-swatch active" data-theme="theme-tech-blue" title="Tech Blue">
-                        <span style="background:linear-gradient(135deg,#00d2ff,#7a5cff)"></span>
-                        <small>Tech Blue</small>
-                    </button>
-                    <button class="theme-swatch" data-theme="theme-matrix-green" title="Matrix Green">
-                        <span style="background:linear-gradient(135deg,#00ff87,#00b85f)"></span>
-                        <small>Matrix Green</small>
-                    </button>
-                    <button class="theme-swatch" data-theme="theme-cyber-purple" title="Cyber Purple">
-                        <span style="background:linear-gradient(135deg,#c44dff,#6f7bff)"></span>
-                        <small>Cyber Purple</small>
-                    </button>
-                    <button class="theme-swatch" data-theme="theme-neon-sunset" title="Neon Sunset">
-                        <span style="background:linear-gradient(135deg,#ff7a18,#ff2d95)"></span>
-                        <small>Neon Sunset</small>
-                    </button>
-                    <button class="theme-swatch" data-theme="theme-minimal-light" title="Minimal Light">
-                        <span style="background:linear-gradient(135deg,#e0e7ff,#f8fafc)"></span>
-                        <small>Minimal Light</small>
-                    </button>
-                    <button class="theme-swatch" data-theme="theme-midnight-gold" title="Midnight Gold">
-                        <span style="background:linear-gradient(135deg,#d4a574,#1a1a2e)"></span>
-                        <small>Midnight Gold</small>
-                    </button>
-                </div>
-            </div>
-
-            <div class="preferences-section">
-                <label class="pref-label"><i class="bi bi-cursor me-2"></i>Cursor Effect</label>
-                <select id="cursorSelector" class="form-select premium-select">
-                    <option value="default">Default</option>
-                    <option value="fire">🔥 Fire Trail</option>
-                    <option value="matrix">💚 Matrix Rain</option>
-                    <option value="tech">⚡ Tech Pulse</option>
-                    <option value="minimal">✨ Minimal Dot</option>
-                    <option value="katana">⚔️ Katana Slash</option>
-                    <option value="binary">🔢 Binary Trail</option>
-                    <option value="lightning">🌩️ Lightning</option>
-                </select>
-            </div>
-
-            <div class="preferences-section">
-                <label class="pref-label"><i class="bi bi-translate me-2"></i>Language</label>
-                <select id="languageSelector" class="form-select premium-select">
-                    <option value="en">🇬🇧 English</option>
-                    <option value="hi">🇮🇳 Hindi</option>
-                    <option value="mr">🇮🇳 Marathi</option>
-                    <option value="te">🇮🇳 Telugu</option>
-                    <option value="ta">🇮🇳 Tamil</option>
-                    <option value="kn">🇮🇳 Kannada</option>
-                    <option value="fr">🇫🇷 French</option>
-                    <option value="ja">🇯🇵 Japanese</option>
-                </select>
-            </div>
-
-            <div class="preferences-section">
-                <button id="toggleThemeModeBtn" class="btn btn-glow-outline w-100">
-                    <i class="bi bi-moon-stars me-2"></i>Toggle Light / Dark
-                </button>
-            </div>
-
-            <div class="preferences-section">
-                <div class="pref-info-box">
-                    <i class="bi bi-info-circle me-2"></i>
-                    Preferences are saved locally in your browser and persist across sessions.
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- FAB Button -->
-    <button id="openPreferencesBtn" class="preferences-fab" type="button" aria-label="Open Preferences">
-        <div class="fab-inner">
-            <i class="bi bi-gear-fill"></i>
-        </div>
-        <div class="fab-ring"></div>
-    </button>
-
-    <!-- Back to Top -->
-    <button id="backToTopBtn" class="back-to-top-btn" type="button" aria-label="Back to top">
-        <i class="bi bi-chevron-up"></i>
-    </button>
-
-    <!-- Loading Screen -->
-    <div id="pageLoader" class="page-loader">
-        <div class="loader-content">
-            <div class="loader-logo">
-                <i class="bi bi-shield-shaded"></i>
-            </div>
-            <div class="loader-bar">
-                <div class="loader-bar-inner"></div>
-            </div>
-            <p class="loader-text">Initializing DeepFake Shield...</p>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.16/dist/typed.umd.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/countup.js@2.8.0/dist/countUp.umd.js"></script>
-
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
     <script src="{% static 'js/theme-toggle.js' %}"></script>
     <script src="{% static 'js/animations.js' %}"></script>
-    <script src="{% static 'js/preferences.js' %}"></script>
-    <script src="{% static 'js/i18n.js' %}"></script>
-    <script src="{% static 'js/cursor.js' %}"></script>
-    <script src="{% static 'js/landing.js' %}"></script>
     <script src="{% static 'js/three-bg.js' %}"></script>
 
-    <script>AOS.init({duration:800,easing:'ease-out-cubic',once:true,offset:60});</script>
+    <!-- AOS Init + Loader Remove -->
+    <script>
+    document.addEventListener('DOMContentLoaded',function(){
+        AOS.init({duration:800,easing:'ease-out-cubic',once:false,offset:50});
+        setTimeout(function(){var l=document.getElementById('page-loader');if(l){l.classList.add('loaded');setTimeout(function(){l.style.display='none';},600);}},800);
+        setTimeout(function(){document.querySelectorAll('.alert').forEach(function(a,i){setTimeout(function(){a.style.opacity='0';a.style.transform='translateY(-20px)';setTimeout(function(){a.remove();},400);},4000+(i*500));});},1000);
+    });
+    </script>
+
+    <!-- GOOGLE TRANSLATE -->
+    <script>
+    function googleTranslateElementInit(){
+        new google.translate.TranslateElement({
+            pageLanguage:'en',
+            includedLanguages:'en,hi,te,ta,kn,ml,bn,es,fr,de,ja,ko,zh-CN,ar,pt,ru',
+            layout:google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay:false
+        },'google_translate_element');
+    }
+    </script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <!-- CURSOR SPARKLE -->
+    <script>
+    (function(){
+        var isMob=('ontouchstart' in window)||(navigator.maxTouchPoints>0)||(window.innerWidth<=768);
+        if(isMob)return;
+        var cols=['rgba(102,126,234,.8)','rgba(118,75,162,.7)','rgba(79,172,254,.6)','rgba(243,104,224,.5)','rgba(67,233,123,.5)'];
+        var parts=[],MAX=25,mx=-100,my=-100,lx=-100,ly=-100,moving=false,mt=null;
+        document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;moving=true;clearTimeout(mt);mt=setTimeout(function(){moving=false;},80);},{passive:true});
+        function mk(x,y){if(parts.length>=MAX){var o=parts.shift();if(o&&o.parentNode)o.remove();}var d=document.createElement('div');d.className='cursor-sparkle';var s=Math.random()*5+3,c=cols[Math.floor(Math.random()*cols.length)],ox=(Math.random()-.5)*10,oy=(Math.random()-.5)*10;d.style.cssText='left:'+(x+ox)+'px;top:'+(y+oy)+'px;width:'+s+'px;height:'+s+'px;background:'+c+';box-shadow:0 0 '+(s*2)+'px '+c+';';document.body.appendChild(d);parts.push(d);setTimeout(function(){if(d.parentNode)d.remove();var i=parts.indexOf(d);if(i>-1)parts.splice(i,1);},700);}
+        (function loop(){if(moving&&mx>0&&my>0){var dx=mx-lx,dy=my-ly;if(Math.sqrt(dx*dx+dy*dy)>4){mk(mx,my);lx=mx;ly=my;}}setTimeout(loop,35);})();
+        document.addEventListener('click',function(e){for(var i=0;i<6;i++){(function(j){setTimeout(function(){var a=(j/6)*Math.PI*2,r=12+Math.random()*12;mk(e.clientX+Math.cos(a)*r,e.clientY+Math.sin(a)*r);},j*25);})(i);}var ring=document.createElement('div');ring.className='click-ring';ring.style.cssText='left:'+e.clientX+'px;top:'+e.clientY+'px;width:30px;height:30px;';document.body.appendChild(ring);setTimeout(function(){if(ring.parentNode)ring.remove();},500);});
+    })();
+    </script>
+
+    <!-- PREFERENCES -->
+    <script>
+    (function(){
+        var KEY='dfs_prefs';
+        function load(){try{var s=localStorage.getItem(KEY);return s?JSON.parse(s):{};}catch(e){return {};}}
+        function save(p){try{localStorage.setItem(KEY,JSON.stringify(p));}catch(e){}}
+        function apply(p){var sizes={small:'14px',normal:'16px',large:'18px'};document.documentElement.style.fontSize=sizes[p.fontSize||'normal']||'16px';}
+        apply(load());
+        window.DFSPrefs={load:load,save:save,apply:apply,set:function(k,v){var p=load();p[k]=v;save(p);apply(p);},get:function(k){return load()[k];}};
+    })();
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

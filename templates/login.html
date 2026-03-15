@@ -1,90 +1,128 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Login | DeepFake Shield{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block extra_css %}
+<style>
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear { display: none !important; }
+input::-ms-reveal { display: none !important; }
+</style>
+{% endblock %}
 
 {% block content %}
-<section class="auth-premium-section">
+<section class="auth-section">
     <div class="auth-bg-effects">
-        <div class="auth-orb auth-orb-1"></div>
-        <div class="auth-orb auth-orb-2"></div>
+        <div class="auth-orb orb-1"></div>
+        <div class="auth-orb orb-2"></div>
     </div>
 
-    <div class="container py-5">
-        <div class="row justify-content-center align-items-center min-vh-80">
-            <div class="col-lg-5 col-xl-5">
-                <div class="auth-card-premium" data-aos="zoom-in" data-aos-duration="600">
-                    <div class="auth-card-glow"></div>
+    <div class="container">
+        <div class="auth-container" data-aos="fade-up" data-aos-duration="800">
+            <div class="auth-card">
+                <div class="auth-header" data-aos="fade-down" data-aos-delay="200">
+                    <div class="auth-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <div class="auth-icon-ring"></div>
+                    </div>
+                    <h1 class="auth-title">Welcome Back</h1>
+                    <p class="auth-subtitle">Login to access your DeepFake Shield dashboard</p>
+                </div>
 
-                    <div class="text-center mb-4">
-                        <div class="auth-icon-premium" data-aos="zoom-in" data-aos-delay="200">
-                            <i class="bi bi-person-lock"></i>
-                            <div class="auth-icon-ring"></div>
+                <form method="POST" action="{% url 'core:login' %}" class="auth-form" novalidate>
+                    {% csrf_token %}
+
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="100">
+                        <label for="id_username" class="form-label">
+                            <i class="fas fa-user"></i> Username
+                        </label>
+                        <div class="input-wrapper">
+                            {{ form.username }}
                         </div>
-                        <h2 class="auth-premium-title" data-aos="fade-up" data-aos-delay="300">Welcome Back</h2>
-                        <p class="auth-premium-subtitle" data-aos="fade-up" data-aos-delay="400">Login to access your scan history and dashboard.</p>
                     </div>
 
-                    <form method="post" novalidate>
-                        {% csrf_token %}
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="200">
+                        <label for="id_password" class="form-label">
+                            <i class="fas fa-lock"></i> Password
+                        </label>
+                        <div class="input-wrapper pw-field-wrap">
+                            <input type="password" name="password" id="id_password"
+                                   class="form-control pw-input"
+                                   placeholder="Enter your password"
+                                   autocomplete="current-password" required>
+                            <span class="pw-eye-btn" id="eye-login-pw" title="Show/Hide">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                    </div>
 
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger glass-alert-premium" data-aos="shake">
-                                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                    <!-- CAPTCHA -->
+                    <div class="form-group captcha-group" data-aos="fade-up" data-aos-delay="300">
+                        <label for="id_captcha" class="form-label">
+                            <i class="fas fa-shield-alt"></i> Security Verification
+                        </label>
+                        <div class="captcha-box">
+                            {% if captcha_type == 'image' and captcha_image %}
+                            <div class="captcha-image-wrap">
+                                <img src="{{ captcha_image }}" alt="CAPTCHA" class="captcha-img" draggable="false">
+                                <span class="captcha-reload-note">Can't read? Refresh the page for a new code</span>
                             </div>
+                            {% else %}
+                            <div class="captcha-question">
+                                <span class="captcha-icon"><i class="fas fa-calculator"></i></span>
+                                <span class="captcha-text">Solve: <strong>{{ captcha_question }}</strong></span>
+                            </div>
+                            {% endif %}
+                            <div class="input-wrapper">
+                                {{ form.captcha }}
+                            </div>
+                        </div>
+                        {% if form.captcha.errors %}
+                        <div class="field-error">
+                            {% for error in form.captcha.errors %}<span><i class="fas fa-exclamation-circle"></i> {{ error }}</span>{% endfor %}
+                        </div>
                         {% endif %}
+                    </div>
 
-                        <div class="premium-input-group" data-aos="fade-up" data-aos-delay="450">
-                            <label class="premium-input-label"><i class="bi bi-person me-1"></i>Username or Email</label>
-                            <div class="premium-input-wrap">
-                                <i class="bi bi-person-fill premium-input-icon"></i>
-                                {{ form.username }}
-                            </div>
-                            {% if form.username.errors %}
-                                <div class="premium-input-error">{{ form.username.errors|join:", " }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="premium-input-group" data-aos="fade-up" data-aos-delay="500">
-                            <label class="premium-input-label"><i class="bi bi-key me-1"></i>Password</label>
-                            <div class="premium-input-wrap password-field-wrap">
-                                <i class="bi bi-lock-fill premium-input-icon"></i>
-                                {{ form.password }}
-                                <button type="button" class="password-toggle-btn" data-target="id_password">
-                                    <i class="bi bi-eye-fill"></i>
-                                </button>
-                            </div>
-                            {% if form.password.errors %}
-                                <div class="premium-input-error">{{ form.password.errors|join:", " }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="premium-input-group" data-aos="fade-up" data-aos-delay="550">
-                            <label class="premium-input-label"><i class="bi bi-puzzle me-1"></i>Captcha</label>
-                            <div class="captcha-premium-box">
-                                <div class="captcha-premium-question">
-                                    <i class="bi bi-shield-lock me-2"></i>{{ captcha_question|default:"What is 7 + 3 ?" }}
-                                </div>
-                                <div class="premium-input-wrap">
-                                    <i class="bi bi-hash premium-input-icon"></i>
-                                    {{ form.captcha }}
-                                </div>
-                            </div>
-                            {% if form.captcha.errors %}
-                                <div class="premium-input-error">{{ form.captcha.errors|join:", " }}</div>
-                            {% endif %}
-                        </div>
-
-                        <button type="submit" class="btn btn-glow w-100 btn-xl mt-3" data-aos="fade-up" data-aos-delay="600">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="400">
+                        <button type="submit" class="btn btn-primary btn-full btn-lg">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Login</span>
                         </button>
-                    </form>
+                    </div>
+                </form>
 
-                    <p class="text-center mt-4 mb-0 auth-footer-text" data-aos="fade-up" data-aos-delay="650">
-                        Don't have an account?
-                        <a href="{% url 'signup' %}" class="auth-premium-link">Create one <i class="bi bi-arrow-right"></i></a>
-                    </p>
+                <div class="auth-footer" data-aos="fade-up" data-aos-delay="500">
+                    <p>Don't have an account? <a href="{% url 'core:signup' %}" class="auth-link">Sign up here</a></p>
+                    <p><a href="{% url 'core:resend_verification' %}" class="auth-link-secondary">Resend verification email</a></p>
                 </div>
             </div>
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+    document.addEventListener('DOMContentLoaded', function() {
+        var btn = document.getElementById('eye-login-pw');
+        var inp = document.getElementById('id_password');
+        if (!btn || !inp) return;
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var icon = btn.querySelector('i');
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                if(icon) icon.className = 'fas fa-eye-slash';
+            } else {
+                inp.type = 'password';
+                if(icon) icon.className = 'fas fa-eye';
+            }
+        });
+    });
+})();
+</script>
 {% endblock %}

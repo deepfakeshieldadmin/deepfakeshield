@@ -1,90 +1,107 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Audio Result | DeepFake Shield{% endblock %}
+{% block body_class %}result-page{% endblock %}
 
 {% block content %}
-<section class="container py-5">
-    <div class="text-center mb-4">
-        <div class="section-badge">
-            <i class="bi bi-soundwave me-2"></i>Audio Scan Complete
+<section class="result-section">
+    <div class="container">
+        <div class="result-header" data-aos="fade-down">
+            <a href="{% url 'core:dashboard' %}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1 class="result-page-title">
+                <i class="fas fa-microphone"></i> Audio Analysis Result
+            </h1>
         </div>
-        <h1 class="premium-section-title">Audio <span class="title-gradient">Analysis</span> Result</h1>
-        <p class="premium-section-desc mx-auto">Signal-based authenticity analysis for the uploaded audio.</p>
-    </div>
 
-    <div class="glass-card-premium p-4">
-        <div class="result-header-premium mb-4">
-            <div>
-                <h3 class="mb-1">{{ scan.original_filename }}</h3>
-                <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <span class="result-classification-badge badge-{{ score_color|default:'info' }}">
-                        {{ scan.classification_display|default:scan.classification }}
-                    </span>
-                    {% if result.real_vs_fake %}
-                    <span class="badge {% if result.real_vs_fake == 'Real' %}bg-success{% elif result.real_vs_fake == 'Fake' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
-                        {{ result.real_vs_fake }}
-                    </span>
-                    {% endif %}
+        <!-- Score Card -->
+        <div class="score-hero-card score-hero-{{ scan.score_color }}" data-aos="zoom-in">
+            <div class="score-hero-bg"></div>
+            <div class="score-hero-content">
+                <div class="score-circle-wrap">
+                    <div class="score-circle" data-score="{{ scan.authenticity_score }}">
+                        <svg viewBox="0 0 120 120" class="score-ring-svg">
+                            <circle cx="60" cy="60" r="54" class="score-ring-bg"/>
+                            <circle cx="60" cy="60" r="54" class="score-ring-fill"
+                                    style="stroke-dashoffset: calc(339.292 - (339.292 * {{ scan.authenticity_score }}) / 100)"/>
+                        </svg>
+                        <div class="score-value">
+                            <span class="score-number">{{ scan.authenticity_score|floatformat:1 }}</span>
+                            <span class="score-percent">%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="score-info">
+                    <div class="score-classification">
+                        <span class="classification-badge badge-{{ scan.score_color }}">
+                            {% if scan.score_color == 'success' %}<i class="fas fa-check-circle"></i>
+                            {% elif scan.score_color == 'warning' %}<i class="fas fa-exclamation-triangle"></i>
+                            {% else %}<i class="fas fa-times-circle"></i>{% endif %}
+                            {{ scan.score_label }}
+                        </span>
+                    </div>
+                    <div class="score-verdict">{{ scan.real_vs_fake }}</div>
+                    <div class="score-file"><i class="fas fa-file-audio"></i> {{ scan.original_filename }}</div>
+                    <div class="score-date"><i class="fas fa-clock"></i> {{ scan.created_at|date:"F d, Y H:i" }}</div>
                 </div>
             </div>
-
-            <div class="result-score-ring-wrap">
-                <svg class="result-score-svg" viewBox="0 0 120 120">
-                    <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="8"/>
-                    <circle cx="60" cy="60" r="52" fill="none" stroke="url(#audioGrad)" stroke-width="8"
-                            stroke-linecap="round"
-                            stroke-dasharray="326.72"
-                            stroke-dashoffset="{{ score_dashoffset|default:'80' }}"
-                            class="result-score-ring-animated"/>
-                    <defs>
-                        <linearGradient id="audioGrad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stop-color="var(--accent)"/>
-                            <stop offset="100%" stop-color="var(--accent-2)"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
-                <div class="result-score-value">{{ scan.authenticity_score }}</div>
-            </div>
         </div>
 
-        <div class="result-explanation-box mb-4">
-            <h5><i class="bi bi-chat-left-text me-2"></i>Explanation</h5>
-            <p>{{ scan.explanation }}</p>
-            {% if result.analysis_summary %}
-            <p class="mt-2 mb-0"><strong>Summary:</strong> {{ result.analysis_summary }}</p>
+        <div class="result-grid">
+            <!-- Audio Metrics -->
+            {% if scan.detailed_results.detailed_metrics %}
+            <div class="result-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-wave-square"></i> Audio Metrics</h3>
+                </div>
+                <div class="result-card-body">
+                    <div class="metrics-grid">
+                        {% for key, value in scan.detailed_results.detailed_metrics.items %}
+                        <div class="metric-item" data-aos="fade-left" data-aos-delay="{{ forloop.counter0 }}50">
+                            <span class="metric-label">{{ key|cut:"_"|title }}</span>
+                            <span class="metric-value">{{ value }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Explanation -->
+            {% if scan.explanation %}
+            <div class="result-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-microscope"></i> Analysis Details</h3>
+                </div>
+                <div class="result-card-body">
+                    <p class="result-explanation">{{ scan.explanation }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if scan.summary %}
+            <div class="result-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="result-card-header">
+                    <h3><i class="fas fa-file-alt"></i> Summary</h3>
+                </div>
+                <div class="result-card-body">
+                    <p class="result-summary">{{ scan.summary }}</p>
+                </div>
+            </div>
             {% endif %}
         </div>
 
-        <div class="result-details-table mb-4">
-            <h5><i class="bi bi-table me-2"></i>Audio Metrics</h5>
-            <div class="table-responsive">
-                <table class="table premium-table">
-                    <tbody>
-                        <tr><th>Duration</th><td>{{ result.duration|default:"0" }} sec</td></tr>
-                        <tr><th>Sample Rate</th><td>{{ result.sample_rate|default:"0" }} Hz</td></tr>
-                        <tr><th>RMS Energy</th><td>{{ result.rms_energy|default:"0" }}</td></tr>
-                        <tr><th>Spectral Flatness</th><td>{{ result.spectral_flatness|default:"0" }}</td></tr>
-                        <tr><th>Clipping Ratio</th><td>{{ result.clipping_ratio|default:"0" }}</td></tr>
-                        <tr><th>Zero Crossing Rate</th><td>{{ result.zero_crossing_rate|default:"0" }}</td></tr>
-                        <tr><th>Spectral Centroid</th><td>{{ result.spectral_centroid|default:"0" }}</td></tr>
-                        <tr><th>Harmonic Confidence</th><td>{{ result.harmonic_confidence|default:"0" }}%</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="result-actions">
-            <a href="{% url 'upload_audio' %}" class="btn btn-outline-glow">
-                <i class="bi bi-arrow-repeat me-2"></i>Scan Another Audio
+        <div class="result-actions" data-aos="fade-up" data-aos-delay="400">
+            <a href="{% url 'core:download_report' scan.id %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-file-pdf"></i> Download PDF Report
             </a>
-
-            {% if scan.report_file %}
-            <a href="{{ scan.report_file.url }}" class="btn btn-glow" target="_blank" download>
-                <i class="bi bi-file-earmark-pdf-fill me-2"></i>Download PDF Report
+            <a href="{% url 'core:upload_audio' %}" class="btn btn-outline btn-lg">
+                <i class="fas fa-plus"></i> New Scan
             </a>
-            {% endif %}
-
-            <a href="{% url 'dashboard' %}" class="btn btn-ghost-premium">
-                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+            <a href="{% url 'core:dashboard' %}" class="btn btn-ghost btn-lg">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
             </a>
         </div>
     </div>

@@ -1,117 +1,188 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Sign Up | DeepFake Shield{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Hide browser native password reveal button */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-clear-button {
+    display: none !important;
+}
+/* Edge/Chrome native eye icon */
+input::-ms-reveal {
+    display: none !important;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<section class="auth-premium-section">
+<section class="auth-section">
     <div class="auth-bg-effects">
-        <div class="auth-orb auth-orb-1"></div>
-        <div class="auth-orb auth-orb-2"></div>
+        <div class="auth-orb orb-1"></div>
+        <div class="auth-orb orb-2"></div>
     </div>
 
-    <div class="container py-5">
-        <div class="row justify-content-center align-items-center min-vh-80">
-            <div class="col-lg-7 col-xl-6">
-                <div class="auth-card-premium" data-aos="zoom-in" data-aos-duration="600">
-                    <div class="auth-card-glow"></div>
+    <div class="container">
+        <div class="auth-container" data-aos="fade-up" data-aos-duration="800">
+            <div class="auth-card">
+                <div class="auth-header" data-aos="fade-down" data-aos-delay="200">
+                    <div class="auth-icon">
+                        <i class="fas fa-user-plus"></i>
+                        <div class="auth-icon-ring"></div>
+                    </div>
+                    <h1 class="auth-title">Create Account</h1>
+                    <p class="auth-subtitle">Join DeepFake Shield to start verifying media</p>
+                </div>
 
-                    <div class="text-center mb-4">
-                        <div class="auth-icon-premium" data-aos="zoom-in" data-aos-delay="200">
-                            <i class="bi bi-person-plus-fill"></i>
-                            <div class="auth-icon-ring"></div>
+                <form method="POST" action="{% url 'core:signup' %}" class="auth-form" novalidate>
+                    {% csrf_token %}
+
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="100">
+                        <label for="id_username" class="form-label">
+                            <i class="fas fa-user"></i> Username
+                        </label>
+                        <div class="input-wrapper">
+                            {{ form.username }}
                         </div>
-                        <h2 class="auth-premium-title" data-aos="fade-up" data-aos-delay="300">Create Account</h2>
-                        <p class="auth-premium-subtitle" data-aos="fade-up" data-aos-delay="400">Register to scan media and store your verification history.</p>
+                        {% if form.username.errors %}
+                        <div class="field-error">
+                            {% for error in form.username.errors %}<span><i class="fas fa-exclamation-circle"></i> {{ error }}</span>{% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
 
-                    <form method="post" novalidate>
-                        {% csrf_token %}
-
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger glass-alert-premium">
-                                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
-                            </div>
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="150">
+                        <label for="id_email" class="form-label">
+                            <i class="fas fa-envelope"></i> Email Address
+                        </label>
+                        <div class="input-wrapper">
+                            {{ form.email }}
+                        </div>
+                        {% if form.email.errors %}
+                        <div class="field-error">
+                            {% for error in form.email.errors %}<span><i class="fas fa-exclamation-circle"></i> {{ error }}</span>{% endfor %}
+                        </div>
                         {% endif %}
+                    </div>
 
-                        <div class="row g-3">
-                            <div class="col-md-6" data-aos="fade-up" data-aos-delay="450">
-                                <div class="premium-input-group">
-                                    <label class="premium-input-label"><i class="bi bi-person me-1"></i>Username</label>
-                                    <div class="premium-input-wrap">
-                                        <i class="bi bi-person-fill premium-input-icon"></i>
-                                        {{ form.username }}
-                                    </div>
-                                    {% if form.username.errors %}<div class="premium-input-error">{{ form.username.errors|join:", " }}</div>{% endif %}
-                                </div>
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="200">
+                        <label for="id_password1" class="form-label">
+                            <i class="fas fa-lock"></i> Password
+                        </label>
+                        <div class="input-wrapper pw-field-wrap">
+                            <input type="password" name="password1" id="id_password1"
+                                   class="form-control pw-input"
+                                   placeholder="Create a password (min 8 characters)"
+                                   autocomplete="new-password"
+                                   minlength="8" required
+                                   value="{{ form.password1.value|default:'' }}">
+                            <span class="pw-eye-btn" id="eye-pw1" title="Show/Hide">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                        {% if form.password1.errors %}
+                        <div class="field-error">
+                            {% for error in form.password1.errors %}<span><i class="fas fa-exclamation-circle"></i> {{ error }}</span>{% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="250">
+                        <label for="id_password2" class="form-label">
+                            <i class="fas fa-lock"></i> Confirm Password
+                        </label>
+                        <div class="input-wrapper pw-field-wrap">
+                            <input type="password" name="password2" id="id_password2"
+                                   class="form-control pw-input"
+                                   placeholder="Confirm your password"
+                                   autocomplete="new-password"
+                                   required
+                                   value="{{ form.password2.value|default:'' }}">
+                            <span class="pw-eye-btn" id="eye-pw2" title="Show/Hide">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                        {% if form.password2.errors %}
+                        <div class="field-error">
+                            {% for error in form.password2.errors %}<span><i class="fas fa-exclamation-circle"></i> {{ error }}</span>{% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- CAPTCHA -->
+                    <div class="form-group captcha-group" data-aos="fade-up" data-aos-delay="300">
+                        <label for="id_captcha" class="form-label">
+                            <i class="fas fa-shield-alt"></i> Security Verification
+                        </label>
+                        <div class="captcha-box">
+                            {% if captcha_type == 'image' and captcha_image %}
+                            <div class="captcha-image-wrap">
+                                <img src="{{ captcha_image }}" alt="CAPTCHA" class="captcha-img" draggable="false">
+                                <span class="captcha-reload-note">Can't read? Refresh the page for a new code</span>
                             </div>
-
-                            <div class="col-md-6" data-aos="fade-up" data-aos-delay="500">
-                                <div class="premium-input-group">
-                                    <label class="premium-input-label"><i class="bi bi-envelope me-1"></i>Email</label>
-                                    <div class="premium-input-wrap">
-                                        <i class="bi bi-envelope-fill premium-input-icon"></i>
-                                        {{ form.email }}
-                                    </div>
-                                    {% if form.email.errors %}<div class="premium-input-error">{{ form.email.errors|join:", " }}</div>{% endif %}
-                                </div>
+                            {% else %}
+                            <div class="captcha-question">
+                                <span class="captcha-icon"><i class="fas fa-calculator"></i></span>
+                                <span class="captcha-text">Solve: <strong>{{ captcha_question }}</strong></span>
                             </div>
-
-                            <div class="col-md-6" data-aos="fade-up" data-aos-delay="550">
-                                <div class="premium-input-group">
-                                    <label class="premium-input-label"><i class="bi bi-key me-1"></i>Password</label>
-                                    <div class="premium-input-wrap password-field-wrap">
-                                        <i class="bi bi-lock-fill premium-input-icon"></i>
-                                        {{ form.password1 }}
-                                        <button type="button" class="password-toggle-btn" data-target="id_password1">
-                                            <i class="bi bi-eye-fill"></i>
-                                        </button>
-                                    </div>
-                                    {% if form.password1.errors %}<div class="premium-input-error">{{ form.password1.errors|join:", " }}</div>{% endif %}
-                                </div>
-                            </div>
-
-                            <div class="col-md-6" data-aos="fade-up" data-aos-delay="600">
-                                <div class="premium-input-group">
-                                    <label class="premium-input-label"><i class="bi bi-key me-1"></i>Confirm Password</label>
-                                    <div class="premium-input-wrap password-field-wrap">
-                                        <i class="bi bi-lock-fill premium-input-icon"></i>
-                                        {{ form.password2 }}
-                                        <button type="button" class="password-toggle-btn" data-target="id_password2">
-                                            <i class="bi bi-eye-fill"></i>
-                                        </button>
-                                    </div>
-                                    {% if form.password2.errors %}<div class="premium-input-error">{{ form.password2.errors|join:", " }}</div>{% endif %}
-                                </div>
-                            </div>
-
-                            <div class="col-12" data-aos="fade-up" data-aos-delay="650">
-                                <div class="premium-input-group">
-                                    <label class="premium-input-label"><i class="bi bi-puzzle me-1"></i>Captcha</label>
-                                    <div class="captcha-premium-box">
-                                        <div class="captcha-premium-question">
-                                            <i class="bi bi-shield-lock me-2"></i>{{ captcha_question|default:"What is 4 + 5 ?" }}
-                                        </div>
-                                        <div class="premium-input-wrap">
-                                            <i class="bi bi-hash premium-input-icon"></i>
-                                            {{ form.captcha }}
-                                        </div>
-                                    </div>
-                                    {% if form.captcha.errors %}<div class="premium-input-error">{{ form.captcha.errors|join:", " }}</div>{% endif %}
-                                </div>
+                            {% endif %}
+                            <div class="input-wrapper">
+                                {{ form.captcha }}
                             </div>
                         </div>
+                        {% if form.captcha.errors %}
+                        <div class="field-error">
+                            {% for error in form.captcha.errors %}<span><i class="fas fa-exclamation-circle"></i> {{ error }}</span>{% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
 
-                        <button type="submit" class="btn btn-glow w-100 btn-xl mt-4" data-aos="fade-up" data-aos-delay="700">
-                            <i class="bi bi-send-check me-2"></i>Register & Verify Email
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="350">
+                        <button type="submit" class="btn btn-primary btn-full btn-lg">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Create Account</span>
                         </button>
-                    </form>
+                    </div>
+                </form>
 
-                    <p class="text-center mt-4 mb-0 auth-footer-text" data-aos="fade-up" data-aos-delay="750">
-                        Already have an account?
-                        <a href="{% url 'login' %}" class="auth-premium-link">Login <i class="bi bi-arrow-right"></i></a>
-                    </p>
+                <div class="auth-footer" data-aos="fade-up" data-aos-delay="400">
+                    <p>Already have an account? <a href="{% url 'core:login' %}" class="auth-link">Login here</a></p>
                 </div>
             </div>
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+    function setupEye(btnId, inputId) {
+        var btn = document.getElementById(btnId);
+        var inp = document.getElementById(inputId);
+        if (!btn || !inp) return;
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var icon = btn.querySelector('i');
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                if(icon) { icon.className = 'fas fa-eye-slash'; }
+            } else {
+                inp.type = 'password';
+                if(icon) { icon.className = 'fas fa-eye'; }
+            }
+        });
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        setupEye('eye-pw1', 'id_password1');
+        setupEye('eye-pw2', 'id_password2');
+    });
+})();
+</script>
 {% endblock %}

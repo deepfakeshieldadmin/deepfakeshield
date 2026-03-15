@@ -1,9 +1,39 @@
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
+"""
+Token generation and validation for email verification.
+"""
+import uuid
+from django.utils import timezone
+from .models import EmailVerificationToken
 
 
-class EmailVerificationTokenGenerator(PasswordResetTokenGenerator):
-    def _make_hash_value(self, user, timestamp):
-        return str(user.pk) + str(timestamp) + str(user.is_active)
+def create_verification_token(user):
+    """Create or refresh an email verification token for a user."""
+    # Delete any existing token
+    EmailVerificationToken.objects.filter(user=user).delete()
+
+    # Create new token
+    token = EmailVerificationToken.objects.create(
+        user=user,
+        token=uuid.uuid4()
+    )
+    return token
 
 
-email_verification_token = EmailVerificationTokenGenerator()
+def validate_verification_token(token_uuid):
+    """Validate a verification token. Returns (success, user, message)."""
+    try:
+        token_obj = EmailVerificationToken.objects.select_related('user').get(token=token_uuid)
+    except EmailVerificationToken.DoesNotExist:
+        return False, None, 'Invalid verification link.'
+
+    if token_obj.is_used:
+        return False, token_obj.user, 'This link has already been used.'
+
+    if token_obj.is_expired:
+        return False, token_obj.user, 'This verification link has expired. Please request a new one.'
+
+    # Mark as used
+    token_obj.is_used = True
+    token_obj.save(update_fields=['is_used'])
+
+    return True, token_obj.user, 'Email verified successfully!'

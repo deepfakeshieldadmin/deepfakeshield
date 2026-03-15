@@ -1,343 +1,255 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeepFake Shield | Welcome</title>
-    <meta name="description" content="DeepFake Shield - Real-Time Media Authenticity Verification System">
+    <meta name="description" content="DeepFake Shield - Protect truth in the age of synthetic media">
+    <meta name="theme-color" content="#0a0e27">
+    <title>DeepFake Shield | Protect Truth</title>
 
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" href="{% static 'css/landing.css' %}">
     <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+
+    <style>
+        /* Sparkle particles */
+        .cursor-sparkle{position:fixed;pointer-events:none;z-index:999999;border-radius:50%;animation:sFade .7s ease-out forwards}
+        @keyframes sFade{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.1) translateY(-15px)}}
+        .click-ring{position:fixed;pointer-events:none;z-index:999999;border-radius:50%;border:2px solid rgba(102,126,234,.6);animation:ringPop .5s ease-out forwards}
+        @keyframes ringPop{0%{opacity:1;transform:translate(-50%,-50%) scale(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(3)}}
+        /* Google translate overrides */
+        body{top:0!important}
+        .goog-te-banner-frame,.skiptranslate,#goog-gt-tt,.goog-te-balloon-frame{display:none!important}
+        iframe.goog-te-banner-frame{display:none!important}
+        .goog-te-gadget{font-size:0!important}
+        .goog-te-gadget .goog-te-combo{font-family:'Inter',sans-serif!important;font-size:.78rem!important;padding:4px 6px!important;border:1px solid rgba(255,255,255,.15)!important;border-radius:6px!important;background:rgba(255,255,255,.08)!important;color:#f0f4f8!important;outline:none!important;cursor:pointer!important;max-width:110px!important;height:28px!important}
+        .goog-te-gadget>span,.goog-logo-link{display:none!important}
+    </style>
 </head>
 <body class="landing-body">
-    <!-- Matrix Canvas -->
-    <canvas id="matrixCanvas" class="matrix-canvas"></canvas>
 
-    <!-- Particle Layer -->
-    <div id="landingParticles" class="landing-particles"></div>
+    <!-- Matrix Background Canvas -->
+    <canvas id="matrix-canvas" class="matrix-canvas"></canvas>
 
-    <!-- Gradient Overlays -->
-    <div class="landing-gradient-overlay"></div>
-    <div class="landing-radial-overlay"></div>
-    <div class="landing-scanline-overlay"></div>
+    <!-- Particle Overlay -->
+    <div class="particle-field" id="particle-field"></div>
 
-    <!-- Floating Geometric Shapes -->
-    <div class="geo-shape geo-shape-1"></div>
-    <div class="geo-shape geo-shape-2"></div>
-    <div class="geo-shape geo-shape-3"></div>
-    <div class="geo-shape geo-shape-4"></div>
-    <div class="geo-shape geo-shape-5"></div>
-    <div class="geo-hex geo-hex-1"></div>
-    <div class="geo-hex geo-hex-2"></div>
+    <!-- Google Translate (top-right corner) -->
+    <div style="position:fixed;top:15px;right:15px;z-index:9999;" id="google_translate_element"></div>
 
-    <!-- Main Landing Content -->
-    <div class="landing-content-wrapper">
-        <div class="container">
-            <!-- Hero Section -->
-            <section class="landing-hero min-vh-100 d-flex flex-column justify-content-center align-items-center text-center">
-                <!-- Status Badge -->
-                <div class="hero-status-badge" data-aos="fade-down" data-aos-duration="600">
-                    <div class="status-pulse"></div>
-                    <span>Real-Time Authenticity Intelligence</span>
-                    <i class="bi bi-lightning-charge-fill"></i>
-                </div>
+    <!-- Landing Container -->
+    <div class="landing-container" id="landing-container">
 
-                <!-- Shield Icon -->
-                <div class="hero-shield-container" data-aos="zoom-in" data-aos-duration="1000" data-aos-delay="200">
-                    <div class="shield-outer-ring">
-                        <div class="shield-orbit-dot dot-1"></div>
-                        <div class="shield-orbit-dot dot-2"></div>
-                        <div class="shield-orbit-dot dot-3"></div>
-                    </div>
-                    <div class="shield-middle-ring"></div>
+        <!-- Logo Intro Animation -->
+        <div class="logo-intro" id="logo-intro">
+            <div class="logo-intro-shield">
+                <div class="shield-glow-ring"></div>
+                <div class="shield-glow-ring ring-2"></div>
+                <div class="shield-glow-ring ring-3"></div>
+                <i class="fas fa-shield-halved shield-main-icon"></i>
+            </div>
+            <div class="logo-intro-text">
+                <span class="logo-intro-deep">Deep</span><span class="logo-intro-fake">Fake</span><span class="logo-intro-shield-text">Shield</span>
+            </div>
+            <div class="logo-intro-tagline">
+                <span class="typing-text" id="typing-text"></span>
+                <span class="typing-cursor">|</span>
+            </div>
+        </div>
+
+        <!-- Hero Section -->
+        <div class="landing-hero" id="landing-hero" style="display:none;">
+            <div class="floating-badges">
+                <div class="float-badge badge-1" data-aos="fade-down-right" data-aos-delay="200"><i class="fas fa-image"></i><span>Image</span></div>
+                <div class="float-badge badge-2" data-aos="fade-down-left" data-aos-delay="400"><i class="fas fa-video"></i><span>Video</span></div>
+                <div class="float-badge badge-3" data-aos="fade-up-right" data-aos-delay="600"><i class="fas fa-microphone"></i><span>Audio</span></div>
+                <div class="float-badge badge-4" data-aos="fade-up-left" data-aos-delay="800"><i class="fas fa-file-alt"></i><span>Text</span></div>
+            </div>
+
+            <div class="hero-content" data-aos="zoom-in" data-aos-duration="1000">
+                <div class="hero-shield">
+                    <div class="shield-outer-ring"></div>
                     <div class="shield-inner-ring"></div>
-                    <div class="shield-core">
-                        <i class="bi bi-shield-shaded"></i>
-                    </div>
-                    <div class="shield-glow"></div>
+                    <i class="fas fa-shield-halved hero-shield-icon"></i>
+                    <div class="shield-scan-line"></div>
                 </div>
 
-                <!-- Title -->
-                <h1 class="landing-hero-title" data-aos="fade-up" data-aos-duration="800" data-aos-delay="400">
-                    DeepFake <span class="title-gradient">Shield</span>
+                <h1 class="hero-title" data-aos="fade-up" data-aos-delay="200">
+                    <span class="hero-title-line">Defend Against</span>
+                    <span class="hero-title-gradient">Digital Deception</span>
                 </h1>
 
-                <!-- Typed Subtitle -->
-                <div class="landing-typed-wrap" data-aos="fade-up" data-aos-duration="800" data-aos-delay="600">
-                    <p class="landing-typed-prefix">Powered by</p>
-                    <span id="landingTyped" class="landing-typed-text"></span>
-                </div>
-
-                <!-- Description -->
-                <p class="landing-hero-desc" data-aos="fade-up" data-aos-duration="800" data-aos-delay="700">
-                    Detect manipulated images, suspicious videos, synthetic audio, and AI-generated text with a professional real-time verification platform.
+                <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="400">
+                    Real-Time Media Authenticity Verification System powered by
+                    Hybrid AI Analysis. Detect deepfakes across images, videos,
+                    audio, and text with precision.
                 </p>
 
-                <!-- CTA Buttons -->
-                <div class="landing-cta-group" data-aos="fade-up" data-aos-duration="800" data-aos-delay="800">
-                    <a href="{% url 'home' %}" class="btn btn-hero-primary">
-                        <span class="btn-hero-inner">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>Enter Platform
-                        </span>
-                        <span class="btn-hero-shine"></span>
+                <div class="hero-stats" data-aos="fade-up" data-aos-delay="600">
+                    <div class="stat-item"><div class="stat-number" data-count="4">0</div><div class="stat-label">Detection Engines</div></div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item"><div class="stat-number" data-count="15">0</div><div class="stat-label">Analysis Metrics</div></div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item"><div class="stat-number" data-count="100">0</div><div class="stat-label">% CPU Friendly</div></div>
+                </div>
+
+                <div class="hero-actions" data-aos="fade-up" data-aos-delay="800">
+                    <a href="{% url 'core:home' %}" class="btn btn-hero-primary">
+                        <span class="btn-content"><i class="fas fa-arrow-right"></i><span>Enter Shield</span></span>
+                        <div class="btn-glow"></div>
                     </a>
-                    <a href="{% url 'signup' %}" class="btn btn-hero-secondary">
-                        <i class="bi bi-person-plus-fill me-2"></i>Create Account
-                    </a>
-                </div>
-
-                <!-- Language Select -->
-                <!-- Language Select — FIXED -->
-                <div class="landing-language-wrap" data-aos="fade-up" data-aos-duration="600" data-aos-delay="900">
-                    <label class="landing-lang-label">
-                        <i class="bi bi-translate me-1"></i>Choose Language
-                    </label>
-                    <select id="landingLanguage" class="landing-lang-select">
-                        <option value="en">English</option>
-                        <option value="hi">हिंदी (Hindi)</option>
-                        <option value="mr">मराठी (Marathi)</option>
-                        <option value="te">తెలుగు (Telugu)</option>
-                        <option value="ta">தமிழ் (Tamil)</option>
-                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
-                        <option value="fr">Français (French)</option>
-                        <option value="ja">日本語 (Japanese)</option>
-                    </select>
-                </div>
-
-                <!-- Scroll indicator -->
-                <div class="scroll-indicator" data-aos="fade-up" data-aos-delay="1100">
-                    <div class="scroll-mouse">
-                        <div class="scroll-dot"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Features Grid Section -->
-            <section class="landing-features-section py-5">
-                <div class="row justify-content-center mb-5">
-                    <div class="col-lg-8 text-center">
-                        <div class="section-badge" data-aos="fade-down">
-                            <i class="bi bi-cpu me-2"></i>Detection Capabilities
-                        </div>
-                        <h2 class="landing-section-title" data-aos="fade-up" data-aos-delay="100">
-                            Multi-Modal <span class="title-gradient">Analysis</span> Engine
-                        </h2>
-                        <p class="landing-section-desc" data-aos="fade-up" data-aos-delay="200">
-                            Four specialized detection modules working together to verify media authenticity.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="row g-4">
-                    <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
-                        <div class="feature-card-premium">
-                            <div class="feature-card-glow" style="--fc-color:#00d2ff"></div>
-                            <div class="feature-icon-premium" style="--fi-gradient:linear-gradient(135deg,#00d2ff,#7a5cff)">
-                                <i class="bi bi-image-fill"></i>
-                            </div>
-                            <h5>Image Detection</h5>
-                            <p>EXIF metadata analysis, face detection with bounding boxes, artifact detection, compression noise evaluation.</p>
-                            <div class="feature-stats">
-                                <div class="feature-stat">
-                                    <span class="feature-stat-num" data-count="6">0</span>
-                                    <small>Analysis Points</small>
-                                </div>
-                            </div>
-                            <div class="feature-card-line" style="--fcl-color:#00d2ff"></div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
-                        <div class="feature-card-premium">
-                            <div class="feature-card-glow" style="--fc-color:#7a5cff"></div>
-                            <div class="feature-icon-premium" style="--fi-gradient:linear-gradient(135deg,#7a5cff,#c44dff)">
-                                <i class="bi bi-film"></i>
-                            </div>
-                            <h5>Video Detection</h5>
-                            <p>Frame extraction and sampling, per-frame authenticity scoring, average confidence calculation across video timeline.</p>
-                            <div class="feature-stats">
-                                <div class="feature-stat">
-                                    <span class="feature-stat-num" data-count="10">0</span>
-                                    <small>Frames Sampled</small>
-                                </div>
-                            </div>
-                            <div class="feature-card-line" style="--fcl-color:#7a5cff"></div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
-                        <div class="feature-card-premium">
-                            <div class="feature-card-glow" style="--fc-color:#21d07a"></div>
-                            <div class="feature-icon-premium" style="--fi-gradient:linear-gradient(135deg,#21d07a,#00b85f)">
-                                <i class="bi bi-soundwave"></i>
-                            </div>
-                            <h5>Audio Detection</h5>
-                            <p>RMS energy analysis, spectral flatness measurement, clipping detection, and signal quality verification.</p>
-                            <div class="feature-stats">
-                                <div class="feature-stat">
-                                    <span class="feature-stat-num" data-count="3">0</span>
-                                    <small>Signal Checks</small>
-                                </div>
-                            </div>
-                            <div class="feature-card-line" style="--fcl-color:#21d07a"></div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="400">
-                        <div class="feature-card-premium">
-                            <div class="feature-card-glow" style="--fc-color:#ff7a18"></div>
-                            <div class="feature-icon-premium" style="--fi-gradient:linear-gradient(135deg,#ff7a18,#ff2d95)">
-                                <i class="bi bi-file-earmark-text-fill"></i>
-                            </div>
-                            <h5>Text Detection</h5>
-                            <p>Repetition pattern analysis, stopword ratio evaluation, punctuation density, sentence length variance.</p>
-                            <div class="feature-stats">
-                                <div class="feature-stat">
-                                    <span class="feature-stat-num" data-count="4">0</span>
-                                    <small>Linguistic Checks</small>
-                                </div>
-                            </div>
-                            <div class="feature-card-line" style="--fcl-color:#ff7a18"></div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Score Explanation Section -->
-            <section class="landing-score-section py-5">
-                <div class="row align-items-center g-5">
-                    <div class="col-lg-6" data-aos="fade-right" data-aos-duration="800">
-                        <div class="section-badge"><i class="bi bi-speedometer2 me-2"></i>Scoring System</div>
-                        <h2 class="landing-section-title">
-                            Authenticity <span class="title-gradient">Score</span> System
-                        </h2>
-                        <p class="landing-section-desc">
-                            Every scan produces a score from 0 to 100, calculated from multiple analysis signals.
-                        </p>
-
-                        <div class="score-breakdown-list">
-                            <div class="score-breakdown-item" data-aos="fade-up" data-aos-delay="100">
-                                <div class="score-indicator score-indicator-danger">
-                                    <span>0–39</span>
-                                </div>
-                                <div>
-                                    <strong>Likely Fake</strong>
-                                    <p>No EXIF, AI artifacts detected, repeating patterns, unrealistic edges, GAN noise patterns.</p>
-                                </div>
-                            </div>
-                            <div class="score-breakdown-item" data-aos="fade-up" data-aos-delay="200">
-                                <div class="score-indicator score-indicator-warning">
-                                    <span>40–74</span>
-                                </div>
-                                <div>
-                                    <strong>Suspicious</strong>
-                                    <p>Missing EXIF, slight artifacts, possibly edited metadata, some compression anomalies.</p>
-                                </div>
-                            </div>
-                            <div class="score-breakdown-item" data-aos="fade-up" data-aos-delay="300">
-                                <div class="score-indicator score-indicator-info">
-                                    <span>75–99</span>
-                                </div>
-                                <div>
-                                    <strong>Likely Real</strong>
-                                    <p>EXIF present, minor compression changes, no significant AI artifacts detected.</p>
-                                </div>
-                            </div>
-                            <div class="score-breakdown-item" data-aos="fade-up" data-aos-delay="400">
-                                <div class="score-indicator score-indicator-success">
-                                    <span>100</span>
-                                </div>
-                                <div>
-                                    <strong>Highly Authentic</strong>
-                                    <p>Original camera image, untouched metadata, natural sensor noise, authentic compression.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-6" data-aos="fade-left" data-aos-duration="800" data-aos-delay="200">
-                        <div class="score-visual-card">
-                            <div class="score-visual-ring">
-                                <svg viewBox="0 0 200 200">
-                                    <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="8"/>
-                                    <circle cx="100" cy="100" r="90" fill="none" stroke="url(#scoreGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="565.48" stroke-dashoffset="140" class="score-ring-animated"/>
-                                    <defs>
-                                        <linearGradient id="scoreGrad" x1="0" y1="0" x2="1" y2="1">
-                                            <stop offset="0%" stop-color="#00d2ff"/>
-                                            <stop offset="100%" stop-color="#7a5cff"/>
-                                        </linearGradient>
-                                    </defs>
-                                </svg>
-                                <div class="score-visual-value">
-                                    <span class="score-visual-num" data-count="87">0</span>
-                                    <small>Authenticity</small>
-                                </div>
-                            </div>
-
-                            <div class="score-visual-bars">
-                                <div class="score-bar-item">
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <small>EXIF Metadata</small><small>Present</small>
-                                    </div>
-                                    <div class="score-bar"><div class="score-bar-fill" style="width:92%"></div></div>
-                                </div>
-                                <div class="score-bar-item">
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <small>Face Detection</small><small>3 Detected</small>
-                                    </div>
-                                    <div class="score-bar"><div class="score-bar-fill" style="width:78%"></div></div>
-                                </div>
-                                <div class="score-bar-item">
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <small>AI Artifacts</small><small>None</small>
-                                    </div>
-                                    <div class="score-bar"><div class="score-bar-fill" style="width:95%"></div></div>
-                                </div>
-                                <div class="score-bar-item">
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <small>Compression</small><small>Normal</small>
-                                    </div>
-                                    <div class="score-bar"><div class="score-bar-fill" style="width:88%"></div></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Bottom CTA -->
-            <section class="landing-bottom-cta py-5 text-center" data-aos="zoom-in" data-aos-duration="800">
-                <div class="bottom-cta-card">
-                    <h2 class="landing-section-title mb-3">
-                        Ready to <span class="title-gradient">Verify</span>?
-                    </h2>
-                    <p class="landing-section-desc mx-auto mb-4">
-                        Start scanning media and discover the truth behind every file.
-                    </p>
-                    <a href="{% url 'home' %}" class="btn btn-hero-primary btn-lg">
-                        <span class="btn-hero-inner">
-                            <i class="bi bi-rocket-takeoff-fill me-2"></i>Launch Platform
-                        </span>
-                        <span class="btn-hero-shine"></span>
+                    <a href="{% url 'core:signup' %}" class="btn btn-hero-secondary">
+                        <span class="btn-content"><i class="fas fa-user-plus"></i><span>Create Account</span></span>
                     </a>
                 </div>
-            </section>
+
+                <div class="language-selector" data-aos="fade-up" data-aos-delay="1000">
+                    <span class="lang-label"><i class="fas fa-globe"></i> Language:</span>
+                    <div class="lang-options">
+                        <button class="lang-btn active" data-lang="en">EN</button>
+                        <button class="lang-btn" data-lang="hi">HI</button>
+                        <button class="lang-btn" data-lang="es">ES</button>
+                        <button class="lang-btn" data-lang="fr">FR</button>
+                        <button class="lang-btn" data-lang="de">DE</button>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <!-- Features Section -->
+        <section class="landing-features" id="landing-features" style="display:none;">
+            <div class="container">
+                <h2 class="section-title" data-aos="fade-up">
+                    <span class="section-badge">CAPABILITIES</span>
+                    Multi-Modal Detection Engine
+                </h2>
+                <div class="features-grid">
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                        <div class="feature-icon-wrap"><div class="feature-icon-bg"></div><i class="fas fa-image"></i></div>
+                        <h3>Image Analysis</h3>
+                        <p>EXIF metadata, face detection, AI artifact scanning, noise analysis, texture & color realism.</p>
+                        <div class="feature-metrics"><span><i class="fas fa-check"></i> 12+ metrics</span></div>
+                    </div>
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                        <div class="feature-icon-wrap"><div class="feature-icon-bg"></div><i class="fas fa-video"></i></div>
+                        <h3>Video Analysis</h3>
+                        <p>Frame-by-frame analysis, temporal consistency, face tracking, motion realism.</p>
+                        <div class="feature-metrics"><span><i class="fas fa-check"></i> 8+ metrics</span></div>
+                    </div>
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                        <div class="feature-icon-wrap"><div class="feature-icon-bg"></div><i class="fas fa-microphone"></i></div>
+                        <h3>Audio Analysis</h3>
+                        <p>Spectral analysis, harmonic detection, clipping ratio, energy profiling.</p>
+                        <div class="feature-metrics"><span><i class="fas fa-check"></i> 10+ metrics</span></div>
+                    </div>
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+                        <div class="feature-icon-wrap"><div class="feature-icon-bg"></div><i class="fas fa-file-alt"></i></div>
+                        <h3>Text Analysis</h3>
+                        <p>AI phrase detection, burstiness scoring, vocabulary richness, sentence variance.</p>
+                        <div class="feature-metrics"><span><i class="fas fa-check"></i> 11+ metrics</span></div>
+                    </div>
+                </div>
+                <div class="landing-bottom-cta" data-aos="zoom-in" data-aos-delay="200">
+                    <a href="{% url 'core:home' %}" class="btn btn-hero-primary btn-lg"><i class="fas fa-rocket"></i><span>Get Started Now</span></a>
+                </div>
+            </div>
+        </section>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.16/dist/typed.umd.js"></script>
+    <!-- SCRIPTS -->
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
     <script src="{% static 'js/landing.js' %}"></script>
+
+    <!-- AOS Init -->
     <script>AOS.init({duration:800,easing:'ease-out-cubic',once:false,offset:50});</script>
+
+    <!-- GOOGLE TRANSLATE -->
+    <script>
+    function googleTranslateElementInit(){
+        new google.translate.TranslateElement({
+            pageLanguage:'en',
+            includedLanguages:'en,hi,te,ta,kn,ml,bn,es,fr,de,ja,ko,zh-CN,ar,pt,ru',
+            layout:google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay:false
+        },'google_translate_element');
+    }
+    </script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <!-- CURSOR SPARKLE TRAIL -->
+    <script>
+    (function(){
+        var isMob = ('ontouchstart' in window)||(navigator.maxTouchPoints>0)||(window.innerWidth<=768);
+        if(isMob) return;
+
+        var cols=['rgba(102,126,234,.8)','rgba(118,75,162,.7)','rgba(79,172,254,.6)','rgba(243,104,224,.5)','rgba(67,233,123,.5)'];
+        var parts=[], MAX=25, mx=-100, my=-100, lx=-100, ly=-100, moving=false, mt=null;
+
+        document.addEventListener('mousemove',function(e){
+            mx=e.clientX; my=e.clientY; moving=true;
+            clearTimeout(mt); mt=setTimeout(function(){moving=false;},80);
+        },{passive:true});
+
+        function mk(x,y){
+            if(parts.length>=MAX){var o=parts.shift();if(o&&o.parentNode)o.remove();}
+            var d=document.createElement('div');
+            d.className='cursor-sparkle';
+            var s=Math.random()*5+3, c=cols[Math.floor(Math.random()*cols.length)];
+            var ox=(Math.random()-.5)*10, oy=(Math.random()-.5)*10;
+            d.style.cssText='left:'+(x+ox)+'px;top:'+(y+oy)+'px;width:'+s+'px;height:'+s+'px;background:'+c+';box-shadow:0 0 '+(s*2)+'px '+c+';';
+            document.body.appendChild(d); parts.push(d);
+            setTimeout(function(){if(d.parentNode)d.remove();var i=parts.indexOf(d);if(i>-1)parts.splice(i,1);},700);
+        }
+
+        (function loop(){
+            if(moving&&mx>0&&my>0){
+                var dx=mx-lx,dy=my-ly;
+                if(Math.sqrt(dx*dx+dy*dy)>4){mk(mx,my);lx=mx;ly=my;}
+            }
+            setTimeout(loop,35);
+        })();
+
+        document.addEventListener('click',function(e){
+            for(var i=0;i<6;i++){
+                (function(j){setTimeout(function(){
+                    var a=(j/6)*Math.PI*2,r=12+Math.random()*12;
+                    mk(e.clientX+Math.cos(a)*r,e.clientY+Math.sin(a)*r);
+                },j*25);})(i);
+            }
+            var ring=document.createElement('div');
+            ring.className='click-ring';
+            ring.style.cssText='left:'+e.clientX+'px;top:'+e.clientY+'px;width:30px;height:30px;';
+            document.body.appendChild(ring);
+            setTimeout(function(){if(ring.parentNode)ring.remove();},500);
+        });
+    })();
+    </script>
+
+    <!-- PREFERENCES -->
+    <script>
+    (function(){
+        var KEY='dfs_prefs';
+        function load(){try{var s=localStorage.getItem(KEY);return s?JSON.parse(s):{};}catch(e){return {};}}
+        function save(p){try{localStorage.setItem(KEY,JSON.stringify(p));}catch(e){}}
+        function apply(p){
+            var sizes={small:'14px',normal:'16px',large:'18px'};
+            document.documentElement.style.fontSize=sizes[p.fontSize||'normal']||'16px';
+        }
+        apply(load());
+        window.DFSPrefs={
+            load:load,save:save,apply:apply,
+            set:function(k,v){var p=load();p[k]=v;save(p);apply(p);},
+            get:function(k){return load()[k];}
+        };
+    })();
+    </script>
+
 </body>
 </html>

@@ -1,184 +1,186 @@
-/* ============================================
-   DEEPFAKE SHIELD — THREE-BG JS
-   Lightweight 3D Floating Shapes (No Three.js)
-   Pure CSS 3D transforms + JS animation
-   ============================================ */
+/* ═══════════════════════════════════════════════════════════════
+   DeepFake Shield — 3D Particle Network Background
+   Lightweight canvas-based with depth simulation
+   ═══════════════════════════════════════════════════════════════ */
+(function () {
+    'use strict';
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Only run on pages that have the container
-    const heroSection = document.querySelector(".premium-hero-section, .landing-hero");
-    if (!heroSection) return;
+    document.addEventListener('DOMContentLoaded', initBackground);
 
-    // Don't run on mobile
-    if (window.innerWidth < 768) return;
+    function initBackground() {
+        // Only run on pages that have the hero section
+        var hero = document.querySelector('.home-hero, .hero-bg-effects');
+        if (!hero) return;
 
-    const container = document.createElement("div");
-    container.className = "three-bg-container";
-    container.setAttribute("aria-hidden", "true");
-    heroSection.appendChild(container);
+        var canvas = document.createElement('canvas');
+        canvas.id = 'network-3d-canvas';
+        canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.6;';
 
-    // Inject styles
-    const style = document.createElement("style");
-    style.textContent = `
-        .three-bg-container {
-            position: absolute;
-            inset: 0;
-            overflow: hidden;
-            pointer-events: none;
-            z-index: 1;
-            perspective: 1200px;
+        var parent = hero.querySelector('.hero-bg-effects') || hero;
+        parent.style.position = 'relative';
+        parent.insertBefore(canvas, parent.firstChild);
+
+        var ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        var w, h, nodes = [], mouseX = -999, mouseY = -999;
+        var maxDist = 160;
+        var count = 0;
+
+        function resize() {
+            w = canvas.width = canvas.offsetWidth || window.innerWidth;
+            h = canvas.height = canvas.offsetHeight || window.innerHeight;
+            count = Math.min(60, Math.floor((w * h) / 15000));
+            createNodes();
         }
 
-        .three-shape {
-            position: absolute;
-            opacity: 0.06;
-            animation: threeDrift linear infinite;
-            will-change: transform;
+        function createNodes() {
+            nodes = [];
+            for (var i = 0; i < count; i++) {
+                nodes.push({
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    z: Math.random() * 200 + 50, // depth
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4,
+                    vz: (Math.random() - 0.5) * 0.3,
+                    baseSize: Math.random() * 2.5 + 1,
+                });
+            }
         }
 
-        .shape-cube {
-            width: 40px;
-            height: 40px;
-            transform-style: preserve-3d;
-            animation-name: threeCubeRotate;
+        function project(node) {
+            // Simple perspective projection
+            var fov = 500;
+            var scale = fov / (fov + node.z);
+            return {
+                x: node.x * scale + (w * (1 - scale)) / 2,
+                y: node.y * scale + (h * (1 - scale)) / 2,
+                scale: scale,
+                size: node.baseSize * scale
+            };
         }
 
-        .shape-cube .face {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border: 1px solid var(--accent, #00d2ff);
-            border-radius: 4px;
+        resize();
+        window.addEventListener('resize', function () {
+            clearTimeout(window._bgResizeTimer);
+            window._bgResizeTimer = setTimeout(resize, 200);
+        });
+
+        canvas.parentElement.addEventListener('mousemove', function (e) {
+            var rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+        }, { passive: true });
+
+        canvas.parentElement.addEventListener('mouseleave', function () {
+            mouseX = -999;
+            mouseY = -999;
+        });
+
+        var isDark = true;
+        window.addEventListener('themechange', function (e) {
+            isDark = e.detail.theme === 'dark';
+        });
+        isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+
+        var time = 0;
+
+        function draw() {
+            ctx.clearRect(0, 0, w, h);
+            time += 0.005;
+
+            var rgb = isDark ? '102,126,234' : '80,100,200';
+            var rgb2 = isDark ? '118,75,162' : '140,80,180';
+
+            // Update nodes
+            for (var i = 0; i < nodes.length; i++) {
+                var n = nodes[i];
+                n.x += n.vx + Math.sin(time + i) * 0.15;
+                n.y += n.vy + Math.cos(time + i * 0.7) * 0.15;
+                n.z += n.vz;
+
+                // Bounce
+                if (n.x < 0 || n.x > w) n.vx *= -1;
+                if (n.y < 0 || n.y > h) n.vy *= -1;
+                if (n.z < 10 || n.z > 250) n.vz *= -1;
+
+                // Mouse repulsion
+                if (mouseX > 0) {
+                    var ddx = n.x - mouseX;
+                    var ddy = n.y - mouseY;
+                    var dd = Math.sqrt(ddx * ddx + ddy * ddy);
+                    if (dd < 120 && dd > 0) {
+                        n.x += (ddx / dd) * 1.5;
+                        n.y += (ddy / dd) * 1.5;
+                    }
+                }
+
+                // Clamp
+                n.x = Math.max(0, Math.min(w, n.x));
+                n.y = Math.max(0, Math.min(h, n.y));
+            }
+
+            // Sort by z (far to near) for depth
+            nodes.sort(function (a, b) { return b.z - a.z; });
+
+            // Draw connections
+            for (var i = 0; i < nodes.length; i++) {
+                var pi = project(nodes[i]);
+                for (var j = i + 1; j < nodes.length; j++) {
+                    var pj = project(nodes[j]);
+                    var dx = pi.x - pj.x;
+                    var dy = pi.y - pj.y;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < maxDist) {
+                        var alpha = (1 - dist / maxDist) * 0.2 * Math.min(pi.scale, pj.scale);
+                        ctx.beginPath();
+                        ctx.moveTo(pi.x, pi.y);
+                        ctx.lineTo(pj.x, pj.y);
+                        ctx.strokeStyle = 'rgba(' + rgb + ',' + alpha + ')';
+                        ctx.lineWidth = 0.6 * Math.min(pi.scale, pj.scale);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Draw nodes
+            for (var i = 0; i < nodes.length; i++) {
+                var p = project(nodes[i]);
+                var glow = (Math.sin(time * 2 + i) + 1) * 0.15 + 0.3;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(' + (i % 2 === 0 ? rgb : rgb2) + ',' + (glow * p.scale) + ')';
+                ctx.fill();
+
+                // Glow effect for larger nodes
+                if (p.size > 2) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(' + rgb + ',' + (glow * 0.08 * p.scale) + ')';
+                    ctx.fill();
+                }
+            }
+
+            // Mouse glow
+            if (mouseX > 0 && mouseY > 0) {
+                var grad = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 100);
+                grad.addColorStop(0, 'rgba(' + rgb + ',0.12)');
+                grad.addColorStop(1, 'rgba(' + rgb + ',0)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(mouseX - 100, mouseY - 100, 200, 200);
+            }
+
+            requestAnimationFrame(draw);
         }
 
-        .shape-cube .face-front  { transform: translateZ(20px); }
-        .shape-cube .face-back   { transform: rotateY(180deg) translateZ(20px); }
-        .shape-cube .face-left   { transform: rotateY(-90deg) translateZ(20px); }
-        .shape-cube .face-right  { transform: rotateY(90deg) translateZ(20px); }
-        .shape-cube .face-top    { transform: rotateX(90deg) translateZ(20px); }
-        .shape-cube .face-bottom { transform: rotateX(-90deg) translateZ(20px); }
+        draw();
 
-        .shape-octahedron {
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-bottom: 35px solid rgba(122, 92, 255, 0.15);
-            animation-name: threeDiaRotate;
-        }
-
-        .shape-ring {
-            width: 50px;
-            height: 50px;
-            border: 2px solid rgba(0, 210, 255, 0.12);
-            border-radius: 50%;
-            animation-name: threeRingRotate;
-        }
-
-        .shape-cross {
-            width: 30px;
-            height: 30px;
-            position: relative;
-            animation-name: threeCrossRotate;
-        }
-
-        .shape-cross::before,
-        .shape-cross::after {
-            content: '';
-            position: absolute;
-            background: rgba(33, 208, 122, 0.12);
-            border-radius: 2px;
-        }
-        .shape-cross::before {
-            width: 100%;
-            height: 4px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        .shape-cross::after {
-            width: 4px;
-            height: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .shape-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--accent, #00d2ff), transparent);
-            animation-name: threeDotPulse;
-        }
-
-        @keyframes threeCubeRotate {
-            0%   { transform: translate(0, 0) rotateX(0) rotateY(0) rotateZ(0); }
-            100% { transform: translate(50px, -80px) rotateX(360deg) rotateY(360deg) rotateZ(180deg); }
-        }
-
-        @keyframes threeDiaRotate {
-            0%   { transform: translate(0, 0) rotateZ(0) scale(1); }
-            50%  { transform: translate(30px, -50px) rotateZ(180deg) scale(1.2); }
-            100% { transform: translate(-20px, -100px) rotateZ(360deg) scale(1); }
-        }
-
-        @keyframes threeRingRotate {
-            0%   { transform: translate(0, 0) rotateX(0) rotateY(0); }
-            100% { transform: translate(-40px, -60px) rotateX(360deg) rotateY(180deg); }
-        }
-
-        @keyframes threeCrossRotate {
-            0%   { transform: translate(0, 0) rotate(0); }
-            100% { transform: translate(60px, -90px) rotate(360deg); }
-        }
-
-        @keyframes threeDotPulse {
-            0%, 100% { transform: scale(1); opacity: .06; }
-            50%      { transform: scale(2); opacity: .12; }
-        }
-
-        @keyframes threeDrift {
-            0%   { transform: translate(0, 0); }
-            100% { transform: translate(var(--dx, 30px), var(--dy, -80px)); }
-        }
-    `;
-    document.head.appendChild(style);
-
-    const shapes = ['cube', 'octahedron', 'ring', 'cross', 'dot'];
-
-    for (let i = 0; i < 12; i++) {
-        const type = shapes[Math.floor(Math.random() * shapes.length)];
-        const el = document.createElement("div");
-        el.className = `three-shape shape-${type}`;
-
-        // Random position
-        el.style.left = `${5 + Math.random() * 85}%`;
-        el.style.top = `${5 + Math.random() * 85}%`;
-
-        // Random animation
-        el.style.animationDuration = `${15 + Math.random() * 30}s`;
-        el.style.animationDelay = `${-Math.random() * 20}s`;
-        el.style.setProperty('--dx', `${(Math.random() - 0.5) * 100}px`);
-        el.style.setProperty('--dy', `${-50 - Math.random() * 100}px`);
-
-        // If cube, add faces
-        if (type === 'cube') {
-            const faces = ['front', 'back', 'left', 'right', 'top', 'bottom'];
-            faces.forEach(f => {
-                const face = document.createElement("div");
-                face.className = `face face-${f}`;
-                el.appendChild(face);
-            });
-        }
-
-        container.appendChild(el);
+        // Pause when not visible
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) requestAnimationFrame(draw);
+        });
     }
-
-    // Parallax on mouse move
-    document.addEventListener("mousemove", (e) => {
-        const x = (e.clientX / window.innerWidth - 0.5) * 15;
-        const y = (e.clientY / window.innerHeight - 0.5) * 15;
-        container.style.transform = `translate(${x}px, ${y}px)`;
-    });
-
-    console.log("3D background shapes initialized ✓");
-});
+})();

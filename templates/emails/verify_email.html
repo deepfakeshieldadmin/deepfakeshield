@@ -1,23 +1,69 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>Verify Email</title></head>
-<body style="font-family:Arial,sans-serif;background:#0a0e1a;color:#fff;padding:30px;">
-<div style="max-width:640px;margin:auto;background:#131a2f;border-radius:20px;padding:40px;border:1px solid rgba(255,255,255,.08);">
-    <div style="text-align:center;margin-bottom:24px;">
-        <div style="display:inline-block;width:70px;height:70px;line-height:70px;border-radius:50%;background:linear-gradient(135deg,#00d2ff,#7a5cff);font-size:28px;">🛡️</div>
-    </div>
-    <h2 style="text-align:center;margin-top:0;">Verify Your DeepFake Shield Account</h2>
-    <p>Hello <strong>{{ user.username }}</strong>,</p>
-    <p>Thank you for registering. Click the button below to verify your email and activate your account.</p>
-    <p style="text-align:center;margin:30px 0;">
-        <a href="{{ verification_url }}" style="display:inline-block;padding:16px 32px;background:linear-gradient(90deg,#00d2ff,#7a5cff);color:#fff;text-decoration:none;border-radius:999px;font-weight:bold;font-size:16px;">
-            ✅ Verify Email Address
-        </a>
-    </p>
-    <p style="font-size:14px;color:#aeb9d6;">If the button doesn't work, copy this link:</p>
-    <p style="word-break:break-all;font-size:13px;color:#7ee8fa;">{{ verification_url }}</p>
-    <hr style="border-color:rgba(255,255,255,.06);margin:24px 0;">
-    <p style="color:#6b7a99;font-size:13px;text-align:center;">If you didn't create this account, ignore this email.</p>
-</div>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - {{ project_name }}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5;">
+    <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <tr>
+            <td>
+                <!-- Header -->
+                <table role="presentation" width="100%" style="background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 50%, #0f3460 100%); border-radius: 16px 16px 0 0; padding: 40px 30px; text-align: center;">
+                    <tr>
+                        <td>
+                            <div style="font-size: 48px; margin-bottom: 10px;">🛡️</div>
+                            <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 5px 0;">DeepFake Shield</h1>
+                            <p style="color: #a0aec0; font-size: 14px; margin: 0;">Real-Time Media Authenticity Verification</p>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Body -->
+                <table role="presentation" width="100%" style="background-color: #ffffff; padding: 40px 30px; border-radius: 0 0 16px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                    <tr>
+                        <td>
+                            <h2 style="color: #1a1a2e; font-size: 22px; margin: 0 0 15px 0;">
+                                Welcome, {{ user.username }}! 👋
+                            </h2>
+                            <p style="color: #4a5568; font-size: 16px; line-height: 1.6; margin: 0 0 25px 0;">
+                                Thank you for creating an account on {{ project_name }}.
+                                Please verify your email address by clicking the button below.
+                            </p>
+
+                            <!-- CTA Button -->
+                            <table role="presentation" width="100%" style="margin: 30px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{{ verify_url }}"
+                                           style="display: inline-block; background: linear-gradient(135deg, #667eea, #764ba2); color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 8px; font-size: 16px; font-weight: 600; letter-spacing: 0.5px;">
+                                            ✓ Verify My Email
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="color: #718096; font-size: 14px; line-height: 1.6; margin: 20px 0 0 0;">
+                                If the button doesn't work, copy and paste this link into your browser:
+                            </p>
+                            <p style="color: #667eea; font-size: 13px; word-break: break-all; background: #f7fafc; padding: 12px; border-radius: 6px; margin: 10px 0;">
+                                {{ verify_url }}
+                            </p>
+
+                            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+
+                            <p style="color: #a0aec0; font-size: 12px; margin: 0; text-align: center;">
+                                This link expires in 24 hours. If you didn't create this account, you can ignore this email.
+                            </p>
+                            <p style="color: #a0aec0; font-size: 12px; margin: 10px 0 0 0; text-align: center;">
+                                © 2024 {{ project_name }} | Media Authenticity Verification
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>

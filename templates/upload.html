@@ -1,39 +1,127 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Image Scan | DeepFake Shield{% endblock %}
+{% block body_class %}scan-page{% endblock %}
 
 {% block content %}
-<section class="container py-5">
-    <div class="text-center mb-5">
-        <div class="section-badge" data-aos="fade-down"><i class="bi bi-image-fill me-2"></i>Image Detection</div>
-        <h1 class="premium-section-title" data-aos="fade-up">Image <span class="title-gradient">Deepfake</span> Detection</h1>
-        <p class="premium-section-desc mx-auto" data-aos="fade-up" data-aos-delay="100">Upload an image to analyze EXIF metadata, face count, artifacts, and compression patterns.</p>
-    </div>
+<section class="scan-section">
+    <div class="container">
+        <div class="scan-container" data-aos="fade-up">
+            <!-- Scan Header -->
+            <div class="scan-header" data-aos="fade-down">
+                <div class="scan-icon image-scan-icon">
+                    <i class="fas fa-image"></i>
+                    <div class="scan-icon-pulse"></div>
+                </div>
+                <h1 class="scan-title">Image Authenticity Scan</h1>
+                <p class="scan-subtitle">Upload an image to analyze for deepfake indicators and authenticity markers</p>
+            </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-8" data-aos="zoom-in" data-aos-duration="600">
-            <div class="upload-card-premium">
-                <form method="post" enctype="multipart/form-data">
+            <!-- Upload Card -->
+            <div class="upload-card" data-aos="zoom-in" data-aos-delay="200">
+                <form method="POST" action="{% url 'core:upload_image' %}" enctype="multipart/form-data" id="upload-form">
                     {% csrf_token %}
-                    <div class="upload-zone-premium" id="uploadZone">
-                        <div class="upload-zone-icon"><i class="bi bi-cloud-arrow-up-fill"></i></div>
-                        <div class="upload-zone-ring"></div>
-                        <h4>Drop Image or Click to Upload</h4>
-                        <p>Supported: JPG, JPEG, PNG, WEBP</p>
-                        {{ form.file }}
-                        <div class="upload-zone-preview" id="uploadPreview" style="display:none;">
-                            <img id="previewImg" src="" alt="Preview">
-                            <span id="previewName"></span>
+
+                    <!-- Drop Zone -->
+                    <div class="drop-zone" id="drop-zone">
+                        <div class="drop-zone-content">
+                            <div class="drop-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <h3>Drop your image here</h3>
+                            <p>or click to browse files</p>
+                            <div class="file-types">
+                                <span class="file-type-badge">JPG</span>
+                                <span class="file-type-badge">PNG</span>
+                                <span class="file-type-badge">BMP</span>
+                                <span class="file-type-badge">WebP</span>
+                                <span class="file-type-badge">TIFF</span>
+                            </div>
+                            <p class="file-size-note">Maximum file size: 20MB</p>
+                        </div>
+                        {{ form.image }}
+                    </div>
+
+                    <!-- File Preview -->
+                    <div class="file-preview" id="file-preview" style="display: none;">
+                        <div class="preview-image-wrap">
+                            <img id="preview-img" src="" alt="Preview">
+                        </div>
+                        <div class="preview-info">
+                            <span class="preview-name" id="preview-name"></span>
+                            <span class="preview-size" id="preview-size"></span>
+                            <button type="button" class="btn btn-ghost btn-sm" id="remove-file">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
                         </div>
                     </div>
 
-                    {% if form.file.errors %}
-                        <div class="premium-input-error mt-2">{{ form.file.errors|join:", " }}</div>
+                    {% if form.image.errors %}
+                    <div class="field-error">
+                        {% for error in form.image.errors %}
+                        <span><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                        {% endfor %}
+                    </div>
                     {% endif %}
 
-                    <button type="submit" class="btn btn-glow btn-xl w-100 mt-4">
-                        <i class="bi bi-search-heart me-2"></i>Analyze Image
-                    </button>
+                    <!-- Submit -->
+                    <div class="upload-actions">
+                        <button type="submit" class="btn btn-primary btn-lg btn-full" id="submit-btn" disabled>
+                            <i class="fas fa-search-plus"></i>
+                            <span>Analyze Image</span>
+                        </button>
+                    </div>
                 </form>
+
+                <!-- Loading State -->
+                <div class="analysis-loading" id="analysis-loading" style="display: none;">
+                    <div class="loading-spinner">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring ring-2"></div>
+                        <i class="fas fa-shield-halved spinner-icon"></i>
+                    </div>
+                    <h3>Analyzing Image...</h3>
+                    <p>Running hybrid AI analysis engine</p>
+                    <div class="loading-steps">
+                        <div class="loading-step active" id="step-1">
+                            <i class="fas fa-check-circle"></i> Reading metadata
+                        </div>
+                        <div class="loading-step" id="step-2">
+                            <i class="fas fa-circle"></i> Detecting faces
+                        </div>
+                        <div class="loading-step" id="step-3">
+                            <i class="fas fa-circle"></i> Analyzing artifacts
+                        </div>
+                        <div class="loading-step" id="step-4">
+                            <i class="fas fa-circle"></i> Computing score
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Cards -->
+            <div class="scan-info-grid">
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="100">
+                    <i class="fas fa-fingerprint"></i>
+                    <h4>EXIF Analysis</h4>
+                    <p>Camera metadata, GPS data, software traces</p>
+                </div>
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="200">
+                    <i class="fas fa-user-check"></i>
+                    <h4>Face Detection</h4>
+                    <p>Multi-cascade detection with quality scoring</p>
+                </div>
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="300">
+                    <i class="fas fa-wave-square"></i>
+                    <h4>Artifact Scan</h4>
+                    <p>Frequency analysis and pattern detection</p>
+                </div>
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="400">
+                    <i class="fas fa-palette"></i>
+                    <h4>Realism Check</h4>
+                    <p>Noise, edge, texture, and color analysis</p>
+                </div>
             </div>
         </div>
     </div>
@@ -41,29 +129,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const input = document.querySelector('#uploadZone input[type="file"]');
-    const zone = document.getElementById('uploadZone');
-    const preview = document.getElementById('uploadPreview');
-    const previewImg = document.getElementById('previewImg');
-    const previewName = document.getElementById('previewName');
-
-    if (input) {
-        input.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                previewName.textContent = file.name;
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    previewImg.src = ev.target.result;
-                    preview.style.display = 'flex';
-                    zone.classList.add('has-file');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-});
-</script>
+<script src="{% static 'js/main.js' %}"></script>
 {% endblock %}

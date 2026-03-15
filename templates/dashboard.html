@@ -1,137 +1,178 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
 {% block title %}Dashboard | DeepFake Shield{% endblock %}
+{% block body_class %}dashboard-page{% endblock %}
 
 {% block content %}
-<section class="container py-5">
-    <!-- Welcome Banner -->
-    <div class="dashboard-welcome-premium" data-aos="fade-down" data-aos-duration="600">
-        <div class="welcome-bg-effect"></div>
-        <div class="row align-items-center position-relative" style="z-index:2;">
-            <div class="col-lg-8">
-                <div class="d-flex align-items-center gap-3 mb-2">
-                    <div class="welcome-avatar">
-                        <span>{{ request.user.username|slice:":1"|upper }}</span>
-                    </div>
-                    <div>
-                        <h2 class="mb-0">Welcome, {{ request.user.username|default:"User" }}</h2>
-                        <p class="mb-0 text-white-50">Monitor scan activity and access all verification modules.</p>
-                    </div>
+<section class="dashboard-section">
+    <div class="container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header" data-aos="fade-down">
+            <div class="dashboard-welcome">
+                <div class="welcome-avatar">
+                    <span>{{ user.username.0|upper }}</span>
+                </div>
+                <div class="welcome-text">
+                    <h1>Welcome, <span class="gradient-text">{{ user.username }}</span></h1>
+                    <p>Your media authenticity verification dashboard</p>
                 </div>
             </div>
-            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                <a href="{% url 'upload_image' %}" class="btn btn-glow me-2"><i class="bi bi-image me-1"></i>Image Scan</a>
-                <a href="{% url 'text_scan' %}" class="btn btn-outline-glow"><i class="bi bi-file-text me-1"></i>Text Scan</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="row g-4 my-4">
-        <div class="col-sm-6 col-lg-3" data-aos="zoom-in" data-aos-delay="100">
-            <div class="dash-stat-card">
-                <div class="dash-stat-icon" style="--dsi-color:#00d2ff"><i class="bi bi-image-fill"></i></div>
-                <div class="dash-stat-info">
-                    <h3 class="dash-stat-value" data-count="{{ image_count|default:0 }}">0</h3>
-                    <p>Image Scans</p>
-                </div>
-                <div class="dash-stat-bar" style="--dsb-color:#00d2ff"></div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-lg-3" data-aos="zoom-in" data-aos-delay="200">
-            <div class="dash-stat-card">
-                <div class="dash-stat-icon" style="--dsi-color:#7a5cff"><i class="bi bi-film"></i></div>
-                <div class="dash-stat-info">
-                    <h3 class="dash-stat-value" data-count="{{ video_count|default:0 }}">0</h3>
-                    <p>Video Scans</p>
-                </div>
-                <div class="dash-stat-bar" style="--dsb-color:#7a5cff"></div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-lg-3" data-aos="zoom-in" data-aos-delay="300">
-            <div class="dash-stat-card">
-                <div class="dash-stat-icon" style="--dsi-color:#21d07a"><i class="bi bi-mic-fill"></i></div>
-                <div class="dash-stat-info">
-                    <h3 class="dash-stat-value" data-count="{{ audio_count|default:0 }}">0</h3>
-                    <p>Audio Scans</p>
-                </div>
-                <div class="dash-stat-bar" style="--dsb-color:#21d07a"></div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-lg-3" data-aos="zoom-in" data-aos-delay="400">
-            <div class="dash-stat-card">
-                <div class="dash-stat-icon" style="--dsi-color:#ff7a18"><i class="bi bi-file-text-fill"></i></div>
-                <div class="dash-stat-info">
-                    <h3 class="dash-stat-value" data-count="{{ text_count|default:0 }}">0</h3>
-                    <p>Text Scans</p>
-                </div>
-                <div class="dash-stat-bar" style="--dsb-color:#ff7a18"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Scans + Quick Access -->
-    <div class="row g-4">
-        <div class="col-lg-7" data-aos="fade-right" data-aos-duration="800">
-            <div class="glass-card-premium p-4 h-100">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h4 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Scans</h4>
-                    <span class="badge-premium">History</span>
-                </div>
-                {% if recent_scans %}
-                <div class="table-responsive">
-                    <table class="table premium-table align-middle">
-                        <thead>
-                            <tr><th>Type</th><th>File</th><th>Score</th><th>Result</th><th>Date</th></tr>
-                        </thead>
-                        <tbody>
-                            {% for scan in recent_scans %}
-                            <tr data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1 }}00">
-                                <td><span class="scan-type-badge scan-type-{{ scan.scan_type }}">{{ scan.scan_type|title }}</span></td>
-                                <td class="text-truncate" style="max-width:180px;">{{ scan.original_filename|default:"N/A" }}</td>
-                                <td><span class="score-badge score-badge-{{ scan.score_color|default:'info' }}">{{ scan.authenticity_score }}</span></td>
-                                <td>{{ scan.classification_display|default:scan.classification }}</td>
-                                <td><small>{{ scan.created_at|date:"M d, H:i" }}</small></td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="empty-state-premium">
-                    <i class="bi bi-inbox"></i>
-                    <p>No scans yet. Start scanning media to build your history.</p>
-                    <a href="{% url 'upload_image' %}" class="btn btn-glow btn-sm">Start First Scan</a>
-                </div>
-                {% endif %}
+            <div class="dashboard-actions">
+                <a href="{% url 'core:upload_image' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    <span>New Scan</span>
+                </a>
             </div>
         </div>
 
-        <div class="col-lg-5" data-aos="fade-left" data-aos-duration="800">
-            <div class="glass-card-premium p-4 h-100">
-                <h4 class="mb-3"><i class="bi bi-lightning-charge-fill me-2"></i>Quick Access</h4>
-                <div class="quick-access-grid">
-                    <a href="{% url 'upload_image' %}" class="quick-access-card" data-aos="zoom-in" data-aos-delay="100">
-                        <div class="quick-access-icon" style="--qa-color:#00d2ff"><i class="bi bi-image-fill"></i></div>
-                        <span>Image Scan</span>
-                        <i class="bi bi-arrow-right quick-access-arrow"></i>
-                    </a>
-                    <a href="{% url 'upload_video' %}" class="quick-access-card" data-aos="zoom-in" data-aos-delay="200">
-                        <div class="quick-access-icon" style="--qa-color:#7a5cff"><i class="bi bi-camera-video-fill"></i></div>
-                        <span>Video Scan</span>
-                        <i class="bi bi-arrow-right quick-access-arrow"></i>
-                    </a>
-                    <a href="{% url 'upload_audio' %}" class="quick-access-card" data-aos="zoom-in" data-aos-delay="300">
-                        <div class="quick-access-icon" style="--qa-color:#21d07a"><i class="bi bi-mic-fill"></i></div>
-                        <span>Audio Scan</span>
-                        <i class="bi bi-arrow-right quick-access-arrow"></i>
-                    </a>
-                    <a href="{% url 'text_scan' %}" class="quick-access-card" data-aos="zoom-in" data-aos-delay="400">
-                        <div class="quick-access-icon" style="--qa-color:#ff7a18"><i class="bi bi-file-earmark-text-fill"></i></div>
-                        <span>Text Scan</span>
-                        <i class="bi bi-arrow-right quick-access-arrow"></i>
-                    </a>
+        <!-- Stats Cards -->
+        <div class="stats-grid" data-aos="fade-up" data-aos-delay="100">
+            <div class="stat-card stat-total" data-aos="zoom-in" data-aos-delay="100">
+                <div class="stat-card-icon"><i class="fas fa-chart-bar"></i></div>
+                <div class="stat-card-info">
+                    <span class="stat-card-number" data-count="{{ total_scans }}">0</span>
+                    <span class="stat-card-label">Total Scans</span>
                 </div>
             </div>
+            <div class="stat-card stat-image" data-aos="zoom-in" data-aos-delay="200">
+                <div class="stat-card-icon"><i class="fas fa-image"></i></div>
+                <div class="stat-card-info">
+                    <span class="stat-card-number" data-count="{{ image_scans }}">0</span>
+                    <span class="stat-card-label">Image Scans</span>
+                </div>
+            </div>
+            <div class="stat-card stat-video" data-aos="zoom-in" data-aos-delay="300">
+                <div class="stat-card-icon"><i class="fas fa-video"></i></div>
+                <div class="stat-card-info">
+                    <span class="stat-card-number" data-count="{{ video_scans }}">0</span>
+                    <span class="stat-card-label">Video Scans</span>
+                </div>
+            </div>
+            <div class="stat-card stat-audio" data-aos="zoom-in" data-aos-delay="400">
+                <div class="stat-card-icon"><i class="fas fa-microphone"></i></div>
+                <div class="stat-card-info">
+                    <span class="stat-card-number" data-count="{{ audio_scans }}">0</span>
+                    <span class="stat-card-label">Audio Scans</span>
+                </div>
+            </div>
+            <div class="stat-card stat-text" data-aos="zoom-in" data-aos-delay="500">
+                <div class="stat-card-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="stat-card-info">
+                    <span class="stat-card-number" data-count="{{ text_scans }}">0</span>
+                    <span class="stat-card-label">Text Scans</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions" data-aos="fade-up" data-aos-delay="200">
+            <h2 class="section-heading"><i class="fas fa-bolt"></i> Quick Scan</h2>
+            <div class="quick-actions-grid">
+                <a href="{% url 'core:upload_image' %}" class="quick-action-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="qa-icon image-icon"><i class="fas fa-image"></i></div>
+                    <span class="qa-label">Image</span>
+                </a>
+                <a href="{% url 'core:upload_video' %}" class="quick-action-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="qa-icon video-icon"><i class="fas fa-video"></i></div>
+                    <span class="qa-label">Video</span>
+                </a>
+                <a href="{% url 'core:upload_audio' %}" class="quick-action-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="qa-icon audio-icon"><i class="fas fa-microphone"></i></div>
+                    <span class="qa-label">Audio</span>
+                </a>
+                <a href="{% url 'core:text_scan' %}" class="quick-action-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="qa-icon text-icon"><i class="fas fa-file-alt"></i></div>
+                    <span class="qa-label">Text</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Scan History -->
+        <div class="scan-history" data-aos="fade-up" data-aos-delay="300">
+            <div class="section-heading-row">
+                <h2 class="section-heading"><i class="fas fa-history"></i> Recent Scans</h2>
+            </div>
+
+            {% if recent_scans %}
+            <div class="scan-table-wrapper">
+                <table class="scan-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>File</th>
+                            <th>Score</th>
+                            <th>Classification</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for scan in recent_scans %}
+                        <tr data-aos="fade-left" data-aos-delay="{{ forloop.counter0 }}50">
+                            <td>
+                                <span class="scan-type-badge scan-type-{{ scan.scan_type }}">
+                                    {% if scan.scan_type == 'image' %}<i class="fas fa-image"></i>
+                                    {% elif scan.scan_type == 'video' %}<i class="fas fa-video"></i>
+                                    {% elif scan.scan_type == 'audio' %}<i class="fas fa-microphone"></i>
+                                    {% else %}<i class="fas fa-file-alt"></i>{% endif %}
+                                    {{ scan.scan_type|title }}
+                                </span>
+                            </td>
+                            <td class="scan-filename" title="{{ scan.original_filename }}">
+                                {{ scan.original_filename|truncatechars:30 }}
+                            </td>
+                            <td>
+                                <span class="score-badge score-{{ scan.score_color }}">
+                                    {{ scan.authenticity_score|floatformat:1 }}%
+                                </span>
+                            </td>
+                            <td>
+                                <span class="classification-badge classification-{{ scan.score_color }}">
+                                    {{ scan.score_label }}
+                                </span>
+                            </td>
+                            <td class="scan-date">
+                                {{ scan.created_at|date:"M d, Y H:i" }}
+                            </td>
+                            <td class="scan-actions">
+                                {% if scan.scan_type == 'image' %}
+                                <a href="{% url 'core:result_image' scan.id %}" class="btn btn-sm btn-ghost" title="View Result">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% elif scan.scan_type == 'video' %}
+                                <a href="{% url 'core:result_video' scan.id %}" class="btn btn-sm btn-ghost" title="View Result">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% elif scan.scan_type == 'audio' %}
+                                <a href="{% url 'core:result_audio' scan.id %}" class="btn btn-sm btn-ghost" title="View Result">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% else %}
+                                <a href="{% url 'core:result_text' scan.id %}" class="btn btn-sm btn-ghost" title="View Result">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'core:download_report' scan.id %}" class="btn btn-sm btn-ghost" title="Download PDF">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state" data-aos="zoom-in">
+                <div class="empty-icon"><i class="fas fa-search"></i></div>
+                <h3>No Scans Yet</h3>
+                <p>Start by uploading an image, video, audio file, or pasting text for analysis.</p>
+                <a href="{% url 'core:upload_image' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Start Your First Scan
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
 </section>

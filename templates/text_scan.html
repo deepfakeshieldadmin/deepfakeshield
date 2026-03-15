@@ -1,26 +1,142 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Text Scan | DeepFake Shield{% endblock %}
+{% block body_class %}scan-page{% endblock %}
 
 {% block content %}
-<section class="container py-5">
-    <div class="text-center mb-5">
-        <div class="section-badge" data-aos="fade-down"><i class="bi bi-file-earmark-text-fill me-2"></i>Text Detection</div>
-        <h1 class="premium-section-title" data-aos="fade-up">Text <span class="title-gradient">AI</span> Detection</h1>
-        <p class="premium-section-desc mx-auto" data-aos="fade-up" data-aos-delay="100">Paste text to analyze for AI-generated patterns.</p>
-    </div>
-    <div class="row justify-content-center">
-        <div class="col-lg-9" data-aos="zoom-in">
-            <div class="upload-card-premium">
-                <form method="post">
+<section class="scan-section">
+    <div class="container">
+        <div class="scan-container" data-aos="fade-up">
+            <div class="scan-header" data-aos="fade-down">
+                <div class="scan-icon text-scan-icon">
+                    <i class="fas fa-file-alt"></i>
+                    <div class="scan-icon-pulse"></div>
+                </div>
+                <h1 class="scan-title">Text Authenticity Scan</h1>
+                <p class="scan-subtitle">Paste text to detect AI-generated content using NLP analysis</p>
+            </div>
+
+            <div class="upload-card text-upload-card" data-aos="zoom-in" data-aos-delay="200">
+                <form method="POST" action="{% url 'core:text_scan' %}" id="text-form">
                     {% csrf_token %}
-                    <div class="premium-input-group">
-                        <label class="premium-input-label"><i class="bi bi-body-text me-1"></i>Paste Your Text</label>
-                        {{ form.text }}
+
+                    <div class="form-group">
+                        <label for="text-input" class="form-label">
+                            <i class="fas fa-pen"></i> Enter or paste your text below
+                        </label>
+                        <div class="textarea-wrapper">
+                            {{ form.text }}
+                            <div class="char-counter">
+                                <span id="char-count">0</span> / 50,000 characters
+                            </div>
+                        </div>
+                        {% if form.text.errors %}
+                        <div class="field-error">
+                            {% for error in form.text.errors %}
+                            <span><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <p class="form-help-text">Minimum 50 characters required for accurate analysis</p>
                     </div>
-                    <button type="submit" class="btn btn-glow btn-xl w-100 mt-4"><i class="bi bi-search me-2"></i>Analyze Text</button>
+
+                    <div class="upload-actions">
+                        <button type="submit" class="btn btn-primary btn-lg btn-full" id="text-submit-btn">
+                            <i class="fas fa-search-plus"></i>
+                            <span>Analyze Text</span>
+                        </button>
+                    </div>
                 </form>
+
+                <div class="analysis-loading" id="analysis-loading" style="display: none;">
+                    <div class="loading-spinner">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring ring-2"></div>
+                        <i class="fas fa-shield-halved spinner-icon"></i>
+                    </div>
+                    <h3>Analyzing Text...</h3>
+                    <p>Running NLP statistical analysis</p>
+                    <div class="loading-steps">
+                        <div class="loading-step active" id="step-1"><i class="fas fa-check-circle"></i> Tokenizing text</div>
+                        <div class="loading-step" id="step-2"><i class="fas fa-circle"></i> Analyzing patterns</div>
+                        <div class="loading-step" id="step-3"><i class="fas fa-circle"></i> Detecting AI phrases</div>
+                        <div class="loading-step" id="step-4"><i class="fas fa-circle"></i> Computing score</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scan-info-grid">
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="100">
+                    <i class="fas fa-robot"></i>
+                    <h4>AI Phrase Detection</h4>
+                    <p>Detects common patterns used by ChatGPT, GPT-4, and similar</p>
+                </div>
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="200">
+                    <i class="fas fa-chart-line"></i>
+                    <h4>Burstiness Score</h4>
+                    <p>Human writing has variable sentence lengths; AI is more uniform</p>
+                </div>
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="300">
+                    <i class="fas fa-book"></i>
+                    <h4>Vocabulary Analysis</h4>
+                    <p>Word diversity, stopword ratio, and repetition patterns</p>
+                </div>
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="400">
+                    <i class="fas fa-spell-check"></i>
+                    <h4>Sentence Structure</h4>
+                    <p>Variance, length patterns, punctuation density</p>
+                </div>
             </div>
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('text-input');
+    const counter = document.getElementById('char-count');
+    const submitBtn = document.getElementById('text-submit-btn');
+    const form = document.getElementById('text-form');
+    const loading = document.getElementById('analysis-loading');
+
+    if (textarea && counter) {
+        textarea.addEventListener('input', function() {
+            const len = this.value.length;
+            counter.textContent = len.toLocaleString();
+            if (len >= 50) {
+                counter.style.color = 'var(--color-success)';
+                if(submitBtn) submitBtn.disabled = false;
+            } else {
+                counter.style.color = 'var(--color-danger)';
+                if(submitBtn) submitBtn.disabled = true;
+            }
+        });
+        // Trigger on load
+        textarea.dispatchEvent(new Event('input'));
+    }
+
+    if (form && loading) {
+        form.addEventListener('submit', function() {
+            if (textarea && textarea.value.length >= 50) {
+                const card = form.closest('.upload-card');
+                if(card) {
+                    form.style.display = 'none';
+                    loading.style.display = 'flex';
+                    // Animate steps
+                    const steps = loading.querySelectorAll('.loading-step');
+                    steps.forEach((step, i) => {
+                        setTimeout(() => {
+                            step.classList.add('active');
+                            step.querySelector('i').className = 'fas fa-check-circle';
+                        }, (i + 1) * 800);
+                    });
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

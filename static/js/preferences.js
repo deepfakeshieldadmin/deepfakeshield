@@ -1,28 +1,47 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const panel = document.getElementById("preferencesPanel");
-    const overlay = document.getElementById("preferencesOverlay");
-    const openBtn = document.getElementById("openPreferencesBtn");
-    const closeBtn = document.getElementById("closePreferencesBtn");
-    const navBtn = document.getElementById("navPreferencesBtn");
+/* ═══════════════════════════════════════════════════════════════
+   DeepFake Shield — Preferences
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+    'use strict';
+    var KEY = 'dfs_prefs';
+    var defaults = {
+        fontSize: 'normal',
+        reducedMotion: false,
+        accent: 'default'
+    };
 
-    function openPanel() {
-        if (panel) panel.classList.add("open");
-        if (overlay) overlay.classList.add("show");
+    function load(){
+        try {
+            var s = localStorage.getItem(KEY);
+            return s ? Object.assign({}, defaults, JSON.parse(s)) : Object.assign({}, defaults);
+        } catch(e){ return Object.assign({}, defaults); }
     }
 
-    function closePanel() {
-        if (panel) panel.classList.remove("open");
-        if (overlay) overlay.classList.remove("show");
+    function save(p){
+        try { localStorage.setItem(KEY, JSON.stringify(p)); } catch(e){}
     }
 
-    if (openBtn) openBtn.addEventListener("click", openPanel);
-    if (closeBtn) closeBtn.addEventListener("click", closePanel);
-    if (navBtn) navBtn.addEventListener("click", openPanel);
-    if (overlay) overlay.addEventListener("click", closePanel);
+    function apply(p){
+        var sizes = {small:'14px', normal:'16px', large:'18px'};
+        document.documentElement.style.fontSize = sizes[p.fontSize] || '16px';
+        if(p.reducedMotion){
+            document.documentElement.classList.add('reduced-motion');
+        } else {
+            document.documentElement.classList.remove('reduced-motion');
+        }
+        save(p);
+    }
 
-    document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") {
-            closePanel();
+    document.addEventListener('DOMContentLoaded', function(){
+        apply(load());
+        if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+            var p = load(); p.reducedMotion = true; apply(p);
         }
     });
-});
+
+    window.DFSPrefs = {
+        load: load, save: save, apply: apply,
+        set: function(k,v){ var p=load(); p[k]=v; apply(p); },
+        get: function(k){ return load()[k]; }
+    };
+})();

@@ -1,38 +1,52 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Resend Verification | DeepFake Shield{% endblock %}
+{% block body_class %}auth-page{% endblock %}
 
 {% block content %}
-<section class="auth-premium-section">
-    <div class="container py-5">
-        <div class="row justify-content-center align-items-center min-vh-75">
-            <div class="col-lg-5">
-                <div class="auth-card-premium">
-                    <div class="text-center mb-4">
-                        <div class="brand-icon-box mx-auto mb-3">
-                            <i class="bi bi-envelope-arrow-up-fill"></i>
+<section class="auth-section">
+    <div class="container">
+        <div class="auth-container" data-aos="fade-up" data-aos-duration="800">
+            <div class="auth-card">
+                <div class="auth-header" data-aos="fade-down" data-aos-delay="200">
+                    <div class="auth-icon">
+                        <i class="fas fa-redo"></i>
+                        <div class="auth-icon-ring"></div>
+                    </div>
+                    <h1 class="auth-title">Resend Verification</h1>
+                    <p class="auth-subtitle">Enter your email to receive a new verification link</p>
+                </div>
+
+                <form method="POST" action="{% url 'core:resend_verification' %}" class="auth-form">
+                    {% csrf_token %}
+
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="100">
+                        <label for="id_email" class="form-label">
+                            <i class="fas fa-envelope"></i> Email Address
+                        </label>
+                        <div class="input-wrapper">
+                            {{ form.email }}
                         </div>
-                        <h2 class="auth-premium-title">Resend Verification</h2>
-                        <p class="auth-premium-subtitle">Enter your email to receive a new verification link.</p>
+                        {% if form.email.errors %}
+                        <div class="field-error">
+                            {% for error in form.email.errors %}
+                            <span><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
 
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="mb-4">
-                            <label class="premium-input-label">Email Address</label>
-                            <div class="premium-input-wrap position-relative">
-                                <i class="bi bi-envelope-fill premium-input-icon"></i>
-                                <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-glow w-100 btn-lg">
-                            <i class="bi bi-send-fill me-2"></i>Resend Verification Email
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="200">
+                        <button type="submit" class="btn btn-primary btn-full btn-lg">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Send Verification Link</span>
                         </button>
-                    </form>
+                    </div>
+                </form>
 
-                    <p class="text-center mt-4 auth-footer-text">
-                        Back to <a href="{% url 'login' %}" class="auth-premium-link">Login</a>
-                    </p>
+                <div class="auth-footer" data-aos="fade-up" data-aos-delay="300">
+                    <p><a href="{% url 'core:login' %}" class="auth-link">Back to Login</a></p>
                 </div>
             </div>
         </div>

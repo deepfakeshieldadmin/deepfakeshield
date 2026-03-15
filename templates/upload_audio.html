@@ -1,29 +1,118 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Audio Scan | DeepFake Shield{% endblock %}
+{% block body_class %}scan-page{% endblock %}
 
 {% block content %}
-<section class="container py-5">
-    <div class="text-center mb-5">
-        <div class="section-badge" data-aos="fade-down"><i class="bi bi-soundwave me-2"></i>Audio Detection</div>
-        <h1 class="premium-section-title" data-aos="fade-up">Audio <span class="title-gradient">Authenticity</span> Detection</h1>
-        <p class="premium-section-desc mx-auto" data-aos="fade-up" data-aos-delay="100">Analyze RMS energy, clipping, and spectral flatness.</p>
-    </div>
-    <div class="row justify-content-center">
-        <div class="col-lg-8" data-aos="zoom-in">
-            <div class="upload-card-premium">
-                <form method="post" enctype="multipart/form-data">
+<section class="scan-section">
+    <div class="container">
+        <div class="scan-container" data-aos="fade-up">
+            <div class="scan-header" data-aos="fade-down">
+                <div class="scan-icon audio-scan-icon">
+                    <i class="fas fa-microphone"></i>
+                    <div class="scan-icon-pulse"></div>
+                </div>
+                <h1 class="scan-title">Audio Authenticity Scan</h1>
+                <p class="scan-subtitle">Upload an audio file to detect synthetic speech and voice cloning</p>
+            </div>
+
+            <div class="upload-card" data-aos="zoom-in" data-aos-delay="200">
+                <form method="POST" action="{% url 'core:upload_audio' %}" enctype="multipart/form-data" id="upload-form">
                     {% csrf_token %}
-                    <div class="upload-zone-premium">
-                        <div class="upload-zone-icon"><i class="bi bi-mic-fill"></i></div>
-                        <div class="upload-zone-ring"></div>
-                        <h4>Upload Audio File</h4>
-                        <p>Supported: WAV, MP3</p>
-                        {{ form.file }}
+
+                    <div class="drop-zone" id="drop-zone">
+                        <div class="drop-zone-content">
+                            <div class="drop-icon">
+                                <i class="fas fa-headphones"></i>
+                            </div>
+                            <h3>Drop your audio file here</h3>
+                            <p>or click to browse files</p>
+                            <div class="file-types">
+                                <span class="file-type-badge">WAV</span>
+                                <span class="file-type-badge">MP3</span>
+                                <span class="file-type-badge">FLAC</span>
+                                <span class="file-type-badge">OGG</span>
+                                <span class="file-type-badge">M4A</span>
+                            </div>
+                            <p class="file-size-note">Maximum file size: 30MB</p>
+                        </div>
+                        {{ form.audio }}
                     </div>
-                    <button type="submit" class="btn btn-glow btn-xl w-100 mt-4"><i class="bi bi-soundwave me-2"></i>Analyze Audio</button>
+
+                    <div class="file-preview" id="file-preview" style="display: none;">
+                        <div class="preview-file-icon">
+                            <i class="fas fa-file-audio"></i>
+                        </div>
+                        <div class="preview-info">
+                            <span class="preview-name" id="preview-name"></span>
+                            <span class="preview-size" id="preview-size"></span>
+                            <button type="button" class="btn btn-ghost btn-sm" id="remove-file">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+
+                    {% if form.audio.errors %}
+                    <div class="field-error">
+                        {% for error in form.audio.errors %}
+                        <span><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="upload-actions">
+                        <button type="submit" class="btn btn-primary btn-lg btn-full" id="submit-btn" disabled>
+                            <i class="fas fa-search-plus"></i>
+                            <span>Analyze Audio</span>
+                        </button>
+                    </div>
                 </form>
+
+                <div class="analysis-loading" id="analysis-loading" style="display: none;">
+                    <div class="loading-spinner">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring ring-2"></div>
+                        <i class="fas fa-shield-halved spinner-icon"></i>
+                    </div>
+                    <h3>Analyzing Audio...</h3>
+                    <p>Processing spectral and temporal features</p>
+                    <div class="loading-steps">
+                        <div class="loading-step active" id="step-1"><i class="fas fa-check-circle"></i> Loading audio</div>
+                        <div class="loading-step" id="step-2"><i class="fas fa-circle"></i> Spectral analysis</div>
+                        <div class="loading-step" id="step-3"><i class="fas fa-circle"></i> Harmonic detection</div>
+                        <div class="loading-step" id="step-4"><i class="fas fa-circle"></i> Computing score</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scan-info-grid">
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="100">
+                    <i class="fas fa-wave-square"></i>
+                    <h4>Spectral Analysis</h4>
+                    <p>Flatness, centroid, bandwidth, rolloff</p>
+                </div>
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="200">
+                    <i class="fas fa-music"></i>
+                    <h4>Harmonic Check</h4>
+                    <p>Harmonic-percussive separation and confidence</p>
+                </div>
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="300">
+                    <i class="fas fa-volume-up"></i>
+                    <h4>Energy Profile</h4>
+                    <p>RMS energy, clipping detection, silence ratio</p>
+                </div>
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="400">
+                    <i class="fas fa-chart-area"></i>
+                    <h4>Temporal Features</h4>
+                    <p>Zero-crossing rate, dynamic range analysis</p>
+                </div>
             </div>
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/main.js' %}"></script>
 {% endblock %}

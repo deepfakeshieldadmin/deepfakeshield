@@ -1,29 +1,118 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Video Scan | DeepFake Shield{% endblock %}
+{% block body_class %}scan-page{% endblock %}
 
 {% block content %}
-<section class="container py-5">
-    <div class="text-center mb-5">
-        <div class="section-badge" data-aos="fade-down"><i class="bi bi-film me-2"></i>Video Detection</div>
-        <h1 class="premium-section-title" data-aos="fade-up">Video <span class="title-gradient">Deepfake</span> Detection</h1>
-        <p class="premium-section-desc mx-auto" data-aos="fade-up" data-aos-delay="100">Extract frames and calculate average authenticity.</p>
-    </div>
-    <div class="row justify-content-center">
-        <div class="col-lg-8" data-aos="zoom-in">
-            <div class="upload-card-premium">
-                <form method="post" enctype="multipart/form-data">
+<section class="scan-section">
+    <div class="container">
+        <div class="scan-container" data-aos="fade-up">
+            <div class="scan-header" data-aos="fade-down">
+                <div class="scan-icon video-scan-icon">
+                    <i class="fas fa-video"></i>
+                    <div class="scan-icon-pulse"></div>
+                </div>
+                <h1 class="scan-title">Video Authenticity Scan</h1>
+                <p class="scan-subtitle">Upload a video to analyze frame-by-frame for deepfake indicators</p>
+            </div>
+
+            <div class="upload-card" data-aos="zoom-in" data-aos-delay="200">
+                <form method="POST" action="{% url 'core:upload_video' %}" enctype="multipart/form-data" id="upload-form">
                     {% csrf_token %}
-                    <div class="upload-zone-premium">
-                        <div class="upload-zone-icon"><i class="bi bi-camera-reels-fill"></i></div>
-                        <div class="upload-zone-ring"></div>
-                        <h4>Upload Video File</h4>
-                        <p>Supported: MP4, MOV, AVI, MKV</p>
-                        {{ form.file }}
+
+                    <div class="drop-zone" id="drop-zone">
+                        <div class="drop-zone-content">
+                            <div class="drop-icon">
+                                <i class="fas fa-film"></i>
+                            </div>
+                            <h3>Drop your video here</h3>
+                            <p>or click to browse files</p>
+                            <div class="file-types">
+                                <span class="file-type-badge">MP4</span>
+                                <span class="file-type-badge">AVI</span>
+                                <span class="file-type-badge">MOV</span>
+                                <span class="file-type-badge">MKV</span>
+                                <span class="file-type-badge">WebM</span>
+                            </div>
+                            <p class="file-size-note">Maximum file size: 50MB</p>
+                        </div>
+                        {{ form.video }}
                     </div>
-                    <button type="submit" class="btn btn-glow btn-xl w-100 mt-4"><i class="bi bi-film me-2"></i>Analyze Video</button>
+
+                    <div class="file-preview" id="file-preview" style="display: none;">
+                        <div class="preview-file-icon">
+                            <i class="fas fa-file-video"></i>
+                        </div>
+                        <div class="preview-info">
+                            <span class="preview-name" id="preview-name"></span>
+                            <span class="preview-size" id="preview-size"></span>
+                            <button type="button" class="btn btn-ghost btn-sm" id="remove-file">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+
+                    {% if form.video.errors %}
+                    <div class="field-error">
+                        {% for error in form.video.errors %}
+                        <span><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="upload-actions">
+                        <button type="submit" class="btn btn-primary btn-lg btn-full" id="submit-btn" disabled>
+                            <i class="fas fa-search-plus"></i>
+                            <span>Analyze Video</span>
+                        </button>
+                    </div>
                 </form>
+
+                <div class="analysis-loading" id="analysis-loading" style="display: none;">
+                    <div class="loading-spinner">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring ring-2"></div>
+                        <i class="fas fa-shield-halved spinner-icon"></i>
+                    </div>
+                    <h3>Analyzing Video...</h3>
+                    <p>Extracting and analyzing frames — this may take a moment</p>
+                    <div class="loading-steps">
+                        <div class="loading-step active" id="step-1"><i class="fas fa-check-circle"></i> Opening video</div>
+                        <div class="loading-step" id="step-2"><i class="fas fa-circle"></i> Extracting frames</div>
+                        <div class="loading-step" id="step-3"><i class="fas fa-circle"></i> Analyzing each frame</div>
+                        <div class="loading-step" id="step-4"><i class="fas fa-circle"></i> Computing consistency</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scan-info-grid">
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="100">
+                    <i class="fas fa-th"></i>
+                    <h4>Frame Sampling</h4>
+                    <p>Up to 10 frames analyzed evenly across the video</p>
+                </div>
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="200">
+                    <i class="fas fa-sync-alt"></i>
+                    <h4>Temporal Check</h4>
+                    <p>Consistency of scores across time</p>
+                </div>
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="300">
+                    <i class="fas fa-users"></i>
+                    <h4>Face Tracking</h4>
+                    <p>Face count consistency across frames</p>
+                </div>
+                <div class="scan-info-card" data-aos="fade-up" data-aos-delay="400">
+                    <i class="fas fa-running"></i>
+                    <h4>Motion Analysis</h4>
+                    <p>Natural motion pattern verification</p>
+                </div>
             </div>
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/main.js' %}"></script>
 {% endblock %}
