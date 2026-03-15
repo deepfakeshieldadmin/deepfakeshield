@@ -1,394 +1,117 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Sign Up — Deep Fake Shield{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/auth.css' %}">
-<style>
-    .auth-page {
-        min-height: 100vh;
-        padding: 90px 15px 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .auth-layout {
-        max-width: 1180px;
-        width: 100%;
-        display: grid;
-        grid-template-columns: 1.05fr 1fr;
-        background: rgba(255,255,255,0.82);
-        border: 1px solid rgba(0,0,0,0.06);
-        border-radius: 28px;
-        overflow: hidden;
-        box-shadow: 0 25px 70px rgba(0,0,0,0.10);
-        backdrop-filter: blur(18px);
-    }
-
-    [data-theme="dark"] .auth-layout {
-        background: rgba(18, 24, 35, 0.84);
-        border-color: rgba(255,255,255,0.08);
-    }
-
-    .auth-showcase {
-        position: relative;
-        padding: 42px 34px;
-        background:
-            radial-gradient(circle at top left, rgba(0,123,255,0.22), transparent 35%),
-            radial-gradient(circle at bottom right, rgba(111,66,193,0.22), transparent 35%),
-            linear-gradient(135deg, rgba(0,123,255,0.14), rgba(111,66,193,0.08));
-        color: #fff;
-    }
-
-    .auth-showcase::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(5,12,22,0.35), rgba(10,20,35,0.15));
-    }
-
-    .auth-showcase-inner {
-        position: relative;
-        z-index: 2;
-    }
-
-    .auth-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.12);
-        border: 1px solid rgba(255,255,255,0.15);
-        font-size: 0.82rem;
-        font-weight: 700;
-        margin-bottom: 18px;
-    }
-
-    .auth-pulse-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #00ff95;
-        box-shadow: 0 0 10px #00ff95;
-        animation: authPulseDot 1.8s infinite;
-    }
-
-    @keyframes authPulseDot {
-        0%,100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.6); opacity: 0.45; }
-    }
-
-    .auth-shield-hero {
-        font-size: 5.5rem;
-        line-height: 1;
-        margin: 18px 0 16px;
-        filter: drop-shadow(0 0 20px rgba(255,255,255,0.20));
-        animation: floatShield 3s ease-in-out infinite;
-    }
-
-    @keyframes floatShield {
-        0%,100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-    }
-
-    .auth-showcase h2 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 800;
-        font-size: 2rem;
-        margin-bottom: 12px;
-    }
-
-    .auth-showcase p {
-        font-family: 'Roboto', sans-serif;
-        color: rgba(255,255,255,0.84);
-        line-height: 1.8;
-        margin-bottom: 20px;
-    }
-
-    .info-block {
-        padding: 14px 16px;
-        border-radius: 16px;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.10);
-        margin-bottom: 14px;
-        font-size: 0.95rem;
-        font-weight: 600;
-    }
-
-    .auth-form-zone {
-        padding: 42px 34px;
-    }
-
-    .auth-title {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 800;
-        font-size: 2rem;
-        margin-bottom: 8px;
-    }
-
-    .auth-subtitle {
-        color: var(--text-secondary, #666);
-        margin-bottom: 22px;
-        line-height: 1.8;
-    }
-
-    .auth-back-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-        margin-bottom: 16px;
-        color: var(--text-secondary, #666);
-        font-weight: 600;
-    }
-
-    .auth-input-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
-    }
-
-    .auth-input-group {
-        position: relative;
-        margin-bottom: 18px;
-    }
-
-    .auth-label {
-        display: block;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        font-size: 0.82rem;
-        margin-bottom: 7px;
-        color: var(--text-primary, #222);
-    }
-
-    .auth-input {
-        width: 100%;
-        padding: 14px 46px 14px 42px;
-        border-radius: 14px;
-        border: 1px solid rgba(0,0,0,0.08);
-        background: rgba(255,255,255,0.7);
-        outline: none;
-    }
-
-    [data-theme="dark"] .auth-input {
-        background: rgba(255,255,255,0.06);
-        border-color: rgba(255,255,255,0.08);
-        color: #fff;
-    }
-
-    .auth-input-icon {
-        position: absolute;
-        left: 14px;
-        top: 41px;
-        color: var(--text-secondary, #6c757d);
-        z-index: 2;
-    }
-
-    .auth-password-toggle {
-        position: absolute;
-        right: 14px;
-        top: 39px;
-        border: none;
-        background: transparent;
-        color: var(--text-secondary, #6c757d);
-        cursor: pointer;
-        z-index: 5;
-    }
-
-    .captcha-box {
-        padding: 16px;
-        border-radius: 16px;
-        background: rgba(0,123,255,0.05);
-        border: 1px dashed rgba(0,123,255,0.16);
-        margin-bottom: 18px;
-    }
-
-    .captcha-title {
-        font-weight: 700;
-        margin-bottom: 8px;
-        font-family: 'Montserrat', sans-serif;
-    }
-
-    .captcha-question {
-        font-weight: 700;
-        padding: 10px 14px;
-        border-radius: 12px;
-        background: rgba(255,255,255,0.62);
-        margin-bottom: 12px;
-        color: #222;
-    }
-
-    [data-theme="dark"] .captcha-question {
-        background: rgba(255,255,255,0.07);
-        color: #fff;
-    }
-
-    .auth-submit-btn {
-        width: 100%;
-        border: none;
-        border-radius: 14px;
-        padding: 14px 18px;
-        font-weight: 800;
-        color: #fff;
-        background: linear-gradient(135deg, #007bff, #6f42c1);
-        box-shadow: 0 16px 36px rgba(0,123,255,0.18);
-    }
-
-    .auth-footer-links {
-        margin-top: 20px;
-        text-align: center;
-    }
-
-    input[type="password"]::-ms-reveal,
-    input[type="password"]::-ms-clear {
-        display: none;
-    }
-
-    @media (max-width: 950px) {
-        .auth-layout {
-            grid-template-columns: 1fr;
-        }
-        .auth-showcase {
-            display: none;
-        }
-        .auth-input-row {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
-{% endblock %}
-
-{% block navbar %}{% endblock %}
-{% block footer %}{% endblock %}
+{% block title %}Sign Up | DeepFake Shield{% endblock %}
 
 {% block content %}
-<div class="auth-page">
-    <div class="auth-layout" data-aos="zoom-in">
-        <div class="auth-showcase">
-            <div class="auth-showcase-inner">
-                <div class="auth-badge">
-                    <span class="auth-pulse-dot"></span>
-                    Secure Registration Flow
-                </div>
+<section class="auth-premium-section">
+    <div class="auth-bg-effects">
+        <div class="auth-orb auth-orb-1"></div>
+        <div class="auth-orb auth-orb-2"></div>
+    </div>
 
-                <div class="auth-shield-hero">🚀</div>
+    <div class="container py-5">
+        <div class="row justify-content-center align-items-center min-vh-80">
+            <div class="col-lg-7 col-xl-6">
+                <div class="auth-card-premium" data-aos="zoom-in" data-aos-duration="600">
+                    <div class="auth-card-glow"></div>
 
-                <h2>Create Your Deep Fake Shield Account</h2>
-                <p>
-                    Register with a valid email address. A verification email will be sent to your inbox, and your account will become active after verification.
-                </p>
-
-                <div class="info-block"><i class="bi bi-envelope-check-fill me-2"></i> Email Verification Required</div>
-                <div class="info-block"><i class="bi bi-shield-lock-fill me-2"></i> Strong CAPTCHA Protection</div>
-                <div class="info-block"><i class="bi bi-translate me-2"></i> Multi-language Support Ready</div>
-                <div class="info-block"><i class="bi bi-file-earmark-pdf-fill me-2"></i> PDF Reports and Scan History</div>
-
-            </div>
-        </div>
-
-        <div class="auth-form-zone">
-            <a href="{% url 'home' %}" class="auth-back-link">
-                <i class="bi bi-arrow-left"></i> Back to Home
-            </a>
-
-            <h1 class="auth-title">Create Account</h1>
-            <p class="auth-subtitle">
-                Fill in your details carefully. Use a valid email to complete account verification.
-            </p>
-
-            {% if form.errors %}
-            <div class="alert alert-danger rounded-4">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                Please correct the highlighted errors.
-            </div>
-            {% endif %}
-
-            <form method="POST" action="{% url 'signup' %}">
-                {% csrf_token %}
-
-                <div class="auth-input-row">
-                    <div class="auth-input-group">
-                        <label class="auth-label" for="{{ form.first_name.id_for_label }}">First Name</label>
-                        <div class="auth-input-icon"><i class="bi bi-person"></i></div>
-                        {{ form.first_name }}
+                    <div class="text-center mb-4">
+                        <div class="auth-icon-premium" data-aos="zoom-in" data-aos-delay="200">
+                            <i class="bi bi-person-plus-fill"></i>
+                            <div class="auth-icon-ring"></div>
+                        </div>
+                        <h2 class="auth-premium-title" data-aos="fade-up" data-aos-delay="300">Create Account</h2>
+                        <p class="auth-premium-subtitle" data-aos="fade-up" data-aos-delay="400">Register to scan media and store your verification history.</p>
                     </div>
 
-                    <div class="auth-input-group">
-                        <label class="auth-label" for="{{ form.last_name.id_for_label }}">Last Name</label>
-                        <div class="auth-input-icon"><i class="bi bi-person"></i></div>
-                        {{ form.last_name }}
-                    </div>
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger glass-alert-premium">
+                                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="row g-3">
+                            <div class="col-md-6" data-aos="fade-up" data-aos-delay="450">
+                                <div class="premium-input-group">
+                                    <label class="premium-input-label"><i class="bi bi-person me-1"></i>Username</label>
+                                    <div class="premium-input-wrap">
+                                        <i class="bi bi-person-fill premium-input-icon"></i>
+                                        {{ form.username }}
+                                    </div>
+                                    {% if form.username.errors %}<div class="premium-input-error">{{ form.username.errors|join:", " }}</div>{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6" data-aos="fade-up" data-aos-delay="500">
+                                <div class="premium-input-group">
+                                    <label class="premium-input-label"><i class="bi bi-envelope me-1"></i>Email</label>
+                                    <div class="premium-input-wrap">
+                                        <i class="bi bi-envelope-fill premium-input-icon"></i>
+                                        {{ form.email }}
+                                    </div>
+                                    {% if form.email.errors %}<div class="premium-input-error">{{ form.email.errors|join:", " }}</div>{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6" data-aos="fade-up" data-aos-delay="550">
+                                <div class="premium-input-group">
+                                    <label class="premium-input-label"><i class="bi bi-key me-1"></i>Password</label>
+                                    <div class="premium-input-wrap password-field-wrap">
+                                        <i class="bi bi-lock-fill premium-input-icon"></i>
+                                        {{ form.password1 }}
+                                        <button type="button" class="password-toggle-btn" data-target="id_password1">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </button>
+                                    </div>
+                                    {% if form.password1.errors %}<div class="premium-input-error">{{ form.password1.errors|join:", " }}</div>{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6" data-aos="fade-up" data-aos-delay="600">
+                                <div class="premium-input-group">
+                                    <label class="premium-input-label"><i class="bi bi-key me-1"></i>Confirm Password</label>
+                                    <div class="premium-input-wrap password-field-wrap">
+                                        <i class="bi bi-lock-fill premium-input-icon"></i>
+                                        {{ form.password2 }}
+                                        <button type="button" class="password-toggle-btn" data-target="id_password2">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </button>
+                                    </div>
+                                    {% if form.password2.errors %}<div class="premium-input-error">{{ form.password2.errors|join:", " }}</div>{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-12" data-aos="fade-up" data-aos-delay="650">
+                                <div class="premium-input-group">
+                                    <label class="premium-input-label"><i class="bi bi-puzzle me-1"></i>Captcha</label>
+                                    <div class="captcha-premium-box">
+                                        <div class="captcha-premium-question">
+                                            <i class="bi bi-shield-lock me-2"></i>{{ captcha_question|default:"What is 4 + 5 ?" }}
+                                        </div>
+                                        <div class="premium-input-wrap">
+                                            <i class="bi bi-hash premium-input-icon"></i>
+                                            {{ form.captcha }}
+                                        </div>
+                                    </div>
+                                    {% if form.captcha.errors %}<div class="premium-input-error">{{ form.captcha.errors|join:", " }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-glow w-100 btn-xl mt-4" data-aos="fade-up" data-aos-delay="700">
+                            <i class="bi bi-send-check me-2"></i>Register & Verify Email
+                        </button>
+                    </form>
+
+                    <p class="text-center mt-4 mb-0 auth-footer-text" data-aos="fade-up" data-aos-delay="750">
+                        Already have an account?
+                        <a href="{% url 'login' %}" class="auth-premium-link">Login <i class="bi bi-arrow-right"></i></a>
+                    </p>
                 </div>
-
-                <div class="auth-input-group">
-                    <label class="auth-label" for="{{ form.username.id_for_label }}">Username</label>
-                    <div class="auth-input-icon"><i class="bi bi-at"></i></div>
-                    {{ form.username }}
-                </div>
-
-                <div class="auth-input-group">
-                    <label class="auth-label" for="{{ form.email.id_for_label }}">Email Address</label>
-                    <div class="auth-input-icon"><i class="bi bi-envelope"></i></div>
-                    {{ form.email }}
-                </div>
-
-                <div class="auth-input-group">
-                    <label class="auth-label" for="id_password1">Create Password</label>
-                    <div class="auth-input-icon"><i class="bi bi-lock"></i></div>
-                    {{ form.password1 }}
-                    <button type="button" class="auth-password-toggle" onclick="togglePassword('id_password1', this)">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                </div>
-
-                <div class="auth-input-group">
-                    <label class="auth-label" for="id_password2">Confirm Password</label>
-                    <div class="auth-input-icon"><i class="bi bi-lock-fill"></i></div>
-                    {{ form.password2 }}
-                    <button type="button" class="auth-password-toggle" onclick="togglePassword('id_password2', this)">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                </div>
-
-                <div class="captcha-box">
-                    <div class="captcha-title"><i class="bi bi-shield-check me-2"></i>Security CAPTCHA</div>
-                    <div class="captcha-question">{{ captcha_question }}</div>
-
-                    <div class="auth-input-group" style="margin-bottom: 0;">
-                        <label class="auth-label" for="{{ form.captcha_answer.id_for_label }}">Captcha Answer</label>
-                        <div class="auth-input-icon"><i class="bi bi-robot"></i></div>
-                        {{ form.captcha_answer }}
-                    </div>
-                </div>
-
-                <button type="submit" class="auth-submit-btn">
-                    <i class="bi bi-person-plus-fill me-2"></i> Create Account & Send Verification
-                </button>
-            </form>
-
-            <div class="auth-footer-links">
-                <p>Already have an account? <a href="{% url 'login' %}" class="fw-bold text-decoration-none">Sign In</a></p>
             </div>
         </div>
     </div>
-</div>
-
-<script>
-function togglePassword(inputId, btn) {
-    const input = document.getElementById(inputId);
-    const icon = btn.querySelector('i');
-    if (!input) return;
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.className = 'bi bi-eye-slash';
-    } else {
-        input.type = 'password';
-        icon.className = 'bi bi-eye';
-    }
-}
-</script>
+</section>
 {% endblock %}

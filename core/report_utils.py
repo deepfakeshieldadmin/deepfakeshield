@@ -1,93 +1,144 @@
-import io
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.colors import HexColor, black, white, grey
-from reportlab.pdfgen import canvas
-from reportlab.lib.utils import ImageReader
+import os
+from datetime import datetime
+from django.conf import settings
+
+try:
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.platypus import (
+        SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+    )
+    from reportlab.lib.enums import TA_CENTER
+    REPORTLAB_AVAILABLE = True
+except Exception:
+    REPORTLAB_AVAILABLE = False
 
 
-def build_image_scan_pdf(scan):
-    buffer = io.BytesIO()
-    p = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
+def generate_pdf_report(scan, results_dict):
+    if not REPORTLAB_AVAILABLE:
+        return None
 
-    # Header
-    p.setFillColor(HexColor("#0d6efd"))
-    p.rect(0, height - 90, width, 90, fill=1, stroke=0)
-
-    p.setFillColor(white)
-    p.setFont("Helvetica-Bold", 22)
-    p.drawString(40, height - 45, "Deep Fake Shield")
-    p.setFont("Helvetica", 11)
-    p.drawString(40, height - 63, "Image Authenticity Verification Report")
-
-    y = height - 120
-    p.setFillColor(black)
-
-    p.setFont("Helvetica-Bold", 14)
-    p.drawString(40, y, "Scan Summary")
-    y -= 25
-
-    p.setFont("Helvetica", 11)
-    p.drawString(40, y, f"Filename: {scan.original_filename}")
-    y -= 18
-    p.drawString(40, y, f"Authenticity Score: {scan.authenticity_score:.1f}%")
-    y -= 18
-    p.drawString(40, y, f"Classification: {scan.classification}")
-    y -= 18
-    p.drawString(40, y, f"Faces Detected: {scan.face_count}")
-    y -= 18
-    p.drawString(40, y, f"EXIF Metadata: {'Present' if scan.has_exif else 'Missing'}")
-    y -= 30
-
-    p.setFont("Helvetica-Bold", 14)
-    p.drawString(40, y, "Explanation")
-    y -= 20
-
-    p.setFont("Helvetica", 10)
-    explanation_lines = (scan.explanation or "No explanation available.").split("\n")
-    for line in explanation_lines[:15]:
-        p.drawString(40, y, line[:100])
-        y -= 14
-        if y < 120:
-            p.showPage()
-            y = height - 60
-
-    # Metrics
-    if scan.analysis_details:
-        y -= 10
-        if y < 140:
-            p.showPage()
-            y = height - 60
-
-        p.setFont("Helvetica-Bold", 14)
-        p.drawString(40, y, "Key Metrics")
-        y -= 20
-        p.setFont("Helvetica", 10)
-
-        for key, value in scan.analysis_details.items():
-            if key in ['face_detection_image', 'face_locations']:
-                continue
-            p.drawString(40, y, f"{key}: {str(value)[:90]}")
-            y -= 14
-            if y < 100:
-                p.showPage()
-                y = height - 60
-
-    # Add original image if available
     try:
-        if scan.image and hasattr(scan.image, "path"):
-            p.showPage()
-            p.setFont("Helvetica-Bold", 16)
-            p.drawString(40, height - 40, "Uploaded Image Preview")
-            img = ImageReader(scan.image.path)
-            p.drawImage(img, 40, 160, width=500, height=500, preserveAspectRatio=True, mask='auto')
+        reports_dir = os.path.join(settings.MEDIA_ROOT, 'reports')
+        os.makedirs(reports_dir, exist_ok=True)
+
+        filename = f"report_{scan.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        filepath = os.path.join(reports_dir, filename)
+
+        doc = SimpleDocTemplate(filepath, pagesize=A4, topMargin=40, bottomMargin=30, leftMargin=35, rightMargin=35)
+        styles = getSampleStyleSheet()
+
+        title_style = ParagraphStyle(
+            'Title',
+            parent=styles['Heading1'],
+            fontSize=22,
+            alignment=TA_CENTER,
+            textColor=colors.HexColor('#1e293b'),
+            spaceAfter=10,
+        )
+        sub_style = ParagraphStyle(
+            'Sub',
+            parent=styles['Normal'],
+            fontSize=10,
+            alignment=TA_CENTER,
+            textColor=colors.HexColor('#64748b'),
+            spaceAfter=18,
+        )
+        heading_style = ParagraphStyle(
+            'Head',
+            parent=styles['Heading2'],
+            fontSize=13,
+            textColor=colors.HexColor('#0f172a'),
+            spaceBefore=12,
+            spaceAfter=8,
+        )
+        body_style = ParagraphStyle(
+            'Body',
+            parent=styles['Normal'],
+            fontSize=10,
+            leading=15,
+            textColor=colors.HexColor('#334155'),
+            spaceAfter=6,
+        )
+
+        elements = []
+        elements.append(Paragraph("DeepFake Shield", title_style))
+        elements.append(Paragraph("Media Authenticity Verification Report", sub_style))
+        elements.append(HRFlowable(width="100%", thickness=2, color=colors.HexColor('#38bdf8')))
+        elements.append(Spacer(1, 14))
+
+        elements.append(Paragraph("Scan Information", heading_style))
+        info = [
+            ['Property', 'Value'],
+            ['Scan Type', scan.scan_type.title()],
+            ['File Name', scan.original_filename or 'N/A'],
+            ['Authenticity Score', str(scan.authenticity_score)],
+            ['Classification', scan.classification_display],
+            ['Generated On', scan.created_at.strftime('%Y-%m-%d %H:%M:%S')],
+        ]
+        table = Table(info, colWidths=[170, 320])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e293b')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#cbd5e1')),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+            ('LEFTPADDING', (0, 0), (-1, -1), 8),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        elements.append(table)
+
+        if scan.explanation:
+            elements.append(Paragraph("Explanation", heading_style))
+            elements.append(Paragraph(scan.explanation, body_style))
+
+        if isinstance(results_dict, dict):
+            summary = results_dict.get('analysis_summary')
+            if summary:
+                elements.append(Paragraph("Summary", heading_style))
+                elements.append(Paragraph(summary, body_style))
+
+            scene_description = results_dict.get('scene_description')
+            if scene_description:
+                elements.append(Paragraph("Description", heading_style))
+                elements.append(Paragraph(scene_description, body_style))
+
+            detail_rows = [['Metric', 'Value']]
+            for key, value in results_dict.items():
+                if key in ('exif_data', 'analysis_summary', 'description', 'scene_description', 'face_boxes'):
+                    continue
+                label = key.replace('_', ' ').title()
+                detail_rows.append([label, str(value)])
+
+            elements.append(Paragraph("Detailed Metrics", heading_style))
+            detail_table = Table(detail_rows, colWidths=[200, 290])
+            detail_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#334155')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#cbd5e1')),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+                ('LEFTPADDING', (0, 0), (-1, -1), 8),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+                ('TOPPADDING', (0, 0), (-1, -1), 5),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+            ]))
+            elements.append(detail_table)
+
+        elements.append(Spacer(1, 18))
+        elements.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#cbd5e1')))
+        elements.append(Spacer(1, 6))
+        elements.append(Paragraph(
+            "This report is a practical AI-assisted authenticity estimate and should not be considered final forensic proof.",
+            body_style
+        ))
+
+        doc.build(elements)
+        return os.path.join('reports', filename)
+
     except Exception:
-        pass
-
-    p.setFont("Helvetica-Oblique", 9)
-    p.setFillColor(grey)
-    p.drawString(40, 30, "Generated by Deep Fake Shield")
-
-    p.save()
-    buffer.seek(0)
-    return buffer
+        return None

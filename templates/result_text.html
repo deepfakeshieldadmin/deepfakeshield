@@ -1,55 +1,94 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Text Result — Deep Fake Shield{% endblock %}
+{% block title %}Text Result | DeepFake Shield{% endblock %}
 
 {% block content %}
-<section class="result-page-wrap">
-    <div class="container">
-        <div class="result-top-card" data-aos="fade-up">
-            <h1 style="font-family:'Montserrat',sans-serif; font-weight:800;">Text Analysis Result</h1>
-
-            <div class="result-score
-                {% if scan.classification == 'authentic' %}text-success
-                {% elif scan.classification == 'likely_real' %}text-info
-                {% elif scan.classification == 'suspicious' %}text-warning
-                {% else %}text-danger{% endif %}">
-                {{ scan.authenticity_score|floatformat:1 }}%
-            </div>
-
-            <div class="score-badge-big score-{{ scan.classification }}">
-                {{ scan.get_classification_display|default:scan.classification }}
-            </div>
-
-            <p class="text-muted mt-3">Word Count: {{ scan.word_count }}</p>
+<section class="container py-5">
+    <div class="text-center mb-4">
+        <div class="section-badge">
+            <i class="bi bi-file-earmark-text me-2"></i>Text Scan Complete
         </div>
+        <h1 class="premium-section-title">Text <span class="title-gradient">Analysis</span> Result</h1>
+        <p class="premium-section-desc mx-auto">Linguistic authenticity analysis for the submitted text.</p>
+    </div>
 
-        <div class="result-block" data-aos="fade-up">
-            <h3 class="result-heading">Analyzed Text</h3>
-            <div class="metric-card">
-                <p style="white-space: pre-line; margin-bottom: 0;">{{ scan.input_text }}</p>
-            </div>
-        </div>
-
-        <div class="result-block" data-aos="fade-up">
-            <h3 class="result-heading">Detected Metrics</h3>
-            {% if scan.analysis_details %}
-            <div class="metric-grid">
-                {% for key, value in scan.analysis_details.items %}
-                <div class="metric-card">
-                    <strong>{{ key }}</strong>
-                    <span>{{ value }}</span>
+    <div class="glass-card-premium p-4">
+        <div class="result-header-premium mb-4">
+            <div>
+                <h3 class="mb-1">Submitted Text</h3>
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="result-classification-badge badge-{{ score_color|default:'info' }}">
+                        {{ scan.classification_display|default:scan.classification }}
+                    </span>
+                    {% if result.real_vs_fake %}
+                    <span class="badge {% if result.real_vs_fake == 'Real' %}bg-success{% elif result.real_vs_fake == 'Fake' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                        {{ result.real_vs_fake }}
+                    </span>
+                    {% endif %}
                 </div>
-                {% endfor %}
             </div>
-            {% else %}
-            <p class="text-muted">No text metrics available.</p>
+
+            <div class="result-score-ring-wrap">
+                <svg class="result-score-svg" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="8"/>
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="url(#textGrad)" stroke-width="8"
+                            stroke-linecap="round"
+                            stroke-dasharray="326.72"
+                            stroke-dashoffset="{{ score_dashoffset|default:'80' }}"
+                            class="result-score-ring-animated"/>
+                    <defs>
+                        <linearGradient id="textGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="var(--accent)"/>
+                            <stop offset="100%" stop-color="var(--accent-2)"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div class="result-score-value">{{ scan.authenticity_score }}</div>
+            </div>
+        </div>
+
+        <div class="result-explanation-box mb-4">
+            <h5><i class="bi bi-chat-left-text me-2"></i>Explanation</h5>
+            <p>{{ scan.explanation }}</p>
+            {% if result.analysis_summary %}
+            <p class="mt-2 mb-0"><strong>Summary:</strong> {{ result.analysis_summary }}</p>
             {% endif %}
         </div>
 
-        <div class="result-block" data-aos="fade-up">
-            <h3 class="result-heading">Explanation</h3>
-            <p style="white-space: pre-line;">{{ scan.explanation }}</p>
+        <div class="result-details-table mb-4">
+            <h5><i class="bi bi-table me-2"></i>Text Metrics</h5>
+            <div class="table-responsive">
+                <table class="table premium-table">
+                    <tbody>
+                        <tr><th>Word Count</th><td>{{ result.word_count|default:"0" }}</td></tr>
+                        <tr><th>Sentence Count</th><td>{{ result.sentence_count|default:"0" }}</td></tr>
+                        <tr><th>Paragraph Count</th><td>{{ result.paragraph_count|default:"0" }}</td></tr>
+                        <tr><th>Repetition Score</th><td>{{ result.repetition_score|default:"0" }}</td></tr>
+                        <tr><th>Stopword Ratio</th><td>{{ result.stopword_ratio|default:"0" }}</td></tr>
+                        <tr><th>Punctuation Density</th><td>{{ result.punctuation_density|default:"0" }}</td></tr>
+                        <tr><th>Sentence Variance</th><td>{{ result.sentence_variance|default:"0" }}</td></tr>
+                        <tr><th>Average Sentence Length</th><td>{{ result.avg_sentence_length|default:"0" }}</td></tr>
+                        <tr><th>Average Word Length</th><td>{{ result.avg_word_length|default:"0" }}</td></tr>
+                        <tr><th>Unique Word Ratio</th><td>{{ result.unique_word_ratio|default:"0" }}</td></tr>
+                        <tr><th>Burstiness Score</th><td>{{ result.burstiness_score|default:"0" }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="result-actions">
+            <a href="{% url 'text_scan' %}" class="btn btn-outline-glow">
+                <i class="bi bi-arrow-repeat me-2"></i>Analyze Another Text
+            </a>
+
+            {% if scan.report_file %}
+            <a href="{{ scan.report_file.url }}" class="btn btn-glow" target="_blank" download>
+                <i class="bi bi-file-earmark-pdf-fill me-2"></i>Download PDF Report
+            </a>
+            {% endif %}
+
+            <a href="{% url 'dashboard' %}" class="btn btn-ghost-premium">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+            </a>
         </div>
     </div>
 </section>

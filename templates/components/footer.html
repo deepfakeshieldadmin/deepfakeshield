@@ -1,71 +1,106 @@
-{% load static %}
-<footer class="site-footer">
-    <div class="container">
-        <div class="row g-4 py-5">
-            <div class="col-lg-4 col-md-6">
-                <div class="footer-brand">
-                    <div class="footer-logo d-flex align-items-center gap-2 mb-3">
-                        <span style="font-size: 2rem;">🛡️</span>
+<footer class="premium-footer" data-aos="fade-up" data-aos-duration="1000">
+    <div class="footer-glow-top"></div>
+
+    <div class="container py-5">
+        <div class="row g-5">
+            <!-- Brand Column -->
+            <div class="col-lg-4">
+                <div class="footer-brand" data-aos="fade-right" data-aos-delay="100">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="footer-brand-icon">
+                            <i class="bi bi-shield-shaded"></i>
+                        </div>
                         <div>
-                            <div style="font-family:'Montserrat',sans-serif; font-weight:800; font-size:1.2rem;">DeepFake Shield</div>
-                            <div style="font-size:0.82rem; color: var(--text-secondary, #666);">Media Authenticity Verification Platform</div>
+                            <h4 class="mb-0 fw-800">DeepFake Shield</h4>
+                            <small class="text-white-50">Authenticity Verification System</small>
                         </div>
                     </div>
-
-                    <p class="footer-desc" style="line-height:1.8; color:var(--text-secondary,#666);">
-                        Deep Fake Shield is a modern digital authenticity platform designed to detect suspicious, manipulated, and AI-generated content across multiple media formats.
+                    <p class="footer-desc">
+                        Real-time media authenticity verification platform powered by heuristic AI analysis for image, video, audio, and text content.
                     </p>
-
-                    <div class="d-flex gap-2 mt-3">
-                        <span class="tech-badge">AI Detection</span>
-                        <span class="tech-badge">Media Analysis</span>
-                        <span class="tech-badge">Forensic Style Scoring</span>
+                    <div class="footer-socials">
+                        <a href="#" class="footer-social-btn" aria-label="GitHub">
+                            <i class="bi bi-github"></i>
+                        </a>
+                        <a href="#" class="footer-social-btn" aria-label="Globe">
+                            <i class="bi bi-globe2"></i>
+                        </a>
+                        <a href="#" class="footer-social-btn" aria-label="Email">
+                            <i class="bi bi-envelope-fill"></i>
+                        </a>
+                        <a href="#" class="footer-social-btn" aria-label="Shield">
+                            <i class="bi bi-shield-check"></i>
+                        </a>
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-2 col-md-6">
-                <h5 class="footer-heading">Navigation</h5>
-                <ul class="footer-links list-unstyled">
-                    <li><a href="{% url 'home' %}">Home</a></li>
-                    <li><a href="{% url 'about' %}">About</a></li>
-                    <li><a href="{% url 'education' %}">Learn</a></li>
-                    <li><a href="{% url 'privacy' %}">Privacy</a></li>
+            <!-- Nav Links -->
+            <div class="col-md-4 col-lg-2" data-aos="fade-up" data-aos-delay="200">
+                <h6 class="footer-heading">Navigation</h6>
+                <ul class="footer-links-list">
+                    <li><a href="{% url 'home' %}"><i class="bi bi-chevron-right me-1"></i>Home</a></li>
+                    <li><a href="{% url 'dashboard' %}"><i class="bi bi-chevron-right me-1"></i>Dashboard</a></li>
+                    <li><a href="{% url 'about' %}"><i class="bi bi-chevron-right me-1"></i>About</a></li>
+                    <li><a href="{% url 'privacy' %}"><i class="bi bi-chevron-right me-1"></i>Privacy</a></li>
                 </ul>
             </div>
 
-            <div class="col-lg-3 col-md-6">
-                <h5 class="footer-heading">Detection Modules</h5>
-                <ul class="footer-links list-unstyled">
-                    <li><a href="{% url 'upload_image' %}">Image Verification</a></li>
-                    <li><a href="{% url 'upload_video' %}">Video Verification</a></li>
-                    <li><a href="{% url 'upload_audio' %}">Audio Verification</a></li>
-                    <li><a href="{% url 'text_scan' %}">Text Verification</a></li>
+            <!-- Detection Links -->
+            <div class="col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                <h6 class="footer-heading">Detection Modules</h6>
+                <ul class="footer-links-list">
+                    <li><a href="{% url 'upload_image' %}"><i class="bi bi-image me-1"></i>Image Scan</a></li>
+                    <li><a href="{% url 'upload_video' %}"><i class="bi bi-film me-1"></i>Video Scan</a></li>
+                    <li><a href="{% url 'upload_audio' %}"><i class="bi bi-mic me-1"></i>Audio Scan</a></li>
+                    <li><a href="{% url 'text_scan' %}"><i class="bi bi-file-text me-1"></i>Text Scan</a></li>
                 </ul>
             </div>
 
-            <div class="col-lg-3 col-md-6">
-                <h5 class="footer-heading">Technology Stack</h5>
-                <div class="footer-tech-badges d-flex flex-wrap gap-2">
-                    <span class="tech-badge">Django</span>
-                    <span class="tech-badge">Python</span>
-                    <span class="tech-badge">OpenCV</span>
-                    <span class="tech-badge">NumPy</span>
-                    <span class="tech-badge">Bootstrap 5</span>
-                    <span class="tech-badge">JavaScript</span>
-                    <span class="tech-badge">SQLite</span>
-                    <span class="tech-badge">AOS</span>
+            <!-- Tech Stack -->
+            <div class="col-md-4 col-lg-3" data-aos="fade-left" data-aos-delay="400">
+                <h6 class="footer-heading">Technology Stack</h6>
+                <div class="footer-tech-pills">
+                    <span class="tech-pill">Django</span>
+                    <span class="tech-pill">PostgreSQL</span>
+                    <span class="tech-pill">OpenCV</span>
+                    <span class="tech-pill">NumPy</span>
+                    <span class="tech-pill">Pillow</span>
+                    <span class="tech-pill">Bootstrap 5</span>
+                    <span class="tech-pill">WhiteNoise</span>
+                    <span class="tech-pill">Render</span>
+                    <span class="tech-pill">AOS</span>
+                    <span class="tech-pill">Typed.js</span>
+                </div>
+
+                <div class="footer-score-legend mt-3">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="score-dot score-dot-danger"></span>
+                        <small>0–39: Likely Fake</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="score-dot score-dot-warning"></span>
+                        <small>40–74: Suspicious</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="score-dot score-dot-info"></span>
+                        <small>75–99: Likely Real</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="score-dot score-dot-success"></span>
+                        <small>100: Highly Authentic</small>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="footer-bottom border-top pt-3 pb-4 d-flex flex-column flex-md-row justify-content-between align-items-center">
-            <p class="mb-2 mb-md-0" style="color:var(--text-secondary,#666);">
-                © 2025 Deep Fake Shield. All rights reserved.
-            </p>
-            <p class="mb-0" style="color:var(--text-secondary,#666);">
-                Built for secure digital verification and trustworthy media analysis.
-            </p>
+        <hr class="footer-premium-divider">
+
+        <div class="footer-bottom">
+            <p class="mb-0">© 2026 DeepFake Shield. All rights reserved.</p>
+            <p class="mb-0 footer-tagline">Protecting authenticity in the age of synthetic media</p>
         </div>
     </div>
+
+    <div class="footer-gradient-line"></div>
 </footer>

@@ -1,319 +1,135 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Dashboard — Deep Fake Shield{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/scan_pages.css' %}">
-<style>
-    .dashboard-wrap {
-        padding-top: 105px;
-        padding-bottom: 70px;
-    }
-
-    .dash-hero {
-        border-radius: 26px;
-        padding: 34px 28px;
-        background:
-            radial-gradient(circle at top left, rgba(0,123,255,0.14), transparent 35%),
-            radial-gradient(circle at right bottom, rgba(111,66,193,0.15), transparent 35%),
-            linear-gradient(135deg, rgba(255,255,255,0.85), rgba(255,255,255,0.70));
-        border: 1px solid rgba(0,0,0,0.06);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.08);
-        margin-bottom: 26px;
-    }
-
-    [data-theme="dark"] .dash-hero {
-        background:
-            radial-gradient(circle at top left, rgba(0,123,255,0.18), transparent 35%),
-            radial-gradient(circle at right bottom, rgba(111,66,193,0.18), transparent 35%),
-            linear-gradient(135deg, rgba(16,20,30,0.92), rgba(14,18,28,0.85));
-        border-color: rgba(255,255,255,0.08);
-    }
-
-    .dash-hero h1 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 800;
-        margin-bottom: 10px;
-    }
-
-    .dash-hero p {
-        color: var(--text-secondary, #666);
-        line-height: 1.8;
-        margin-bottom: 16px;
-    }
-
-    .dash-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .dash-meta-badge {
-        padding: 8px 14px;
-        border-radius: 999px;
-        background: rgba(0,123,255,0.07);
-        border: 1px solid rgba(0,123,255,0.12);
-        font-size: 0.84rem;
-        font-weight: 700;
-    }
-
-    .dash-card {
-        border-radius: 22px;
-        padding: 22px 20px;
-        background: rgba(255,255,255,0.86);
-        border: 1px solid rgba(0,0,0,0.06);
-        box-shadow: 0 14px 36px rgba(0,0,0,0.06);
-        height: 100%;
-    }
-
-    [data-theme="dark"] .dash-card {
-        background: rgba(18,24,35,0.86);
-        border-color: rgba(255,255,255,0.08);
-    }
-
-    .dash-card h4 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 700;
-        margin-bottom: 14px;
-    }
-
-    .metric-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-    }
-
-    .metric-box {
-        padding: 20px 18px;
-        border-radius: 20px;
-        background: rgba(255,255,255,0.86);
-        border: 1px solid rgba(0,0,0,0.05);
-        box-shadow: 0 12px 30px rgba(0,0,0,0.05);
-        text-align: center;
-    }
-
-    [data-theme="dark"] .metric-box {
-        background: rgba(18,24,35,0.86);
-        border-color: rgba(255,255,255,0.08);
-    }
-
-    .metric-icon {
-        font-size: 1.8rem;
-        margin-bottom: 8px;
-    }
-
-    .metric-value {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 1.8rem;
-        font-weight: 800;
-        line-height: 1;
-    }
-
-    .metric-label {
-        margin-top: 6px;
-        font-size: 0.88rem;
-        color: var(--text-secondary, #666);
-    }
-
-    .quick-actions {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-    }
-
-    .quick-card {
-        text-decoration: none;
-        color: inherit;
-        padding: 22px 18px;
-        border-radius: 20px;
-        background: rgba(255,255,255,0.86);
-        border: 1px solid rgba(0,0,0,0.06);
-        box-shadow: 0 14px 36px rgba(0,0,0,0.06);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    [data-theme="dark"] .quick-card {
-        background: rgba(18,24,35,0.86);
-        border-color: rgba(255,255,255,0.08);
-    }
-
-    .quick-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 18px 45px rgba(0,0,0,0.08);
-        color: inherit;
-    }
-
-    .quick-card h5 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 700;
-        margin: 12px 0 6px;
-    }
-
-    .quick-card p {
-        margin: 0;
-        color: var(--text-secondary, #666);
-        font-size: 0.9rem;
-    }
-
-    .recent-list {
-        display: grid;
-        gap: 12px;
-    }
-
-    .recent-item {
-        padding: 14px 14px;
-        border-radius: 16px;
-        background: rgba(0,123,255,0.04);
-        border: 1px solid rgba(0,123,255,0.08);
-    }
-
-    .recent-item .title {
-        font-weight: 700;
-        margin-bottom: 4px;
-    }
-
-    .recent-item .meta {
-        font-size: 0.84rem;
-        color: var(--text-secondary, #666);
-    }
-
-    .empty-note {
-        padding: 20px;
-        border-radius: 16px;
-        background: rgba(255,255,255,0.5);
-        border: 1px dashed rgba(0,0,0,0.08);
-        color: var(--text-secondary, #666);
-    }
-
-    @media (max-width: 992px) {
-        .metric-grid,
-        .quick-actions {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (max-width: 576px) {
-        .metric-grid,
-        .quick-actions {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
-{% endblock %}
+{% block title %}Dashboard | DeepFake Shield{% endblock %}
 
 {% block content %}
-<section class="dashboard-wrap">
-    <div class="container">
-        <div class="dash-hero" data-aos="fade-up">
-            <div class="row align-items-center g-4">
-                <div class="col-lg-8">
-                    <h1>Welcome, {{ user.first_name|default:user.username }} 👋</h1>
-                    <p>
-                        This is your central dashboard for managing scans, reviewing authenticity reports, and tracking your recent verification activity.
-                    </p>
-
-                    <div class="dash-meta">
-                        <span class="dash-meta-badge">User: {{ user.username }}</span>
-                        <span class="dash-meta-badge">Email: {{ user.email }}</span>
-                        <span class="dash-meta-badge">Project: Deep Fake Shield</span>
+<section class="container py-5">
+    <!-- Welcome Banner -->
+    <div class="dashboard-welcome-premium" data-aos="fade-down" data-aos-duration="600">
+        <div class="welcome-bg-effect"></div>
+        <div class="row align-items-center position-relative" style="z-index:2;">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <div class="welcome-avatar">
+                        <span>{{ request.user.username|slice:":1"|upper }}</span>
+                    </div>
+                    <div>
+                        <h2 class="mb-0">Welcome, {{ request.user.username|default:"User" }}</h2>
+                        <p class="mb-0 text-white-50">Monitor scan activity and access all verification modules.</p>
                     </div>
                 </div>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a href="{% url 'upload_image' %}" class="btn btn-glow me-2"><i class="bi bi-image me-1"></i>Image Scan</a>
+                <a href="{% url 'text_scan' %}" class="btn btn-outline-glow"><i class="bi bi-file-text me-1"></i>Text Scan</a>
+            </div>
+        </div>
+    </div>
 
-                <div class="col-lg-4 text-lg-end">
-                    <a href="{% url 'upload_image' %}" class="btn btn-primary btn-lg rounded-4 px-4">
-                        <i class="bi bi-plus-circle-fill me-2"></i> New Scan
+    <!-- Stats -->
+    <div class="row g-4 my-4">
+        <div class="col-sm-6 col-lg-3" data-aos="zoom-in" data-aos-delay="100">
+            <div class="dash-stat-card">
+                <div class="dash-stat-icon" style="--dsi-color:#00d2ff"><i class="bi bi-image-fill"></i></div>
+                <div class="dash-stat-info">
+                    <h3 class="dash-stat-value" data-count="{{ image_count|default:0 }}">0</h3>
+                    <p>Image Scans</p>
+                </div>
+                <div class="dash-stat-bar" style="--dsb-color:#00d2ff"></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3" data-aos="zoom-in" data-aos-delay="200">
+            <div class="dash-stat-card">
+                <div class="dash-stat-icon" style="--dsi-color:#7a5cff"><i class="bi bi-film"></i></div>
+                <div class="dash-stat-info">
+                    <h3 class="dash-stat-value" data-count="{{ video_count|default:0 }}">0</h3>
+                    <p>Video Scans</p>
+                </div>
+                <div class="dash-stat-bar" style="--dsb-color:#7a5cff"></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3" data-aos="zoom-in" data-aos-delay="300">
+            <div class="dash-stat-card">
+                <div class="dash-stat-icon" style="--dsi-color:#21d07a"><i class="bi bi-mic-fill"></i></div>
+                <div class="dash-stat-info">
+                    <h3 class="dash-stat-value" data-count="{{ audio_count|default:0 }}">0</h3>
+                    <p>Audio Scans</p>
+                </div>
+                <div class="dash-stat-bar" style="--dsb-color:#21d07a"></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3" data-aos="zoom-in" data-aos-delay="400">
+            <div class="dash-stat-card">
+                <div class="dash-stat-icon" style="--dsi-color:#ff7a18"><i class="bi bi-file-text-fill"></i></div>
+                <div class="dash-stat-info">
+                    <h3 class="dash-stat-value" data-count="{{ text_count|default:0 }}">0</h3>
+                    <p>Text Scans</p>
+                </div>
+                <div class="dash-stat-bar" style="--dsb-color:#ff7a18"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Scans + Quick Access -->
+    <div class="row g-4">
+        <div class="col-lg-7" data-aos="fade-right" data-aos-duration="800">
+            <div class="glass-card-premium p-4 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h4 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Scans</h4>
+                    <span class="badge-premium">History</span>
+                </div>
+                {% if recent_scans %}
+                <div class="table-responsive">
+                    <table class="table premium-table align-middle">
+                        <thead>
+                            <tr><th>Type</th><th>File</th><th>Score</th><th>Result</th><th>Date</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for scan in recent_scans %}
+                            <tr data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1 }}00">
+                                <td><span class="scan-type-badge scan-type-{{ scan.scan_type }}">{{ scan.scan_type|title }}</span></td>
+                                <td class="text-truncate" style="max-width:180px;">{{ scan.original_filename|default:"N/A" }}</td>
+                                <td><span class="score-badge score-badge-{{ scan.score_color|default:'info' }}">{{ scan.authenticity_score }}</span></td>
+                                <td>{{ scan.classification_display|default:scan.classification }}</td>
+                                <td><small>{{ scan.created_at|date:"M d, H:i" }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state-premium">
+                    <i class="bi bi-inbox"></i>
+                    <p>No scans yet. Start scanning media to build your history.</p>
+                    <a href="{% url 'upload_image' %}" class="btn btn-glow btn-sm">Start First Scan</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-5" data-aos="fade-left" data-aos-duration="800">
+            <div class="glass-card-premium p-4 h-100">
+                <h4 class="mb-3"><i class="bi bi-lightning-charge-fill me-2"></i>Quick Access</h4>
+                <div class="quick-access-grid">
+                    <a href="{% url 'upload_image' %}" class="quick-access-card" data-aos="zoom-in" data-aos-delay="100">
+                        <div class="quick-access-icon" style="--qa-color:#00d2ff"><i class="bi bi-image-fill"></i></div>
+                        <span>Image Scan</span>
+                        <i class="bi bi-arrow-right quick-access-arrow"></i>
                     </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="metric-grid mb-4">
-            <div class="metric-box" data-aos="fade-up" data-aos-delay="50">
-                <div class="metric-icon">📊</div>
-                <div class="metric-value">{{ total_scans }}</div>
-                <div class="metric-label">Total Scans</div>
-            </div>
-
-            <div class="metric-box" data-aos="fade-up" data-aos-delay="100">
-                <div class="metric-icon">📸</div>
-                <div class="metric-value">{{ image_count }}</div>
-                <div class="metric-label">Image Scans</div>
-            </div>
-
-            <div class="metric-box" data-aos="fade-up" data-aos-delay="150">
-                <div class="metric-icon">🎬</div>
-                <div class="metric-value">{{ video_count }}</div>
-                <div class="metric-label">Video Scans</div>
-            </div>
-
-            <div class="metric-box" data-aos="fade-up" data-aos-delay="200">
-                <div class="metric-icon">⚠️</div>
-                <div class="metric-value">{{ threats_detected }}</div>
-                <div class="metric-label">Suspicious Results</div>
-            </div>
-        </div>
-
-        <div class="dash-card mb-4" data-aos="fade-up">
-            <h4><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Quick Actions</h4>
-            <div class="quick-actions">
-                <a href="{% url 'upload_image' %}" class="quick-card">
-                    <div style="font-size:2rem;">📸</div>
-                    <h5>Image Scan</h5>
-                    <p>Upload and analyze image authenticity.</p>
-                </a>
-                <a href="{% url 'upload_video' %}" class="quick-card">
-                    <div style="font-size:2rem;">🎬</div>
-                    <h5>Video Scan</h5>
-                    <p>Analyze selected frames for suspicious patterns.</p>
-                </a>
-                <a href="{% url 'upload_audio' %}" class="quick-card">
-                    <div style="font-size:2rem;">🎵</div>
-                    <h5>Audio Scan</h5>
-                    <p>Inspect clipping and synthetic signal indicators.</p>
-                </a>
-                <a href="{% url 'text_scan' %}" class="quick-card">
-                    <div style="font-size:2rem;">📝</div>
-                    <h5>Text Scan</h5>
-                    <p>Check text for AI-style writing patterns.</p>
-                </a>
-            </div>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-lg-6" data-aos="fade-right">
-                <div class="dash-card h-100">
-                    <h4><i class="bi bi-clock-history me-2 text-primary"></i>Recent Image Scans</h4>
-                    {% if recent_images %}
-                    <div class="recent-list">
-                        {% for scan in recent_images %}
-                        <div class="recent-item">
-                            <div class="title">{{ scan.original_filename }}</div>
-                            <div class="meta">Score: {{ scan.authenticity_score|floatformat:1 }}% | Faces: {{ scan.face_count }}</div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="empty-note">No recent image scans available.</div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="col-lg-6" data-aos="fade-left">
-                <div class="dash-card h-100">
-                    <h4><i class="bi bi-file-earmark-text-fill me-2 text-success"></i>Recent Text Scans</h4>
-                    {% if recent_texts %}
-                    <div class="recent-list">
-                        {% for scan in recent_texts %}
-                        <div class="recent-item">
-                            <div class="title">Text Scan #{{ forloop.counter }}</div>
-                            <div class="meta">Words: {{ scan.word_count }} | Score: {{ scan.authenticity_score|floatformat:1 }}%</div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="empty-note">No recent text scans available.</div>
-                    {% endif %}
+                    <a href="{% url 'upload_video' %}" class="quick-access-card" data-aos="zoom-in" data-aos-delay="200">
+                        <div class="quick-access-icon" style="--qa-color:#7a5cff"><i class="bi bi-camera-video-fill"></i></div>
+                        <span>Video Scan</span>
+                        <i class="bi bi-arrow-right quick-access-arrow"></i>
+                    </a>
+                    <a href="{% url 'upload_audio' %}" class="quick-access-card" data-aos="zoom-in" data-aos-delay="300">
+                        <div class="quick-access-icon" style="--qa-color:#21d07a"><i class="bi bi-mic-fill"></i></div>
+                        <span>Audio Scan</span>
+                        <i class="bi bi-arrow-right quick-access-arrow"></i>
+                    </a>
+                    <a href="{% url 'text_scan' %}" class="quick-access-card" data-aos="zoom-in" data-aos-delay="400">
+                        <div class="quick-access-icon" style="--qa-color:#ff7a18"><i class="bi bi-file-earmark-text-fill"></i></div>
+                        <span>Text Scan</span>
+                        <i class="bi bi-arrow-right quick-access-arrow"></i>
+                    </a>
                 </div>
             </div>
         </div>

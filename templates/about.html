@@ -1,145 +1,74 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}About — Deep Fake Shield{% endblock %}
-
-{% block extra_css %}
-<style>
-    .about-wrap {
-        padding-top: 110px;
-        padding-bottom: 70px;
-    }
-
-    .about-hero,
-    .about-card,
-    .about-note {
-        border-radius: 24px;
-        padding: 26px;
-        background: rgba(15,22,34,0.82);
-        border: 1px solid rgba(255,255,255,0.08);
-        box-shadow: 0 18px 48px rgba(0,0,0,0.24);
-    }
-
-    html[data-theme="light"] .about-hero,
-    html[data-theme="light"] .about-card,
-    html[data-theme="light"] .about-note {
-        background: rgba(255,255,255,0.86);
-        border: 1px solid rgba(0,0,0,0.06);
-        box-shadow: 0 16px 40px rgba(0,0,0,0.06);
-    }
-
-    .about-hero h1,
-    .about-card h3,
-    .about-note h3 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 900;
-    }
-
-    .about-hero p,
-    .about-card p,
-    .about-card li,
-    .about-note p {
-        color: var(--text-secondary);
-        line-height: 1.85;
-    }
-
-    .about-card ul {
-        margin: 0;
-        padding-left: 18px;
-    }
-
-    .badge-soft {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
-        border-radius: 999px;
-        background: rgba(0,191,255,0.08);
-        border: 1px solid rgba(0,191,255,0.14);
-        color: var(--primary-color);
-        font-size: 0.82rem;
-        font-weight: 800;
-        margin-bottom: 14px;
-    }
-</style>
-{% endblock %}
+{% block title %}About | DeepFake Shield{% endblock %}
 
 {% block content %}
-<section class="about-wrap">
+<section class="py-5">
     <div class="container">
-        <div class="about-hero mb-4" data-aos="fade-up">
-            <div class="badge-soft">
-                <i class="bi bi-shield-check"></i>
-                Platform Overview
+        <div class="text-center mb-5">
+            <div class="section-badge">
+                <i class="bi bi-info-circle-fill me-2"></i>About the Project
             </div>
-            <h1>About Deep Fake Shield</h1>
-            <p class="mb-0">
-                Deep Fake Shield is a digital media authenticity platform created to help users evaluate suspicious, manipulated, or AI-generated content across multiple media types. It focuses on practical analysis, transparent scoring, and accessible explanation rather than black-box output.
+            <h1 class="premium-section-title">About DeepFake Shield</h1>
+            <p class="premium-section-desc mx-auto">
+                A practical media authenticity verification platform built using Django, computer vision,
+                signal processing, and heuristic AI for engineering-level demonstration and deployment.
             </p>
         </div>
 
         <div class="row g-4">
-            <div class="col-lg-6" data-aos="fade-right">
-                <div class="about-card h-100">
-                    <h3>Why This Platform Matters</h3>
+            <div class="col-lg-6">
+                <div class="glass-card-premium p-4 h-100">
+                    <h3 class="mb-3"><i class="bi bi-bullseye me-2"></i>Project Objective</h3>
                     <p>
-                        As synthetic and manipulated media becomes easier to generate, users need tools that help them inspect content more carefully. Deep Fake Shield is designed to provide a clear verification workflow that turns technical analysis into understandable results.
+                        DeepFake Shield is designed to verify the authenticity of digital media including images,
+                        videos, audio, and text. It helps identify suspicious or AI-generated content using a hybrid
+                        approach combining metadata, visual artifacts, signal analysis, and backend intelligence.
                     </p>
-                    <p>
-                        Instead of relying on a single hidden prediction, the platform attempts to explain how a result is formed through metadata checks, pattern inspection, signal analysis, and score interpretation.
+                    <p class="mb-0">
+                        The project is intended to be stable, educational, deployable, and presentation-ready for
+                        final-year engineering and board exam demonstrations.
                     </p>
                 </div>
             </div>
 
-            <div class="col-lg-6" data-aos="fade-left">
-                <div class="about-card h-100">
-                    <h3>Core Verification Scope</h3>
-                    <ul>
-                        <li>Image authenticity analysis with metadata and face review</li>
-                        <li>Video frame sampling for suspicious visual characteristics</li>
-                        <li>Audio signal inspection for synthetic or altered patterns</li>
-                        <li>Text analysis for AI-writing style indicators</li>
-                        <li>Structured score generation and downloadable reporting</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="col-lg-6" data-aos="zoom-in">
-                <div class="about-card h-100">
-                    <h3>Platform Strengths</h3>
-                    <p>
-                        The platform combines modern UI design with practical scanning modules, making it suitable for demonstrations, awareness, learning, and applied media verification.
-                    </p>
-                    <ul>
-                        <li>Readable authenticity score output</li>
-                        <li>Visual face-detection feedback for images</li>
-                        <li>Multi-format verification flow</li>
-                        <li>Lightweight and locally testable architecture</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="col-lg-6" data-aos="zoom-in" data-aos-delay="120">
-                <div class="about-card h-100">
-                    <h3>Technology Profile</h3>
-                    <p>
-                        Deep Fake Shield brings together web technologies and media analysis tools to create a practical authenticity system.
-                    </p>
-                    <ul>
-                        <li>Django + Python backend</li>
-                        <li>Bootstrap 5 + JavaScript frontend</li>
-                        <li>OpenCV, NumPy, Pillow, and EXIFRead</li>
-                        <li>Theme presets, scroll animations, and PDF reporting</li>
+            <div class="col-lg-6">
+                <div class="glass-card-premium p-4 h-100">
+                    <h3 class="mb-3"><i class="bi bi-diagram-3-fill me-2"></i>System Modules</h3>
+                    <ul class="footer-links">
+                        <li>Image Authenticity Detection</li>
+                        <li>Video Frame-Based Analysis</li>
+                        <li>Audio Signal Authenticity Detection</li>
+                        <li>Text AI Pattern Analysis</li>
+                        <li>User Authentication & Scan History</li>
+                        <li>PDF Report Generation</li>
+                        <li>Admin Review Panel</li>
                     </ul>
                 </div>
             </div>
         </div>
 
-        <div class="about-note mt-4" data-aos="fade-up">
-            <h3>Product Vision</h3>
-            <p class="mb-0">
-                The long-term vision of Deep Fake Shield is to become a more complete and intelligent verification experience that helps users reduce uncertainty when interacting with digital content. It is designed to balance technical insight, usability, and presentation quality in a single platform.
-            </p>
+        <div class="row g-4 mt-1">
+            <div class="col-md-4">
+                <div class="clean-stat-card">
+                    <div class="clean-stat-icon"><i class="bi bi-cpu-fill"></i></div>
+                    <h3>Hybrid</h3>
+                    <p>AI + Heuristic Detection</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="clean-stat-card">
+                    <div class="clean-stat-icon"><i class="bi bi-database-fill"></i></div>
+                    <h3>PostgreSQL</h3>
+                    <p>Production Database Ready</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="clean-stat-card">
+                    <div class="clean-stat-icon"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+                    <h3>Reports</h3>
+                    <p>Downloadable PDF Output</p>
+                </div>
+            </div>
         </div>
     </div>
 </section>

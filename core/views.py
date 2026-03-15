@@ -1,519 +1,442 @@
-"""
-Views for DeepFakeShield.
-Handles pages, authentication, dashboard, scans, and compulsory email verification.
-"""
 import os
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
+import random
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib import messages
-from django.http import JsonResponse
-from django.conf import settings
-from django.utils.http import urlsafe_base64_decode
-from django.utils.encoding import force_str
-from django.utils import timezone
-from django.http import FileResponse
-from .report_utils import build_image_scan_pdf
+from django.shortcuts import render, redirect, get_object_or_404
 
 from .forms import (
-    SignUpForm,
-    LoginForm,
-    ImageUploadForm,
-    VideoUploadForm,
-    AudioUploadForm,
-    TextAnalysisForm,
-    generate_captcha,
+    LoginForm, SignupForm,
+    ImageUploadForm, VideoUploadForm,
+    AudioUploadForm, TextScanForm
 )
-from .models import ImageScan, VideoScan, AudioScan, TextScan, UserProfile, EmailVerification
-from .ai_engine import analyze_image
-from .video_engine import analyze_video
-from .audio_engine import analyze_audio
-from .text_engine import analyze_text
-from .tokens import email_verification_token
-from .email_utils import send_verification_email, is_valid_email
+from .models import ScanResult, EmailVerificationToken
+from .utils import get_classification, generate_explanation
+from .email_utils import send_verification_email
+from .report_utils import generate_pdf_report
 
 
-# ═══════════════════════════════════════
-# PUBLIC PAGES
-# ═══════════════════════════════════════
-
-def landing_page(request):
-    return render(request, "landing.html")
-
-
-def home_page(request):
-    return render(request, "home.html")
+def _generate_captcha(request):
+    a = random.randint(2, 15)
+    b = random.randint(1, 12)
+    answer = a + b
+    request.session['captcha_answer'] = answer
+    request.session.modified = True
+    return f"What is {a} + {b} ?"
 
 
-def about_page(request):
-    return render(request, "about.html")
+def _verify_captcha(request, user_input):
+    try:
+        correct = request.session.get('captcha_answer')
+        return int(str(user_input).strip()) == int(correct)
+    except Exception:
+        return False
 
 
-def privacy_page(request):
-    return render(request, "privacy.html")
+def landing_view(request):
+    return render(request, 'landing.html')
 
 
-def education_page(request):
-    return render(request, "education.html")
+def home_view(request):
+    return render(request, 'home.html')
 
 
-# ═══════════════════════════════════════
-# AUTHENTICATION
-# ═══════════════════════════════════════
+def about_view(request):
+    return render(request, 'about.html')
 
-def signup_view(request):
-    """
-    Signup with compulsory email verification.
-    User is created inactive.
-    Verification mail is sent.
-    Account becomes active only after clicking verification link.
-    """
-    if request.user.is_authenticated:
-        return redirect("dashboard")
 
-    if request.method == "POST":
-        captcha_correct = request.session.get("captcha_answer", "")
-        form = SignUpForm(
-            request.POST,
-            captcha_question=request.session.get("captcha_question", ""),
-            captcha_correct=captcha_correct,
-        )
+def privacy_view(request):
+    return render(request, 'privacy.html')
 
-        if form.is_valid():
-            email = form.cleaned_data.get("email", "").strip().lower()
 
-            if not is_valid_email(email):
-                messages.error(request, "No valid email detected. Please enter a valid email.")
-                question, answer = generate_captcha()
-                request.session["captcha_question"] = question
-                request.session["captcha_answer"] = answer
-                return render(request, "signup.html", {
-                    "form": form,
-                    "captcha_question": request.session.get("captcha_question", ""),
-                })
-
-            user = form.save(commit=False)
-            user.email = email
-            user.is_active = False
-            user.save()
-
-            UserProfile.objects.get_or_create(user=user)
-            EmailVerification.objects.get_or_create(user=user)
-
-            email_sent = send_verification_email(request, user)
-
-            if email_sent:
-                messages.success(
-                    request,
-                    f"Verification email sent to {email}. Please open your inbox and click the verification link."
-                )
-                return render(request, "email_verification_sent.html", {
-                    "email": email,
-                    "user_obj": user,
-                })
-            else:
-                user.delete()
-                messages.error(
-                    request,
-                    "Could not send verification email. Please try again with a valid email."
-                )
-        else:
-            messages.error(request, "Please correct the form errors below.")
-
-        question, answer = generate_captcha()
-        request.session["captcha_question"] = question
-        request.session["captcha_answer"] = answer
-
-    else:
-        form = SignUpForm(captcha_question="", captcha_correct="")
-        question, answer = generate_captcha()
-        request.session["captcha_question"] = question
-        request.session["captcha_answer"] = answer
-
-    return render(request, "signup.html", {
-        "form": form,
-        "captcha_question": request.session.get("captcha_question", ""),
-    })
+def education_view(request):
+    return render(request, 'education.html')
 
 
 def login_view(request):
-    """
-    Login only for verified and active users.
-    """
     if request.user.is_authenticated:
-        return redirect("dashboard")
+        return redirect('dashboard')
 
-    if request.method == "POST":
-        form = LoginForm(request, data=request.POST)
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if not _verify_captcha(request, request.POST.get('captcha', '')):
+            messages.error(request, 'Incorrect captcha answer.')
+            captcha_question = _generate_captcha(request)
+            return render(request, 'login.html', {'form': form, 'captcha_question': captcha_question})
+
         if form.is_valid():
-            user = form.get_user()
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
 
-            if not user.is_active:
-                messages.warning(
-                    request,
-                    "Your account is not verified yet. Please verify your email before logging in."
+            user = authenticate(request, username=username, password=password)
+
+            if user is None:
+                try:
+                    user_obj = User.objects.get(email=username)
+                    user = authenticate(request, username=user_obj.username, password=password)
+                except User.DoesNotExist:
+                    user = None
+
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    messages.success(request, f'Welcome back, {user.username}!')
+                    return redirect('dashboard')
+                messages.warning(request, 'Please verify your email before logging in.')
+            else:
+                messages.error(request, 'Invalid username or password.')
+
+        captcha_question = _generate_captcha(request)
+        return render(request, 'login.html', {'form': form, 'captcha_question': captcha_question})
+
+    form = LoginForm()
+    captcha_question = _generate_captcha(request)
+    return render(request, 'login.html', {'form': form, 'captcha_question': captcha_question})
+
+
+def signup_view(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
+
+        if not _verify_captcha(request, request.POST.get('captcha', '')):
+            messages.error(request, 'Incorrect captcha answer.')
+            captcha_question = _generate_captcha(request)
+            return render(request, 'signup.html', {'form': form, 'captcha_question': captcha_question})
+
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password1']
+
+            if User.objects.filter(username=username).exists():
+                messages.error(request, 'Username already exists.')
+            elif User.objects.filter(email=email).exists():
+                messages.error(request, 'Email already registered.')
+            else:
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    is_active=True
                 )
-                return redirect("resend_verification")
 
-            login(request, user)
-            UserProfile.objects.get_or_create(user=user)
-            messages.success(request, f"Welcome back, {user.first_name or user.username}!")
-            next_url = request.GET.get("next")
-            if next_url:
-                return redirect(next_url)
-            return redirect("dashboard")
-        else:
-            messages.error(request, "Invalid username or password.")
-    else:
-        form = LoginForm()
+                token_obj = EmailVerificationToken.objects.create(user=user)
+                send_verification_email(user, token_obj, request)
+                messages.success(request, 'Account created successfully. Verification email sent.')
+                return redirect('email_verification_sent')
 
-    return render(request, "login.html", {"form": form})
+        captcha_question = _generate_captcha(request)
+        return render(request, 'signup.html', {'form': form, 'captcha_question': captcha_question})
+
+    form = SignupForm()
+    captcha_question = _generate_captcha(request)
+    return render(request, 'signup.html', {'form': form, 'captcha_question': captcha_question})
 
 
 def logout_view(request):
     logout(request)
-    messages.info(request, "You have been logged out successfully.")
-    return redirect("home")
+    messages.success(request, 'Logged out successfully.')
+    return redirect('home')
 
 
-def verify_email_view(request, uidb64, token):
-    """
-    User clicks the link from email.
-    Account becomes active and verified.
-    """
+def verify_email_view(request, token):
     try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
+        token_obj = EmailVerificationToken.objects.get(token=token)
+        if token_obj.is_used:
+            messages.info(request, 'Email already verified.')
+            return redirect('email_verification_success')
 
-    if user and email_verification_token.check_token(user, token):
-        user.is_active = True
-        user.save()
+        if token_obj.is_expired():
+            messages.error(request, 'Verification link expired.')
+            return redirect('email_verification_failed')
 
-        verification, _ = EmailVerification.objects.get_or_create(user=user)
-        verification.is_verified = True
-        verification.verified_at = timezone.now()
-        verification.save()
+        token_obj.user.is_active = True
+        token_obj.user.save()
+        token_obj.is_used = True
+        token_obj.save()
 
-        login(request, user)
-        messages.success(request, "Email verified successfully. Your account is now active.")
-        return redirect("dashboard")
+        messages.success(request, 'Email verified successfully.')
+        return redirect('email_verification_success')
+    except EmailVerificationToken.DoesNotExist:
+        messages.error(request, 'Invalid verification link.')
+        return redirect('email_verification_failed')
 
-    messages.error(request, "Verification link is invalid or expired.")
-    return render(request, "email_verification_failed.html")
+
+def email_verification_sent_view(request):
+    return render(request, 'email_verification_sent.html')
+
+
+def email_verification_success_view(request):
+    return render(request, 'email_verification_success.html')
+
+
+def email_verification_failed_view(request):
+    return render(request, 'email_verification_failed.html')
 
 
 def resend_verification_view(request):
-    """
-    Resend verification email to unverified users.
-    """
-    if request.method == "POST":
-        email = request.POST.get("email", "").strip().lower()
-
-        if not email:
-            messages.error(request, "Please enter your email address.")
-            return render(request, "resend_verification.html")
-
-        if not is_valid_email(email):
-            messages.error(request, "No valid email detected. Please enter a valid email.")
-            return render(request, "resend_verification.html")
-
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
         try:
-            user = User.objects.get(email__iexact=email)
-
-            if user.is_active:
-                messages.info(request, "This account is already verified. Please login.")
-                return redirect("login")
-
-            sent = send_verification_email(request, user)
-            if sent:
-                messages.success(request, f"Verification email sent again to {email}.")
-            else:
-                messages.error(request, "Could not send verification email. Please try again.")
+            user = User.objects.get(email=email)
+            EmailVerificationToken.objects.filter(user=user).delete()
+            token_obj = EmailVerificationToken.objects.create(user=user)
+            send_verification_email(user, token_obj, request)
+            messages.success(request, 'Verification email sent again.')
         except User.DoesNotExist:
-            messages.error(request, "No account found with that email address.")
+            messages.info(request, 'If that account exists, a verification email has been sent.')
+        return redirect('login')
 
-    return render(request, "resend_verification.html")
+    return render(request, 'resend_verification.html')
 
-
-# ═══════════════════════════════════════
-# DASHBOARD
-# ═══════════════════════════════════════
 
 @login_required
 def dashboard_view(request):
-    user = request.user
+    scans = ScanResult.objects.filter(user=request.user)
+    context = {
+        'image_count': scans.filter(scan_type='image').count(),
+        'video_count': scans.filter(scan_type='video').count(),
+        'audio_count': scans.filter(scan_type='audio').count(),
+        'text_count': scans.filter(scan_type='text').count(),
+        'recent_scans': scans[:10],
+    }
+    return render(request, 'dashboard.html', context)
 
-    image_count = ImageScan.objects.filter(user=user).count()
-    video_count = VideoScan.objects.filter(user=user).count()
-    audio_count = AudioScan.objects.filter(user=user).count()
-    text_count = TextScan.objects.filter(user=user).count()
-    total_scans = image_count + video_count + audio_count + text_count
-
-    recent_images = ImageScan.objects.filter(user=user).order_by("-created_at")[:5]
-    recent_videos = VideoScan.objects.filter(user=user).order_by("-created_at")[:5]
-    recent_audios = AudioScan.objects.filter(user=user).order_by("-created_at")[:5]
-    recent_texts = TextScan.objects.filter(user=user).order_by("-created_at")[:5]
-
-    threats_detected = (
-        ImageScan.objects.filter(user=user, classification__in=["suspicious", "likely_fake"]).count()
-        + VideoScan.objects.filter(user=user, classification__in=["suspicious", "likely_fake"]).count()
-        + AudioScan.objects.filter(user=user, classification__in=["suspicious", "likely_fake"]).count()
-        + TextScan.objects.filter(user=user, classification__in=["suspicious", "likely_fake"]).count()
-    )
-
-    return render(request, "dashboard.html", {
-        "image_count": image_count,
-        "video_count": video_count,
-        "audio_count": audio_count,
-        "text_count": text_count,
-        "total_scans": total_scans,
-        "threats_detected": threats_detected,
-        "recent_images": recent_images,
-        "recent_videos": recent_videos,
-        "recent_audios": recent_audios,
-        "recent_texts": recent_texts,
-    })
-
-
-# ═══════════════════════════════════════
-# IMAGE SCAN
-# ═══════════════════════════════════════
 
 @login_required
 def upload_image_view(request):
-    if request.method == "POST":
+    from .ai_engine import analyze_image, draw_face_boxes
+
+    if request.method == 'POST':
         form = ImageUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            image_file = form.cleaned_data["image"]
-            original_filename = image_file.name
+            uploaded_file = request.FILES['file']
 
-            scan = ImageScan(
+            uploads_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
+            processed_dir = os.path.join(settings.MEDIA_ROOT, 'processed')
+            os.makedirs(uploads_dir, exist_ok=True)
+            os.makedirs(processed_dir, exist_ok=True)
+
+            file_path = os.path.join(uploads_dir, uploaded_file.name)
+            with open(file_path, 'wb') as f:
+                for chunk in uploaded_file.chunks():
+                    f.write(chunk)
+
+            results, score = analyze_image(file_path)
+
+            processed_path = os.path.join(processed_dir, f"processed_{uploaded_file.name}")
+            draw_face_boxes(file_path, processed_path)
+
+            classification = get_classification(score)
+            explanation = generate_explanation('image', score, results)
+
+            scan = ScanResult(
                 user=request.user,
-                image=image_file,
-                original_filename=original_filename,
+                scan_type='image',
+                original_filename=uploaded_file.name,
+                authenticity_score=score,
+                classification=classification,
+                explanation=explanation,
+                file_size=uploaded_file.size,
             )
+            scan.set_detailed_results(results)
+            scan.uploaded_file = f"uploads/{uploaded_file.name}"
+            if os.path.exists(processed_path):
+                scan.processed_file = f"processed/processed_{uploaded_file.name}"
+
             scan.save()
 
-            try:
-                result = analyze_image(scan.image.path)
-
-                scan.authenticity_score = result.get("authenticity_score", 0.0)
-                scan.classification = result.get("classification", "suspicious")
-                scan.is_ai_generated = result.get("is_ai_generated", False)
-                scan.is_edited = result.get("is_edited", False)
-                scan.face_count = int(result.get("face_count", 0))
-                scan.has_exif = result.get("has_exif", False)
-                scan.exif_data = result.get("exif_data", {})
-                scan.analysis_details = result.get("details", {})
-                scan.explanation = result.get("explanation", "")
-
-                try:
-                    from .ai_engine import generate_face_detection_image
-                    face_img_path, _, face_locations = generate_face_detection_image(scan.image.path)
-                    if face_img_path:
-                        relative_path = os.path.relpath(face_img_path, settings.MEDIA_ROOT)
-                        scan.analysis_details["face_detection_image"] = relative_path
-                        scan.analysis_details["face_locations"] = face_locations
-                except Exception:
-                    pass
-
+            pdf_rel_path = generate_pdf_report(scan, results)
+            if pdf_rel_path:
+                scan.report_file = pdf_rel_path
                 scan.save()
 
-                profile, _ = UserProfile.objects.get_or_create(user=request.user)
-                profile.total_scans += 1
-                profile.save()
-
-                return redirect("result_image", scan_id=scan.id)
-
-            except Exception as e:
-                messages.error(request, f"Image analysis failed: {str(e)}")
-                scan.delete()
-        else:
-            messages.error(request, "Please select a valid image file.")
+            return redirect('image_result', scan_id=scan.id)
     else:
         form = ImageUploadForm()
 
-    return render(request, "upload.html", {"form": form})
+    return render(request, 'upload.html', {'form': form})
 
 
 @login_required
-def result_image_view(request, scan_id):
-    scan = get_object_or_404(ImageScan, id=scan_id, user=request.user)
-    return render(request, "result.html", {"scan": scan})
+def image_result_view(request, scan_id):
+    scan = get_object_or_404(ScanResult, id=scan_id, user=request.user)
+    result = scan.get_detailed_results()
+    context = {
+        'scan': scan,
+        'result': result,
+        'score_color': scan.score_color,
+        'score_dashoffset': scan.score_dashoffset,
+        'pdf_url': scan.report_file.url if scan.report_file else None,
+    }
+    return render(request, 'result.html', context)
 
-
-# ═══════════════════════════════════════
-# VIDEO SCAN
-# ═══════════════════════════════════════
 
 @login_required
 def upload_video_view(request):
-    if request.method == "POST":
+    from .video_engine import analyze_video
+
+    if request.method == 'POST':
         form = VideoUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            video_file = form.cleaned_data["video"]
-            original_filename = video_file.name
+            uploaded_file = request.FILES['file']
 
-            scan = VideoScan(
+            uploads_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
+            os.makedirs(uploads_dir, exist_ok=True)
+
+            file_path = os.path.join(uploads_dir, uploaded_file.name)
+            with open(file_path, 'wb') as f:
+                for chunk in uploaded_file.chunks():
+                    f.write(chunk)
+
+            results, score = analyze_video(file_path)
+            classification = get_classification(score)
+            explanation = generate_explanation('video', score, results)
+
+            scan = ScanResult(
                 user=request.user,
-                video=video_file,
-                original_filename=original_filename,
+                scan_type='video',
+                original_filename=uploaded_file.name,
+                authenticity_score=score,
+                classification=classification,
+                explanation=explanation,
+                file_size=uploaded_file.size,
             )
+            scan.set_detailed_results(results)
+            scan.uploaded_file = f"uploads/{uploaded_file.name}"
             scan.save()
 
-            try:
-                result = analyze_video(scan.video.path)
-
-                scan.authenticity_score = result.get("authenticity_score", 0.0)
-                scan.classification = result.get("classification", "suspicious")
-                scan.total_frames_analyzed = result.get("total_frames_analyzed", 0)
-                scan.frame_scores = result.get("frame_scores", [])
-                scan.analysis_details = result.get("details", {})
-                scan.explanation = result.get("explanation", "")
+            pdf_rel_path = generate_pdf_report(scan, results)
+            if pdf_rel_path:
+                scan.report_file = pdf_rel_path
                 scan.save()
 
-                profile, _ = UserProfile.objects.get_or_create(user=request.user)
-                profile.total_scans += 1
-                profile.save()
-
-                return redirect("result_video", scan_id=scan.id)
-
-            except Exception as e:
-                messages.error(request, f"Video analysis failed: {str(e)}")
-                scan.delete()
-        else:
-            messages.error(request, "Please select a valid video file.")
+            return redirect('video_result', scan_id=scan.id)
     else:
         form = VideoUploadForm()
 
-    return render(request, "upload_video.html", {"form": form})
+    return render(request, 'upload_video.html', {'form': form})
 
 
 @login_required
-def result_video_view(request, scan_id):
-    scan = get_object_or_404(VideoScan, id=scan_id, user=request.user)
-    return render(request, "result_video.html", {"scan": scan})
+def video_result_view(request, scan_id):
+    scan = get_object_or_404(ScanResult, id=scan_id, user=request.user)
+    result = scan.get_detailed_results()
+    return render(request, 'result_video.html', {
+        'scan': scan,
+        'result': result,
+        'frame_scores': result.get('frame_scores', []),
+        'score_color': scan.score_color,
+        'score_dashoffset': scan.score_dashoffset,
+    })
 
-
-# ═══════════════════════════════════════
-# AUDIO SCAN
-# ═══════════════════════════════════════
 
 @login_required
 def upload_audio_view(request):
-    if request.method == "POST":
+    from .audio_engine import analyze_audio
+
+    if request.method == 'POST':
         form = AudioUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            audio_file = form.cleaned_data["audio"]
-            original_filename = audio_file.name
+            uploaded_file = request.FILES['file']
 
-            scan = AudioScan(
+            uploads_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
+            os.makedirs(uploads_dir, exist_ok=True)
+
+            file_path = os.path.join(uploads_dir, uploaded_file.name)
+            with open(file_path, 'wb') as f:
+                for chunk in uploaded_file.chunks():
+                    f.write(chunk)
+
+            results, score = analyze_audio(file_path)
+            classification = get_classification(score)
+            explanation = generate_explanation('audio', score, results)
+
+            scan = ScanResult(
                 user=request.user,
-                audio=audio_file,
-                original_filename=original_filename,
+                scan_type='audio',
+                original_filename=uploaded_file.name,
+                authenticity_score=score,
+                classification=classification,
+                explanation=explanation,
+                file_size=uploaded_file.size,
             )
+            scan.set_detailed_results(results)
+            scan.uploaded_file = f"uploads/{uploaded_file.name}"
             scan.save()
 
-            try:
-                result = analyze_audio(scan.audio.path)
-
-                scan.authenticity_score = result.get("authenticity_score", 0.0)
-                scan.classification = result.get("classification", "suspicious")
-                scan.duration_seconds = result.get("duration_seconds", 0.0)
-                scan.analysis_details = result.get("details", {})
-                scan.explanation = result.get("explanation", "")
+            pdf_rel_path = generate_pdf_report(scan, results)
+            if pdf_rel_path:
+                scan.report_file = pdf_rel_path
                 scan.save()
 
-                profile, _ = UserProfile.objects.get_or_create(user=request.user)
-                profile.total_scans += 1
-                profile.save()
-
-                return redirect("result_audio", scan_id=scan.id)
-
-            except Exception as e:
-                messages.error(request, f"Audio analysis failed: {str(e)}")
-                scan.delete()
-        else:
-            messages.error(request, "Please select a valid audio file.")
+            return redirect('audio_result', scan_id=scan.id)
     else:
         form = AudioUploadForm()
 
-    return render(request, "upload_audio.html", {"form": form})
+    return render(request, 'upload_audio.html', {'form': form})
 
 
 @login_required
-def result_audio_view(request, scan_id):
-    scan = get_object_or_404(AudioScan, id=scan_id, user=request.user)
-    return render(request, "result_audio.html", {"scan": scan})
+def audio_result_view(request, scan_id):
+    scan = get_object_or_404(ScanResult, id=scan_id, user=request.user)
+    result = scan.get_detailed_results()
+    return render(request, 'result_audio.html', {
+        'scan': scan,
+        'result': result,
+        'score_color': scan.score_color,
+        'score_dashoffset': scan.score_dashoffset,
+    })
 
-
-# ═══════════════════════════════════════
-# TEXT SCAN
-# ═══════════════════════════════════════
 
 @login_required
 def text_scan_view(request):
-    if request.method == "POST":
-        form = TextAnalysisForm(request.POST)
+    from .text_engine import analyze_text
+
+    if request.method == 'POST':
+        form = TextScanForm(request.POST)
         if form.is_valid():
-            text = form.cleaned_data["text"]
+            text = form.cleaned_data['text']
+            results, score = analyze_text(text)
+            classification = get_classification(score)
+            explanation = generate_explanation('text', score, results)
 
-            try:
-                result = analyze_text(text)
+            scan = ScanResult(
+                user=request.user,
+                scan_type='text',
+                original_filename='Text Submission',
+                authenticity_score=score,
+                classification=classification,
+                explanation=explanation,
+                submitted_text=text[:5000],
+            )
+            scan.set_detailed_results(results)
+            scan.save()
 
-                scan = TextScan(
-                    user=request.user,
-                    input_text=text,
-                    word_count=len(text.split()),
-                    authenticity_score=result.get("authenticity_score", 0.0),
-                    classification=result.get("classification", "suspicious"),
-                    analysis_details=result.get("details", {}),
-                    explanation=result.get("explanation", ""),
-                )
+            pdf_rel_path = generate_pdf_report(scan, results)
+            if pdf_rel_path:
+                scan.report_file = pdf_rel_path
                 scan.save()
 
-                profile, _ = UserProfile.objects.get_or_create(user=request.user)
-                profile.total_scans += 1
-                profile.save()
-
-                return redirect("result_text", scan_id=scan.id)
-
-            except Exception as e:
-                messages.error(request, f"Text analysis failed: {str(e)}")
-        else:
-            messages.error(request, "Please enter valid text.")
+            return redirect('text_result', scan_id=scan.id)
     else:
-        form = TextAnalysisForm()
+        form = TextScanForm()
 
-    return render(request, "text_scan.html", {"form": form})
+    return render(request, 'text_scan.html', {'form': form})
 
 
 @login_required
-def result_text_view(request, scan_id):
-    scan = get_object_or_404(TextScan, id=scan_id, user=request.user)
-    return render(request, "result_text.html", {"scan": scan})
-
-
-# ═══════════════════════════════════════
-# SIMPLE API
-# ═══════════════════════════════════════
-
-@login_required
-def api_scan_stats(request):
-    user = request.user
-    return JsonResponse({
-        "images": ImageScan.objects.filter(user=user).count(),
-        "videos": VideoScan.objects.filter(user=user).count(),
-        "audios": AudioScan.objects.filter(user=user).count(),
-        "texts": TextScan.objects.filter(user=user).count(),
+def text_result_view(request, scan_id):
+    scan = get_object_or_404(ScanResult, id=scan_id, user=request.user)
+    result = scan.get_detailed_results()
+    return render(request, 'result_text.html', {
+        'scan': scan,
+        'result': result,
+        'score_color': scan.score_color,
+        'score_dashoffset': scan.score_dashoffset,
     })
-
-@login_required
-def download_image_report_view(request, scan_id):
-    scan = get_object_or_404(ImageScan, id=scan_id, user=request.user)
-    pdf_buffer = build_image_scan_pdf(scan)
-    filename = f"deepfakeshield_report_{scan.id}.pdf"
-    return FileResponse(pdf_buffer, as_attachment=True, filename=filename)

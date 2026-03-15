@@ -1,36 +1,14 @@
-<div id="cookieBanner" class="cookie-banner" style="display:none;">
-    <div class="cookie-content">
-        <div class="cookie-icon">🍪</div>
+<div id="cookieBanner" class="cookie-banner-premium">
+    <div class="cookie-inner">
+        <div class="cookie-icon-wrap">
+            <i class="bi bi-shield-lock-fill"></i>
+        </div>
         <div class="cookie-text">
-            <h4>Privacy Preferences</h4>
-            <p>
-                We use local storage to save language, theme, and interface preferences so your experience stays consistent across visits.
-            </p>
+            <strong>Privacy & Preferences</strong>
+            <p class="mb-0">This site uses local storage and session cookies for theme, language, and scan preferences.</p>
         </div>
         <div class="cookie-actions">
-            <button class="cookie-accept-btn" onclick="acceptCookies()">Accept</button>
-            <button class="cookie-decline-btn" onclick="declineCookies()">Dismiss</button>
+            <button id="acceptCookiesBtn" class="btn btn-glow btn-sm">Accept All</button>
         </div>
     </div>
 </div>
-
-<script>
-if (!localStorage.getItem('cookiesAccepted')) {
-    setTimeout(() => {
-        const banner = document.getElementById('cookieBanner');
-        if (banner) banner.style.display = 'flex';
-    }, 1800);
-}
-
-function acceptCookies() {
-    localStorage.setItem('cookiesAccepted', 'true');
-    const banner = document.getElementById('cookieBanner');
-    if (banner) banner.style.display = 'none';
-}
-
-function declineCookies() {
-    localStorage.setItem('cookiesAccepted', 'false');
-    const banner = document.getElementById('cookieBanner');
-    if (banner) banner.style.display = 'none';
-}
-</script>

@@ -1,203 +1,164 @@
-import wave
-import struct
 import numpy as np
-import os
-from .utils import get_classification
 
 
-def analyze_audio(audio_path):
-    result = {
-        'authenticity_score': 50.0,
-        'classification': 'suspicious',
-        'duration_seconds': 0.0,
-        'details': {},
-        'explanation': '',
+def analyze_audio(file_path):
+    results = {
+        'rms_energy': 0,
+        'spectral_flatness': 0,
+        'clipping_ratio': 0,
+        'duration': 0,
+        'sample_rate': 0,
+        'zero_crossing_rate': 0,
+        'spectral_centroid': 0,
+        'harmonic_confidence': 0,
+        'description': '',
+        'analysis_summary': '',
+        'real_vs_fake': 'Uncertain',
     }
 
     try:
-        ext = os.path.splitext(audio_path)[1].lower()
+        import librosa
 
-        if ext == '.wav':
-            return analyze_wav(audio_path)
+        y, sr = librosa.load(file_path, sr=None, mono=True, duration=120)
+        if y is None or len(y) == 0:
+            results['description'] = 'Audio file could not be read properly.'
+            return results, 0
+
+        results['sample_rate'] = int(sr)
+        results['duration'] = round(len(y) / sr, 2)
+
+        rms = np.sqrt(np.mean(y ** 2))
+        results['rms_energy'] = round(float(rms), 6)
+
+        flatness = librosa.feature.spectral_flatness(y=y)
+        flatness_mean = float(np.mean(flatness))
+        results['spectral_flatness'] = round(flatness_mean, 6)
+
+        clipping_threshold = 0.99
+        clipping_ratio = float(np.sum(np.abs(y) >= clipping_threshold) / len(y))
+        results['clipping_ratio'] = round(clipping_ratio, 6)
+
+        zcr = librosa.feature.zero_crossing_rate(y)
+        zcr_mean = float(np.mean(zcr))
+        results['zero_crossing_rate'] = round(zcr_mean, 6)
+
+        centroid = librosa.feature.spectral_centroid(y=y, sr=sr)
+        centroid_mean = float(np.mean(centroid))
+        results['spectral_centroid'] = round(centroid_mean, 2)
+
+        harmonic, percussive = librosa.effects.hpss(y)
+        harmonic_energy = np.mean(np.abs(harmonic))
+        percussive_energy = np.mean(np.abs(percussive))
+        if (harmonic_energy + percussive_energy) > 0:
+            harmonic_conf = harmonic_energy / (harmonic_energy + percussive_energy)
         else:
-            return analyze_generic_audio(audio_path)
+            harmonic_conf = 0.5
+        results['harmonic_confidence'] = round(float(harmonic_conf) * 100, 2)
 
-    except Exception as e:
-        result['explanation'] = f'Audio analysis error: {str(e)}'
-        return result
+        score = _calculate_audio_score(results)
 
-
-def analyze_wav(audio_path):
-    result = {
-        'authenticity_score': 50.0,
-        'classification': 'suspicious',
-        'duration_seconds': 0.0,
-        'details': {},
-        'explanation': '',
-    }
-
-    try:
-        with wave.open(audio_path, 'rb') as wav_file:
-            channels = wav_file.getnchannels()
-            sample_width = wav_file.getsampwidth()
-            frame_rate = wav_file.getframerate()
-            n_frames = wav_file.getnframes()
-            duration = n_frames / frame_rate if frame_rate > 0 else 0
-
-            result['duration_seconds'] = round(duration, 2)
-
-            raw_data = wav_file.readframes(n_frames)
-
-            if sample_width == 1:
-                fmt = f'{n_frames * channels}B'
-                data = np.array(struct.unpack(fmt, raw_data), dtype=np.float64) - 128
-                max_val = 128
-            elif sample_width == 2:
-                fmt = f'{n_frames * channels}h'
-                data = np.array(struct.unpack(fmt, raw_data), dtype=np.float64)
-                max_val = 32768
-            elif sample_width == 4:
-                fmt = f'{n_frames * channels}i'
-                data = np.array(struct.unpack(fmt, raw_data), dtype=np.float64)
-                max_val = 2147483648
-            else:
-                result['explanation'] = 'Unsupported WAV sample width.'
-                return result
-
-            if len(data) == 0:
-                result['explanation'] = 'Audio file is empty.'
-                return result
-
-            signal = data / max_val
-
-            rms = float(np.sqrt(np.mean(signal ** 2)))
-            clip_ratio = float(np.sum(np.abs(signal) > 0.99) / len(signal))
-            zero_crossings = np.sum(np.abs(np.diff(np.sign(signal))) > 0)
-            zcr = float(zero_crossings / len(signal))
-
-            spectral_flatness = 0.0
-            if len(signal) > 256:
-                fft_vals = np.abs(np.fft.rfft(signal[:min(len(signal), frame_rate * 2)]))
-                fft_vals = fft_vals[1:]
-                if len(fft_vals) > 0 and np.mean(fft_vals) > 0:
-                    geometric_mean = np.exp(np.mean(np.log(fft_vals + 1e-10)))
-                    arithmetic_mean = np.mean(fft_vals)
-                    spectral_flatness = float(geometric_mean / arithmetic_mean)
-
-            score = 0
-            explanations = [f"Audio loaded: {channels} channel(s), {frame_rate} Hz, duration {duration:.1f}s."]
-
-            if 0.01 < rms < 0.5:
-                score += 25
-                explanations.append(f"RMS energy appears natural ({rms:.4f}).")
-            elif 0.005 < rms <= 0.01 or 0.5 <= rms < 0.8:
-                score += 15
-                explanations.append(f"RMS energy is somewhat unusual ({rms:.4f}).")
-            else:
-                score += 8
-                explanations.append(f"RMS energy is highly unusual ({rms:.4f}).")
-
-            if clip_ratio < 0.001:
-                score += 25
-                explanations.append(f"Minimal clipping detected ({clip_ratio:.4%}).")
-            elif clip_ratio < 0.01:
-                score += 18
-                explanations.append(f"Minor clipping present ({clip_ratio:.4%}).")
-            elif clip_ratio < 0.05:
-                score += 10
-                explanations.append(f"Moderate clipping present ({clip_ratio:.4%}).")
-            else:
-                score += 5
-                explanations.append(f"Severe clipping detected ({clip_ratio:.4%}).")
-
-            if 0.02 < zcr < 0.3:
-                score += 25
-                explanations.append(f"Zero-crossing rate appears natural ({zcr:.4f}).")
-            elif 0.01 < zcr <= 0.02 or 0.3 <= zcr < 0.5:
-                score += 15
-                explanations.append(f"Zero-crossing rate is somewhat unusual ({zcr:.4f}).")
-            else:
-                score += 8
-                explanations.append(f"Zero-crossing rate is highly unusual ({zcr:.4f}).")
-
-            if 0.01 < spectral_flatness < 0.5:
-                score += 25
-                explanations.append(f"Spectral profile appears natural ({spectral_flatness:.4f}).")
-            elif spectral_flatness <= 0.01:
-                score += 12
-                explanations.append(f"Very tonal signal detected ({spectral_flatness:.4f}).")
-            else:
-                score += 10
-                explanations.append(f"High spectral flatness detected ({spectral_flatness:.4f}).")
-
-            score = min(max(round(score, 1), 0), 100)
-
-            result['authenticity_score'] = score
-            result['classification'] = get_classification(score)
-            result['details'] = {
-                'Channels': channels,
-                'Sample Width': sample_width,
-                'Frame Rate': frame_rate,
-                'Duration': round(duration, 2),
-                'RMS': round(rms, 4),
-                'Clip Ratio': round(clip_ratio, 6),
-                'Zero Crossing Rate': round(zcr, 4),
-                'Spectral Flatness': round(spectral_flatness, 4),
-            }
-            result['explanation'] = "\n".join(explanations)
-
-    except Exception as e:
-        result['explanation'] = f'WAV analysis error: {str(e)}'
-
-    return result
-
-
-def analyze_generic_audio(audio_path):
-    result = {
-        'authenticity_score': 55.0,
-        'classification': 'suspicious',
-        'duration_seconds': 0.0,
-        'details': {},
-        'explanation': '',
-    }
-
-    try:
-        file_size = os.path.getsize(audio_path)
-        ext = os.path.splitext(audio_path)[1].lower()
-
-        with open(audio_path, 'rb') as f:
-            raw_data = f.read(min(file_size, 1024 * 1024))
-
-        data = np.frombuffer(raw_data, dtype=np.uint8).astype(np.float64)
-
-        if len(data) > 0:
-            hist, _ = np.histogram(data, bins=256, range=(0, 256))
-            hist = hist / len(data)
-            hist = hist[hist > 0]
-            entropy = float(-np.sum(hist * np.log2(hist)))
-
-            if entropy > 7.0:
-                score = 75
-                explanation = f"Compressed audio data has high entropy ({entropy:.2f}), suggesting complex content."
-            elif entropy > 5.0:
-                score = 60
-                explanation = f"Compressed audio data has moderate entropy ({entropy:.2f})."
-            else:
-                score = 40
-                explanation = f"Compressed audio data has low entropy ({entropy:.2f}), which may be suspicious."
-
-            result['authenticity_score'] = score
-            result['classification'] = get_classification(score)
-            result['details'] = {
-                'Format': ext,
-                'File Size (bytes)': file_size,
-                'Byte Entropy': round(entropy, 2),
-            }
-            result['explanation'] = explanation + " For deeper analysis, WAV format is recommended."
+        if score >= 75:
+            results['real_vs_fake'] = 'Real'
+        elif score <= 39:
+            results['real_vs_fake'] = 'Fake'
         else:
-            result['explanation'] = "Could not read compressed audio data."
+            results['real_vs_fake'] = 'Uncertain'
+
+        results['analysis_summary'] = _generate_audio_summary(results, score)
+        results['description'] = _generate_audio_description(results, score)
+
+        return results, score
 
     except Exception as e:
-        result['explanation'] = f'Generic audio analysis error: {str(e)}'
+        results['description'] = f'Error during audio analysis: {str(e)}'
+        results['analysis_summary'] = 'Audio analysis failed due to an internal processing error.'
+        return results, 0
 
-    return result
+
+def _calculate_audio_score(results):
+    score = 50
+
+    rms = results.get('rms_energy', 0)
+    flatness = results.get('spectral_flatness', 0)
+    clipping = results.get('clipping_ratio', 0)
+    zcr = results.get('zero_crossing_rate', 0)
+    centroid = results.get('spectral_centroid', 0)
+    harmonic_conf = results.get('harmonic_confidence', 50)
+
+    if 0.01 < rms < 0.30:
+        score += 14
+    elif rms < 0.005:
+        score -= 14
+    elif rms > 0.50:
+        score -= 8
+
+    if flatness < 0.10:
+        score += 14
+    elif flatness < 0.25:
+        score += 7
+    elif flatness > 0.60:
+        score -= 18
+    elif flatness > 0.40:
+        score -= 8
+
+    if clipping < 0.001:
+        score += 10
+    elif clipping < 0.01:
+        score += 5
+    elif clipping > 0.05:
+        score -= 15
+
+    if 0.02 < zcr < 0.15:
+        score += 8
+    elif zcr > 0.25:
+        score -= 8
+
+    if 300 < centroid < 4000:
+        score += 6
+    elif centroid > 7000:
+        score -= 5
+
+    if harmonic_conf > 55:
+        score += 8
+    elif harmonic_conf < 30:
+        score -= 8
+
+    return int(round(max(0, min(100, score))))
+
+
+def _generate_audio_summary(results, score):
+    if score >= 75:
+        verdict = "likely real"
+    elif score <= 39:
+        verdict = "likely fake"
+    else:
+        verdict = "suspicious"
+
+    return (
+        f"The audio was evaluated using signal-level authenticity features including RMS energy, "
+        f"spectral flatness, clipping ratio, zero crossing rate, and harmonic confidence. "
+        f"Overall, the audio appears {verdict}."
+    )
+
+
+def _generate_audio_description(results, score):
+    parts = []
+    parts.append(
+        f"Audio duration is {results.get('duration', 0)} seconds at "
+        f"{results.get('sample_rate', 0)} Hz sample rate."
+    )
+    parts.append(f"RMS energy: {results.get('rms_energy', 0):.6f}.")
+    parts.append(f"Spectral flatness: {results.get('spectral_flatness', 0):.6f}.")
+    parts.append(f"Clipping ratio: {results.get('clipping_ratio', 0):.6f}.")
+    parts.append(f"Zero crossing rate: {results.get('zero_crossing_rate', 0):.6f}.")
+    parts.append(f"Spectral centroid: {results.get('spectral_centroid', 0):.2f}.")
+    parts.append(f"Harmonic confidence: {results.get('harmonic_confidence', 0):.2f}%.")
+
+    if score >= 75:
+        parts.append("The signal characteristics appear mostly natural and consistent with real audio.")
+    elif score <= 39:
+        parts.append("The signal contains suspicious patterns often associated with synthetic or heavily processed audio.")
+    else:
+        parts.append("The signal contains mixed indicators and should be interpreted carefully.")
+
+    return " ".join(parts)

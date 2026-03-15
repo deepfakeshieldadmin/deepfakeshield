@@ -1,221 +1,144 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Image Result — Deep Fake Shield{% endblock %}
-
-{% block extra_css %}
-<style>
-    .result-page-wrap {
-        padding-top: 110px;
-        padding-bottom: 70px;
-    }
-
-    .result-top-card,
-    .result-block {
-        border-radius: 24px;
-        padding: 26px;
-        background: rgba(255,255,255,0.86);
-        border: 1px solid rgba(0,0,0,0.06);
-        box-shadow: 0 16px 40px rgba(0,0,0,0.06);
-        margin-bottom: 24px;
-    }
-
-    [data-theme="dark"] .result-top-card,
-    [data-theme="dark"] .result-block {
-        background: rgba(18,24,35,0.86);
-        border-color: rgba(255,255,255,0.08);
-    }
-
-    .score-badge-big {
-        display: inline-block;
-        padding: 10px 18px;
-        border-radius: 999px;
-        font-weight: 800;
-        margin-top: 10px;
-    }
-
-    .score-authentic { background:#d4edda; color:#155724; }
-    .score-likely_real { background:#d1ecf1; color:#0c5460; }
-    .score-suspicious { background:#fff3cd; color:#856404; }
-    .score-likely_fake { background:#f8d7da; color:#721c24; }
-
-    .result-score {
-        font-size: 3.2rem;
-        font-weight: 900;
-        font-family: 'Montserrat', sans-serif;
-        line-height: 1;
-    }
-
-    .result-image {
-        width: 100%;
-        border-radius: 18px;
-        background: #fff;
-        border: 1px solid rgba(0,0,0,0.06);
-        box-shadow: 0 12px 26px rgba(0,0,0,0.06);
-    }
-
-    .metric-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
-    }
-
-    .metric-card {
-        padding: 14px 16px;
-        border-radius: 16px;
-        background: rgba(0,123,255,0.05);
-        border: 1px solid rgba(0,123,255,0.10);
-    }
-
-    .metric-card strong {
-        display: block;
-        margin-bottom: 6px;
-    }
-
-    .report-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 18px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #dc3545, #6f42c1);
-        color: #fff;
-        text-decoration: none;
-        font-weight: 800;
-    }
-
-    .report-btn:hover {
-        color: #fff;
-        opacity: 0.96;
-    }
-
-    .result-heading {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 800;
-        margin-bottom: 14px;
-    }
-
-    @media (max-width: 768px) {
-        .metric-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
-{% endblock %}
+{% block title %}Image Result | DeepFake Shield{% endblock %}
 
 {% block content %}
-<section class="result-page-wrap">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" data-aos="fade-up">
-            <div>
-                <a href="{% url 'upload_image' %}" class="text-decoration-none">
-                    <i class="bi bi-arrow-left"></i> Back to Image Upload
-                </a>
-                <h1 class="mt-2" style="font-family:'Montserrat',sans-serif; font-weight:800;">Image Scan Result</h1>
-            </div>
-
-            <a href="{% url 'download_image_report' scan.id %}" class="report-btn mt-2 mt-md-0">
-                <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF Report
-            </a>
+<section class="container py-5">
+    <div class="text-center mb-4">
+        <div class="section-badge">
+            <i class="bi bi-file-earmark-check me-2"></i>Scan Complete
         </div>
+        <h1 class="premium-section-title">Image Analysis Result</h1>
+        <p class="premium-section-desc mx-auto">Detailed authenticity assessment for the uploaded image.</p>
+    </div>
 
-        <div class="result-top-card" data-aos="zoom-in">
-            <div class="row g-4 align-items-center">
-                <div class="col-lg-5">
-                    <img src="{{ scan.image.url }}" alt="Scanned Image" class="result-image">
-                </div>
-                <div class="col-lg-7">
-                    <p class="text-muted mb-1">Filename: {{ scan.original_filename }}</p>
-                    <div class="result-score
-                        {% if scan.classification == 'authentic' %}text-success
-                        {% elif scan.classification == 'likely_real' %}text-info
-                        {% elif scan.classification == 'suspicious' %}text-warning
-                        {% else %}text-danger{% endif %}">
-                        {{ scan.authenticity_score|floatformat:1 }}%
-                    </div>
+    <div class="row g-4 align-items-start">
+        <div class="col-lg-5">
+            <div class="glass-card-premium p-4 h-100">
+                <h4 class="mb-3"><i class="bi bi-image me-2"></i>Processed Image</h4>
 
-                    <div class="score-badge-big score-{{ scan.classification }}">
-                        {% if scan.classification == 'authentic' %}
-                            Highly Authentic
-                        {% elif scan.classification == 'likely_real' %}
-                            Likely Real
-                        {% elif scan.classification == 'suspicious' %}
-                            Suspicious / Possibly Edited
-                        {% else %}
-                            Likely AI / Fake
-                        {% endif %}
-                    </div>
+                {% if scan.processed_file %}
+                    <img src="{{ scan.processed_file.url }}" alt="Processed image"
+                         class="img-fluid rounded-4 shadow-sm w-100 result-preview-img">
+                {% elif scan.uploaded_file %}
+                    <img src="{{ scan.uploaded_file.url }}" alt="Uploaded image"
+                         class="img-fluid rounded-4 shadow-sm w-100 result-preview-img">
+                {% endif %}
 
-                    <div class="metric-grid mt-4">
-                        <div class="metric-card">
-                            <strong>Faces Detected</strong>
-                            <span>{{ scan.face_count }}</span>
-                        </div>
-                        <div class="metric-card">
-                            <strong>EXIF Metadata</strong>
-                            <span>{% if scan.has_exif %}Present{% else %}Missing{% endif %}</span>
-                        </div>
-                        <div class="metric-card">
-                            <strong>AI Generated</strong>
-                            <span>{% if scan.is_ai_generated %}Yes{% else %}No{% endif %}</span>
-                        </div>
-                        <div class="metric-card">
-                            <strong>Edited / Manipulated</strong>
-                            <span>{% if scan.is_edited %}Possible{% else %}No{% endif %}</span>
-                        </div>
-                    </div>
+                <div class="mt-4">
+                    <h5><i class="bi bi-eye me-2"></i>Image Description</h5>
+                    <p class="mb-0">{{ result.scene_description|default:"No description available." }}</p>
                 </div>
             </div>
         </div>
 
-        {% if scan.analysis_details.face_detection_image %}
-        <div class="result-block" data-aos="fade-up">
-            <h3 class="result-heading"><i class="bi bi-bounding-box-circles me-2 text-success"></i>Face Detection Preview</h3>
-            <img src="/media/{{ scan.analysis_details.face_detection_image }}" alt="Face Detection" class="result-image">
-        </div>
-        {% endif %}
-
-        <div class="result-block" data-aos="fade-up">
-            <h3 class="result-heading"><i class="bi bi-bar-chart-fill me-2 text-primary"></i>Detection Metrics</h3>
-            {% if scan.analysis_details %}
-            <div class="metric-grid">
-                {% for key, value in scan.analysis_details.items %}
-                    {% if key != 'face_detection_image' and key != 'face_locations' %}
-                    <div class="metric-card">
-                        <strong>{{ key }}</strong>
-                        <span>{{ value }}</span>
+        <div class="col-lg-7">
+            <div class="glass-card-premium p-4 h-100">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+                    <div>
+                        <h2 class="mb-2">{{ scan.original_filename }}</h2>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge rounded-pill px-3 py-2 bg-warning text-dark">
+                                {{ scan.classification_display|default:scan.classification }}
+                            </span>
+                            <span class="badge rounded-pill px-3 py-2 {% if result.real_vs_fake == 'Real' %}bg-success{% elif result.real_vs_fake == 'Fake' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                {{ result.real_vs_fake|default:"Uncertain" }}
+                            </span>
+                        </div>
                     </div>
+
+                    <div class="score-badge-circle">
+                        <span>{{ scan.authenticity_score }}</span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3 col-6">
+                        <div class="mini-stat-box">
+                            <small>Faces</small>
+                            <strong>{{ result.face_count|default:0 }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="mini-stat-box">
+                            <small>EXIF</small>
+                            <strong>{% if result.exif_present %}Present{% else %}Missing{% endif %}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="mini-stat-box">
+                            <small>Compression</small>
+                            <strong>{{ result.compression_label|default:"Normal" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="mini-stat-box">
+                            <small>Artifacts</small>
+                            <strong>{{ result.artifact_label|default:"Low" }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h4><i class="bi bi-chat-left-text me-2"></i>Explanation</h4>
+                    <p>{{ scan.explanation }}</p>
+                    <p><strong>Summary:</strong> {{ result.analysis_summary|default:"No summary available." }}</p>
+                </div>
+
+                <div class="mb-4">
+                    <h4><i class="bi bi-table me-2"></i>Detailed Metrics</h4>
+                    <div class="table-responsive">
+                        <table class="table align-middle premium-table">
+                            <tbody>
+                                <tr><th>Camera Make</th><td>{{ result.camera_make|default:"Not found" }}</td></tr>
+                                <tr><th>Camera Model</th><td>{{ result.camera_model|default:"Not found" }}</td></tr>
+                                <tr><th>Face Count</th><td>{{ result.face_count|default:0 }}</td></tr>
+                                <tr><th>Face Detector</th><td>{{ result.face_detector_used|default:"N/A" }}</td></tr>
+                                <tr><th>Face Quality Score</th><td>{{ result.face_quality_score|default:"0" }}</td></tr>
+                                <tr><th>AI Artifact Score</th><td>{{ result.ai_artifact_score|default:"0" }}</td></tr>
+                                <tr><th>Compression Noise</th><td>{{ result.compression_noise_score|default:"0" }}</td></tr>
+                                <tr><th>Noise Score</th><td>{{ result.noise_score|default:"0" }}</td></tr>
+                                <tr><th>Edge Score</th><td>{{ result.edge_score|default:"0" }}</td></tr>
+                                <tr><th>Texture Score</th><td>{{ result.texture_score|default:"0" }}</td></tr>
+                                <tr><th>Color Score</th><td>{{ result.color_score|default:"0" }}</td></tr>
+                                <tr><th>Deep Feature Score</th><td>{{ result.deep_feature_score|default:"0" }}</td></tr>
+                                <tr><th>Screenshot Likelihood</th><td>{{ result.screenshot_likelihood|default:"0" }}</td></tr>
+                                <tr><th>Synthetic Smoothness</th><td>{{ result.synthetic_smoothness_score|default:"0" }}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {% if result.exif_data %}
+                <div class="mb-4">
+                    <h4><i class="bi bi-info-circle me-2"></i>EXIF Metadata</h4>
+                    <div class="exif-scroll-box">
+                        {% for key, value in result.exif_data.items %}
+                            <div class="exif-row">
+                                <strong>{{ key }}</strong>
+                                <span>{{ value }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'upload_image' %}" class="btn btn-outline-glow">
+                        <i class="bi bi-arrow-repeat me-2"></i>Scan Another Image
+                    </a>
+
+                    {% if scan.report_file %}
+                    <a href="{{ scan.report_file.url }}" class="btn btn-glow" target="_blank" download>
+                        <i class="bi bi-file-earmark-pdf-fill me-2"></i>Download PDF Report
+                    </a>
                     {% endif %}
-                {% endfor %}
-            </div>
-            {% else %}
-            <p class="text-muted">No detailed metrics available.</p>
-            {% endif %}
-        </div>
 
-        <div class="result-block" data-aos="fade-up">
-            <h3 class="result-heading"><i class="bi bi-info-circle-fill me-2 text-info"></i>EXIF Metadata</h3>
-            {% if scan.exif_data %}
-            <div class="metric-grid">
-                {% for key, value in scan.exif_data.items %}
-                <div class="metric-card">
-                    <strong>{{ key }}</strong>
-                    <span>{{ value }}</span>
+                    <a href="{% url 'dashboard' %}" class="btn btn-ghost-premium">
+                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                    </a>
                 </div>
-                {% endfor %}
             </div>
-            {% else %}
-            <p class="text-muted">
-                No EXIF metadata found. This commonly happens in screenshots, compressed social media images, or AI-generated images.
-            </p>
-            {% endif %}
         </div>
-
-        <div class="result-block" data-aos="fade-up">
-            <h3 class="result-heading"><i class="bi bi-journal-text me-2 text-secondary"></i>Detailed Explanation</h3>
-            <p style="white-space: pre-line; line-height: 1.8; color: var(--text-secondary, #666);">{{ scan.explanation }}</p>
-        </div>
-
     </div>
 </section>
 {% endblock %}

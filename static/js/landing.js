@@ -1,165 +1,147 @@
-/* ═══════════════════════════════════════════════════════════
-   DEEP FAKE SHIELD — LANDING PAGE JAVASCRIPT
-   Matrix rain, logo intro, animations
-   ═══════════════════════════════════════════════════════════ */
+/* ============================================
+   DEEPFAKE SHIELD — LANDING JS (FIXED)
+   Matrix Rain + Typed.js + Particles
+   ============================================ */
 
-// Check if should skip intro
-const urlParams = new URLSearchParams(window.location.search);
-const forceIntro = urlParams.get('intro') === 'true';
-const hasVisited = localStorage.getItem('dfs-visited');
+document.addEventListener("DOMContentLoaded", () => {
 
-// ─── MATRIX RAIN ─────────────────────────────────────────
-const matrixCanvas = document.getElementById('matrixCanvas');
-const matrixCtx = matrixCanvas.getContext('2d');
+    // === MATRIX RAIN — BRIGHTER AND VISIBLE ===
+    const canvas = document.getElementById("matrixCanvas");
+    if (canvas) {
+        const ctx = canvas.getContext("2d");
+        let width, height, columns, drops;
+        const chars = "01アイウエオカキクケコサシスセソタチツテトABCDEFGHIJKLMNOPQRSTUVWXYZ<>/{}[]!@#$%^&*";
+        const fontSize = 15;
 
-function resizeMatrix() {
-    matrixCanvas.width = window.innerWidth;
-    matrixCanvas.height = window.innerHeight;
-}
-resizeMatrix();
-window.addEventListener('resize', resizeMatrix);
-
-const matrixChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*()_+-=[]{}|;:,.<>?/~ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ';
-const fontSize = 14;
-let columns = Math.floor(matrixCanvas.width / fontSize);
-let drops = Array(columns).fill(1);
-
-function drawMatrix() {
-    matrixCtx.fillStyle = 'rgba(10, 10, 10, 0.05)';
-    matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
-
-    matrixCtx.fillStyle = '#0f0';
-    matrixCtx.font = fontSize + 'px monospace';
-
-    for (let i = 0; i < drops.length; i++) {
-        const text = matrixChars[Math.floor(Math.random() * matrixChars.length)];
-
-        // Vary green shades
-        const brightness = Math.random();
-        if (brightness > 0.8) {
-            matrixCtx.fillStyle = '#fff';
-        } else if (brightness > 0.5) {
-            matrixCtx.fillStyle = '#0f0';
-        } else {
-            matrixCtx.fillStyle = '#003300';
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            columns = Math.floor(width / fontSize);
+            drops = Array(columns).fill(1);
         }
 
-        matrixCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+        function draw() {
+            // Slower fade = more visible trails
+            ctx.fillStyle = "rgba(4, 8, 15, 0.04)";
+            ctx.fillRect(0, 0, width, height);
 
-        if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
-            drops[i] = 0;
-        }
-        drops[i]++;
-    }
-}
+            ctx.font = `${fontSize}px 'JetBrains Mono', monospace`;
 
-const matrixInterval = setInterval(drawMatrix, 50);
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
 
-// ─── LOADING ANIMATION ──────────────────────────────────
-const loadingBar = document.getElementById('loadingBar');
-const loadingText = document.getElementById('loadingText');
-const logoIntro = document.getElementById('logoIntro');
-const landingContent = document.getElementById('landingContent');
+                // Bright green with high opacity
+                const alpha = (0.5 + Math.random() * 0.5).toFixed(2);
+                ctx.fillStyle = `rgba(0, 255, 135, ${alpha})`;
 
-const loadingMessages = [
-    'Initializing Shield Systems...',
-    'Loading AI Detection Engines...',
-    'Preparing Image Analysis...',
-    'Configuring Video Scanner...',
-    'Setting Up Audio Processor...',
-    'Calibrating Text Analyzer...',
-    'Systems Ready!'
-];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
 
-let loadProgress = 0;
-let messageIndex = 0;
-
-function updateLoading() {
-    loadProgress += Math.random() * 8 + 2;
-    if (loadProgress > 100) loadProgress = 100;
-
-    loadingBar.style.width = loadProgress + '%';
-
-    const newMsgIndex = Math.min(Math.floor(loadProgress / 15), loadingMessages.length - 1);
-    if (newMsgIndex !== messageIndex) {
-        messageIndex = newMsgIndex;
-        loadingText.textContent = loadingMessages[messageIndex];
-    }
-
-    if (loadProgress >= 100) {
-        clearInterval(loadingInterval);
-        setTimeout(showContent, 800);
-    }
-}
-
-// Skip intro if visited before (unless forced)
-if (hasVisited && !forceIntro) {
-    logoIntro.style.display = 'none';
-    landingContent.style.display = 'block';
-    animateStats();
-    var loadingInterval = null;
-} else {
-    var loadingInterval = setInterval(updateLoading, 200);
-}
-
-function showContent() {
-    logoIntro.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-    logoIntro.style.opacity = '0';
-    logoIntro.style.transform = 'scale(1.1)';
-
-    setTimeout(() => {
-        logoIntro.style.display = 'none';
-        landingContent.style.display = 'block';
-        landingContent.style.opacity = '0';
-        landingContent.style.transition = 'opacity 0.6s ease';
-        setTimeout(() => {
-            landingContent.style.opacity = '1';
-            localStorage.setItem('dfs-visited', 'true');
-            animateStats();
-        }, 50);
-    }, 800);
-}
-
-// ─── ANIMATE STATS COUNTING ─────────────────────────────
-function animateStats() {
-    document.querySelectorAll('.stat-number').forEach(el => {
-        const target = parseInt(el.getAttribute('data-count')) || 0;
-        let current = 0;
-        const duration = 2000;
-        const increment = target / (duration / 30);
-
-        const timer = setInterval(() => {
-            current += increment;
-            if (current >= target) {
-                current = target;
-                clearInterval(timer);
+                if (drops[i] * fontSize > height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
             }
-            el.textContent = Math.round(current);
-        }, 30);
-    });
-}
-
-// ─── LANGUAGE SELECTION ──────────────────────────────────
-function selectLandingLanguage(lang) {
-    localStorage.setItem('dfs-language', lang);
-
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.getAttribute('data-lang') === lang) {
-            btn.classList.add('active');
         }
-    });
-}
 
-// ─── ENTER SITE ──────────────────────────────────────────
-function enterSite() {
-    localStorage.setItem('dfs-visited', 'true');
-    window.location.href = '/home/';
-}
+        resizeCanvas();
+        setInterval(draw, 45);
+        window.addEventListener("resize", resizeCanvas);
+    }
 
-// ─── RESIZE HANDLER ──────────────────────────────────────
-window.addEventListener('resize', () => {
-    resizeMatrix();
-    columns = Math.floor(matrixCanvas.width / fontSize);
-    drops = Array(columns).fill(1);
+    // === TYPED.JS ===
+    const typedEl = document.getElementById("landingTyped");
+    if (typedEl && typeof Typed !== "undefined") {
+        new Typed("#landingTyped", {
+            strings: [
+                "OpenCV Face Detection",
+                "EXIF Metadata Analysis",
+                "AI Artifact Detection",
+                "Compression Noise Analysis",
+                "Audio Signal Processing",
+                "Text Heuristic Engine",
+                "Video Frame Sampling",
+                "PDF Report Generation",
+                "Authenticity Scoring 0–100"
+            ],
+            typeSpeed: 40,
+            backSpeed: 20,
+            backDelay: 2000,
+            loop: true,
+            showCursor: true,
+            cursorChar: "▌"
+        });
+    }
+
+    // === LANDING PARTICLES ===
+    const particleLayer = document.getElementById("landingParticles");
+    if (particleLayer && window.innerWidth > 768) {
+        const pStyle = document.createElement("style");
+        pStyle.textContent = `
+            @keyframes landingParticleFloat {
+                0% { transform: translate(0, 0) scale(1); opacity: 0; }
+                10% { opacity: .4; }
+                50% { opacity: .2; }
+                100% { transform: translate(0, -100vh) scale(0); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(pStyle);
+
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement("div");
+            const size = 2 + Math.random() * 3;
+            p.style.cssText = `
+                position:absolute;
+                width:${size}px;
+                height:${size}px;
+                background:rgba(0,255,135,${0.15 + Math.random() * 0.2});
+                border-radius:50%;
+                left:${Math.random() * 100}%;
+                bottom: -10px;
+                animation:landingParticleFloat ${12 + Math.random() * 20}s linear infinite;
+                animation-delay:${-Math.random() * 15}s;
+            `;
+            particleLayer.appendChild(p);
+        }
+    }
+
+    // === COUNTER ANIMATION ===
+    const statNums = document.querySelectorAll(".feature-stat-num, .score-visual-num");
+    const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const el = entry.target;
+                const target = parseInt(el.getAttribute("data-count")) || 0;
+                animateNum(el, target);
+                counterObserver.unobserve(el);
+            }
+        });
+    }, { threshold: 0.3 });
+
+    statNums.forEach(el => counterObserver.observe(el));
+
+    function animateNum(el, target) {
+        const duration = 2000;
+        const start = performance.now();
+        function tick(now) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 4);
+            el.textContent = Math.floor(target * eased);
+            if (progress < 1) requestAnimationFrame(tick);
+            else el.textContent = target;
+        }
+        requestAnimationFrame(tick);
+    }
+
+    // === LANGUAGE SELECTOR ===
+    const landingLang = document.getElementById("landingLanguage");
+    if (landingLang) {
+        const savedLang = localStorage.getItem("siteLanguage") || "en";
+        landingLang.value = savedLang;
+        landingLang.addEventListener("change", () => {
+            localStorage.setItem("siteLanguage", landingLang.value);
+        });
+    }
+
+    console.log("Landing page initialized ✓");
 });

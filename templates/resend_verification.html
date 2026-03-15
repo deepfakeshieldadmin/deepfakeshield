@@ -1,53 +1,41 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Resend Verification — Deep Fake Shield{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/auth.css' %}">
-{% endblock %}
-
-{% block navbar %}{% endblock %}
-{% block footer %}{% endblock %}
+{% block title %}Resend Verification | DeepFake Shield{% endblock %}
 
 {% block content %}
-<div class="auth-page">
-    <div class="auth-bg">
-        <div class="auth-glow auth-glow-1"></div>
-        <div class="auth-glow auth-glow-2"></div>
-    </div>
+<section class="auth-premium-section">
+    <div class="container py-5">
+        <div class="row justify-content-center align-items-center min-vh-75">
+            <div class="col-lg-5">
+                <div class="auth-card-premium">
+                    <div class="text-center mb-4">
+                        <div class="brand-icon-box mx-auto mb-3">
+                            <i class="bi bi-envelope-arrow-up-fill"></i>
+                        </div>
+                        <h2 class="auth-premium-title">Resend Verification</h2>
+                        <p class="auth-premium-subtitle">Enter your email to receive a new verification link.</p>
+                    </div>
 
-    <div style="max-width:520px; width:100%; position:relative; z-index:10;">
-        <div class="animate-scale-in" style="background:var(--card-bg, rgba(255,255,255,0.92)); backdrop-filter:blur(20px); border:1px solid var(--border-color, rgba(0,0,0,0.08)); border-radius:24px; padding:45px 35px; box-shadow:0 20px 60px rgba(0,0,0,0.12);">
-            <div style="text-align:center; margin-bottom:24px;">
-                <div style="font-size:58px; margin-bottom:12px;">📨</div>
-                <h1 style="font-family:'Montserrat',sans-serif; font-weight:800; font-size:1.9rem; margin-bottom:8px;">
-                    Resend Verification Email
-                </h1>
-                <p style="font-family:'Roboto',sans-serif; color:var(--text-secondary,#666); line-height:1.7;">
-                    Enter your registered email address.
-                </p>
-            </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="premium-input-label">Email Address</label>
+                            <div class="premium-input-wrap position-relative">
+                                <i class="bi bi-envelope-fill premium-input-icon"></i>
+                                <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
+                            </div>
+                        </div>
 
-            <form method="POST">
-                {% csrf_token %}
-                <div class="auth-input-group">
-                    <div class="auth-input-icon"><i class="bi bi-envelope"></i></div>
-                    <input type="email" name="email" class="auth-input" placeholder="Enter your email" required>
-                    <div class="auth-input-line"></div>
+                        <button type="submit" class="btn btn-glow w-100 btn-lg">
+                            <i class="bi bi-send-fill me-2"></i>Resend Verification Email
+                        </button>
+                    </form>
+
+                    <p class="text-center mt-4 auth-footer-text">
+                        Back to <a href="{% url 'login' %}" class="auth-premium-link">Login</a>
+                    </p>
                 </div>
-
-                <button type="submit" class="auth-submit-btn" style="margin-top:10px;">
-                    <span class="auth-btn-text">Send Verification Email</span>
-                    <span class="auth-btn-icon"><i class="bi bi-send"></i></span>
-                    <div class="auth-btn-shine"></div>
-                </button>
-            </form>
-
-            <div style="text-align:center; margin-top:18px;">
-                <a href="{% url 'login' %}" style="color:#666; text-decoration:none; font-size:0.92rem;">Back to Login</a>
             </div>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}

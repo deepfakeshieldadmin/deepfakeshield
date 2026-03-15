@@ -1,48 +1,119 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Video Result — Deep Fake Shield{% endblock %}
+{% block title %}Video Result | DeepFake Shield{% endblock %}
 
 {% block content %}
-<section class="result-page-wrap">
-    <div class="container">
-        <div class="result-top-card" data-aos="fade-up">
-            <h1 style="font-family:'Montserrat',sans-serif; font-weight:800;">Video Analysis Result</h1>
-            <p class="text-muted">Filename: {{ scan.original_filename }}</p>
+<section class="container py-5">
+    <div class="text-center mb-4">
+        <div class="section-badge">
+            <i class="bi bi-film me-2"></i>Video Scan Complete
+        </div>
+        <h1 class="premium-section-title">Video <span class="title-gradient">Analysis</span> Result</h1>
+        <p class="premium-section-desc mx-auto">Frame-level authenticity analysis with temporal scoring.</p>
+    </div>
 
-            <div class="result-score
-                {% if scan.classification == 'authentic' %}text-success
-                {% elif scan.classification == 'likely_real' %}text-info
-                {% elif scan.classification == 'suspicious' %}text-warning
-                {% else %}text-danger{% endif %}">
-                {{ scan.authenticity_score|floatformat:1 }}%
+    <div class="glass-card-premium p-4">
+        <div class="result-header-premium mb-4">
+            <div>
+                <h3 class="mb-1">{{ scan.original_filename }}</h3>
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="result-classification-badge badge-{{ score_color|default:'info' }}">
+                        {{ scan.classification_display|default:scan.classification }}
+                    </span>
+                    {% if result.real_vs_fake %}
+                    <span class="badge {% if result.real_vs_fake == 'Real' %}bg-success{% elif result.real_vs_fake == 'Fake' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                        {{ result.real_vs_fake }}
+                    </span>
+                    {% endif %}
+                </div>
             </div>
 
-            <div class="score-badge-big score-{{ scan.classification }}">
-                {{ scan.get_classification_display|default:scan.classification }}
+            <div class="result-score-ring-wrap">
+                <svg class="result-score-svg" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="8"/>
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="url(#videoGrad)" stroke-width="8"
+                            stroke-linecap="round"
+                            stroke-dasharray="326.72"
+                            stroke-dashoffset="{{ score_dashoffset|default:'80' }}"
+                            class="result-score-ring-animated"/>
+                    <defs>
+                        <linearGradient id="videoGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="var(--accent)"/>
+                            <stop offset="100%" stop-color="var(--accent-2)"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div class="result-score-value">{{ scan.authenticity_score }}</div>
             </div>
         </div>
 
-        <div class="result-block" data-aos="fade-up">
-            <h3 class="result-heading">Frame Analysis</h3>
-            {% if scan.frame_scores %}
-                <div class="metric-grid">
-                    {% for frame in scan.frame_scores %}
-                    <div class="metric-card">
-                        <strong>Frame {{ frame.frame_index }}</strong>
-                        <span>Score: {{ frame.score }}%</span><br>
-                        <span>Time: {{ frame.time_seconds }}s</span>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <p class="text-muted">No frame details available.</p>
+        <div class="result-explanation-box mb-4">
+            <h5><i class="bi bi-chat-left-text me-2"></i>Explanation</h5>
+            <p>{{ scan.explanation }}</p>
+            {% if result.analysis_summary %}
+            <p class="mt-2 mb-0"><strong>Summary:</strong> {{ result.analysis_summary }}</p>
             {% endif %}
         </div>
 
-        <div class="result-block" data-aos="fade-up">
-            <h3 class="result-heading">Explanation</h3>
-            <p style="white-space: pre-line;">{{ scan.explanation }}</p>
+        <div class="result-details-table mb-4">
+            <h5><i class="bi bi-table me-2"></i>Video Metrics</h5>
+            <div class="table-responsive">
+                <table class="table premium-table">
+                    <tbody>
+                        <tr><th>Resolution</th><td>{{ result.resolution|default:"Unknown" }}</td></tr>
+                        <tr><th>FPS</th><td>{{ result.fps|default:"0" }}</td></tr>
+                        <tr><th>Duration</th><td>{{ result.duration|default:"0" }} sec</td></tr>
+                        <tr><th>Total Frames</th><td>{{ result.total_frames|default:"0" }}</td></tr>
+                        <tr><th>Frames Analyzed</th><td>{{ result.frames_analyzed|default:"0" }}</td></tr>
+                        <tr><th>Temporal Variation Score</th><td>{{ result.temporal_variation_score|default:"0" }}</td></tr>
+                        <tr><th>Face Consistency Score</th><td>{{ result.face_consistency_score|default:"0" }}</td></tr>
+                        <tr><th>Motion Score</th><td>{{ result.motion_score|default:"0" }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% if frame_scores %}
+        <div class="result-details-table mb-4">
+            <h5><i class="bi bi-collection-play me-2"></i>Frame Scores</h5>
+            <div class="table-responsive">
+                <table class="table premium-table">
+                    <thead>
+                        <tr>
+                            <th>Frame</th>
+                            <th>Score</th>
+                            <th>Faces</th>
+                            <th>Verdict</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in frame_scores %}
+                        <tr>
+                            <td>{{ item.frame }}</td>
+                            <td>{{ item.score }}</td>
+                            <td>{{ item.face_count }}</td>
+                            <td>{{ item.real_vs_fake }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="result-actions">
+            <a href="{% url 'upload_video' %}" class="btn btn-outline-glow">
+                <i class="bi bi-arrow-repeat me-2"></i>Scan Another Video
+            </a>
+
+            {% if scan.report_file %}
+            <a href="{{ scan.report_file.url }}" class="btn btn-glow" target="_blank" download>
+                <i class="bi bi-file-earmark-pdf-fill me-2"></i>Download PDF Report
+            </a>
+            {% endif %}
+
+            <a href="{% url 'dashboard' %}" class="btn btn-ghost-premium">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+            </a>
         </div>
     </div>
 </section>

@@ -1,192 +1,69 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Learn — Deep Fake Shield{% endblock %}
-
-{% block extra_css %}
-<style>
-    .edu-wrap {
-        padding-top: 110px;
-        padding-bottom: 70px;
-    }
-
-    .edu-hero,
-    .edu-card,
-    .score-card {
-        border-radius: 24px;
-        padding: 26px;
-        background: rgba(15,22,34,0.82);
-        border: 1px solid rgba(255,255,255,0.08);
-        box-shadow: 0 18px 48px rgba(0,0,0,0.24);
-    }
-
-    html[data-theme="light"] .edu-hero,
-    html[data-theme="light"] .edu-card,
-    html[data-theme="light"] .score-card {
-        background: rgba(255,255,255,0.86);
-        border: 1px solid rgba(0,0,0,0.06);
-        box-shadow: 0 16px 40px rgba(0,0,0,0.06);
-    }
-
-    .edu-hero h1,
-    .edu-card h3,
-    .score-card h4 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 900;
-    }
-
-    .edu-hero p,
-    .edu-card p,
-    .edu-card li {
-        color: var(--text-secondary);
-        line-height: 1.85;
-    }
-
-    .score-box {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 18px;
-        margin-top: 28px;
-        margin-bottom: 26px;
-    }
-
-    .score-card {
-        text-align: center;
-        height: 100%;
-    }
-
-    .score-big {
-        font-size: 2rem;
-        font-weight: 900;
-        font-family: 'Montserrat', sans-serif;
-        margin-bottom: 10px;
-    }
-
-    .score-high { color: #4be4a1; }
-    .score-real { color: #83f1ff; }
-    .score-suspicious { color: #ffd975; }
-    .score-fake { color: #ff9aa5; }
-
-    html[data-theme="light"] .score-high { color: #198754; }
-    html[data-theme="light"] .score-real { color: #0dcaf0; }
-    html[data-theme="light"] .score-suspicious { color: #ffc107; }
-    html[data-theme="light"] .score-fake { color: #dc3545; }
-
-    .info-list {
-        margin: 0;
-        padding-left: 18px;
-    }
-
-    @media (max-width: 992px) {
-        .score-box {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (max-width: 576px) {
-        .score-box {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
-{% endblock %}
+{% block title %}Education | DeepFake Shield{% endblock %}
 
 {% block content %}
-<section class="edu-wrap">
+<section class="py-5">
     <div class="container">
-        <div class="edu-hero mb-4" data-aos="fade-up">
-            <h1>Learn How Authenticity Scoring Works</h1>
-            <p class="mb-0">
-                Deep Fake Shield is designed not just to produce a result, but also to help users understand why a piece of content may appear trustworthy, suspicious, edited, or synthetic.
+        <div class="text-center mb-5">
+            <div class="section-badge">
+                <i class="bi bi-mortarboard-fill me-2"></i>Educational Insights
+            </div>
+            <h1 class="premium-section-title">How Authenticity Detection Works</h1>
+            <p class="premium-section-desc mx-auto">
+                DeepFake Shield combines metadata, visual analysis, audio features, and text heuristics to estimate media authenticity.
             </p>
         </div>
 
-        <div class="score-box">
-            <div class="score-card" data-aos="zoom-in" data-aos-delay="50">
-                <div class="score-big score-high">90–100</div>
-                <h4>Highly Authentic</h4>
-                <p>Strong signals of natural media quality, realistic structure, and supporting metadata.</p>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="glass-card-premium p-4 h-100">
+                    <h4>EXIF Metadata</h4>
+                    <p>
+                        Camera images often contain EXIF data such as device make, model, and capture settings.
+                        Missing EXIF can indicate screenshots, edited images, or AI-generated content.
+                    </p>
+                </div>
             </div>
 
-            <div class="score-card" data-aos="zoom-in" data-aos-delay="100">
-                <div class="score-big score-real">75–89</div>
-                <h4>Likely Real</h4>
-                <p>Mostly genuine characteristics with only limited irregularities or minor processing traces.</p>
+            <div class="col-md-6 col-lg-3">
+                <div class="glass-card-premium p-4 h-100">
+                    <h4>Artifacts</h4>
+                    <p>
+                        Synthetic images can contain visual artifacts such as abnormal frequency distribution,
+                        unnatural smoothness, or compression inconsistencies.
+                    </p>
+                </div>
             </div>
 
-            <div class="score-card" data-aos="zoom-in" data-aos-delay="150">
-                <div class="score-big score-suspicious">40–74</div>
-                <h4>Suspicious</h4>
-                <p>Mixed indicators suggesting edits, metadata loss, or unusual technical behavior.</p>
+            <div class="col-md-6 col-lg-3">
+                <div class="glass-card-premium p-4 h-100">
+                    <h4>Audio Features</h4>
+                    <p>
+                        Audio is checked using RMS energy, spectral flatness, clipping ratio, harmonic structure,
+                        and other signal-level characteristics.
+                    </p>
+                </div>
             </div>
 
-            <div class="score-card" data-aos="zoom-in" data-aos-delay="200">
-                <div class="score-big score-fake">0–39</div>
-                <h4>Likely AI / Fake</h4>
-                <p>Stronger signs of synthetic generation, unrealistic consistency, or manipulated content patterns.</p>
+            <div class="col-md-6 col-lg-3">
+                <div class="glass-card-premium p-4 h-100">
+                    <h4>Text Heuristics</h4>
+                    <p>
+                        AI text often shows unusual repetition, low burstiness, predictable punctuation patterns,
+                        and lower sentence diversity than natural writing.
+                    </p>
+                </div>
             </div>
         </div>
 
-        <div class="row g-4">
-            <div class="col-lg-6" data-aos="fade-right">
-                <div class="edu-card h-100">
-                    <h3>What is EXIF Metadata?</h3>
-                    <p>
-                        EXIF metadata is hidden data stored inside many photos captured by cameras and smartphones. It can include camera model, date taken, settings, and sometimes software traces.
-                    </p>
-                    <ul class="info-list">
-                        <li>Camera make and model details</li>
-                        <li>Capture date and time</li>
-                        <li>Photo settings like exposure and ISO</li>
-                        <li>Software history in some cases</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="col-lg-6" data-aos="fade-left">
-                <div class="edu-card h-100">
-                    <h3>What if EXIF is missing?</h3>
-                    <p>
-                        Missing EXIF does not automatically mean the media is fake. It may be removed during screenshots, social media sharing, editing, or compression pipelines.
-                    </p>
-                    <ul class="info-list">
-                        <li>Social media often strips metadata</li>
-                        <li>Screenshots usually do not contain camera EXIF</li>
-                        <li>AI-generated images often lack natural camera metadata</li>
-                        <li>Edited media may replace original metadata with software traces</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="col-lg-6" data-aos="fade-right">
-                <div class="edu-card h-100">
-                    <h3>What does “edited” mean?</h3>
-                    <p>
-                        Edited media can still originate from a real source, but has been modified after capture. This includes filters, retouching, cropping, overlays, or recompression.
-                    </p>
-                    <ul class="info-list">
-                        <li>Color enhancements or filter usage</li>
-                        <li>Beauty retouching and face smoothing</li>
-                        <li>Photoshop-like modifications</li>
-                        <li>Compression and re-save artifacts</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="col-lg-6" data-aos="fade-left">
-                <div class="edu-card h-100">
-                    <h3>How should users interpret results?</h3>
-                    <p>
-                        The authenticity score is designed as a decision-support indicator. It should be read along with the explanation, metadata, visual metrics, and file context.
-                    </p>
-                    <ul class="info-list">
-                        <li>Read the score together with explanation</li>
-                        <li>Check whether metadata is present or missing</li>
-                        <li>Review face detection and metric signals</li>
-                        <li>Use source credibility and context before drawing conclusions</li>
-                    </ul>
-                </div>
-            </div>
+        <div class="glass-card-premium p-4 mt-5">
+            <h3 class="mb-3">Score Interpretation</h3>
+            <ul class="score-meaning-list">
+                <li><span class="badge bg-danger">0–39</span> Likely Fake / AI Generated</li>
+                <li><span class="badge bg-warning text-dark">40–74</span> Suspicious / Possibly Edited</li>
+                <li><span class="badge bg-info text-dark">75–99</span> Likely Real</li>
+                <li><span class="badge bg-success">100</span> Highly Authentic</li>
+            </ul>
         </div>
     </div>
 </section>

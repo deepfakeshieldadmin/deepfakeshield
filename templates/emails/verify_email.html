@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Verify Email</title></head>
+<body style="font-family:Arial,sans-serif;background:#0a0e1a;color:#fff;padding:30px;">
+<div style="max-width:640px;margin:auto;background:#131a2f;border-radius:20px;padding:40px;border:1px solid rgba(255,255,255,.08);">
+    <div style="text-align:center;margin-bottom:24px;">
+        <div style="display:inline-block;width:70px;height:70px;line-height:70px;border-radius:50%;background:linear-gradient(135deg,#00d2ff,#7a5cff);font-size:28px;">🛡️</div>
+    </div>
+    <h2 style="text-align:center;margin-top:0;">Verify Your DeepFake Shield Account</h2>
+    <p>Hello <strong>{{ user.username }}</strong>,</p>
+    <p>Thank you for registering. Click the button below to verify your email and activate your account.</p>
+    <p style="text-align:center;margin:30px 0;">
+        <a href="{{ verification_url }}" style="display:inline-block;padding:16px 32px;background:linear-gradient(90deg,#00d2ff,#7a5cff);color:#fff;text-decoration:none;border-radius:999px;font-weight:bold;font-size:16px;">
+            ✅ Verify Email Address
+        </a>
+    </p>
+    <p style="font-size:14px;color:#aeb9d6;">If the button doesn't work, copy this link:</p>
+    <p style="word-break:break-all;font-size:13px;color:#7ee8fa;">{{ verification_url }}</p>
+    <hr style="border-color:rgba(255,255,255,.06);margin:24px 0;">
+    <p style="color:#6b7a99;font-size:13px;text-align:center;">If you didn't create this account, ignore this email.</p>
+</div>
+</body>
+</html>

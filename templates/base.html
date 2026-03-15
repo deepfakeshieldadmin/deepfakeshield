@@ -1,191 +1,203 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="tech-blue">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Deep Fake Shield{% endblock %}</title>
+    <title>{% block title %}DeepFake Shield{% endblock %}</title>
+    <meta name="description" content="DeepFake Shield - Real-Time Media Authenticity Verification System">
+    <meta name="theme-color" content="#0a0e1a">
 
-    <!-- Google Fonts -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
-    <!-- Bootstrap Icons CDN -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <!-- AOS Animate on Scroll -->
-    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+    <!-- AOS -->
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" href="{% static 'css/animations.css' %}">
     <link rel="stylesheet" href="{% static 'css/auth.css' %}">
     <link rel="stylesheet" href="{% static 'css/scan_pages.css' %}">
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'css/cursor.css' %}">
+
     {% block extra_css %}{% endblock %}
-
-    <style>
-        :root {
-            --hero-glow-1: #007bff;
-            --hero-glow-2: #6f42c1;
-            --hero-glow-3: #00d4ff;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            overflow-x: hidden;
-            background: var(--bg-primary, #f8f9fc);
-        }
-
-        .main-content {
-            min-height: calc(100vh - 220px);
-            position: relative;
-            z-index: 2;
-        }
-
-        .site-loader-line {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, #007bff, #6f42c1, #00d4ff);
-            background-size: 200% 100%;
-            animation: loaderMove 4s linear infinite;
-            z-index: 99999;
-        }
-
-        @keyframes loaderMove {
-            0% { background-position: 0% 0; }
-            100% { background-position: 200% 0; }
-        }
-
-        .global-aurora {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .aurora-orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(70px);
-            opacity: 0.14;
-            animation: orbFloat 14s ease-in-out infinite;
-        }
-
-        .aurora-orb.one {
-            width: 280px;
-            height: 280px;
-            background: var(--hero-glow-1);
-            top: 5%;
-            left: -40px;
-        }
-
-        .aurora-orb.two {
-            width: 320px;
-            height: 320px;
-            background: var(--hero-glow-2);
-            bottom: 8%;
-            right: -70px;
-            animation-delay: -3s;
-        }
-
-        .aurora-orb.three {
-            width: 220px;
-            height: 220px;
-            background: var(--hero-glow-3);
-            top: 45%;
-            left: 45%;
-            animation-delay: -6s;
-        }
-
-        @keyframes orbFloat {
-            0%,100% { transform: translate(0,0) scale(1); }
-            50% { transform: translate(30px,-20px) scale(1.12); }
-        }
-
-        .brand-placeholder-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 7px 14px;
-            border-radius: 999px;
-            background: rgba(0,123,255,0.08);
-            border: 1px solid rgba(0,123,255,0.15);
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: #007bff;
-        }
-
-        .project-note-box {
-            border-radius: 16px;
-            padding: 18px 20px;
-            background: rgba(255,255,255,0.75);
-            border: 1px dashed rgba(0,123,255,0.25);
-            color: #4c5b70;
-            font-size: 0.95rem;
-        }
-
-        [data-theme="dark"] .project-note-box {
-            background: rgba(20, 24, 35, 0.75);
-            color: #d4d9e5;
-            border-color: rgba(0,212,255,0.18);
-        }
-    </style>
-
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
 </head>
-<body>
-    <div class="site-loader-line"></div>
+<body class="theme-tech-blue">
+    <!-- Cursor Layer -->
+    <div id="cursor-layer"></div>
+    <div id="cursor-dot" class="cursor-dot"></div>
+    <div id="cursor-ring" class="cursor-ring"></div>
 
-    <div class="global-aurora">
-        <div class="aurora-orb one"></div>
-        <div class="aurora-orb two"></div>
-        <div class="aurora-orb three"></div>
-    </div>
+    <!-- Background Effects -->
+    <div class="bg-mesh-gradient"></div>
+    <div class="bg-grid-overlay"></div>
+    <div class="bg-noise-overlay"></div>
+    <div class="site-bg-orb orb-1"></div>
+    <div class="site-bg-orb orb-2"></div>
+    <div class="site-bg-orb orb-3"></div>
+    <div class="site-bg-orb orb-4"></div>
+    <div class="site-bg-orb orb-5"></div>
 
-    {% block navbar %}
+    <!-- Floating Particles Container -->
+    <div id="floatingParticles" class="floating-particles-container"></div>
+
+    {% if request.path != '/' %}
         {% include 'components/navbar.html' %}
-    {% endblock %}
+    {% endif %}
 
     {% if messages %}
-    <div class="container mt-3" style="padding-top: 80px; position: relative; z-index: 5;">
+    <div class="container pt-3" style="position:relative; z-index:10;">
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show glass-alert" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show glass-alert-premium shadow-lg" role="alert" data-aos="fade-down" data-aos-duration="600">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %} fs-5"></i>
+                <span>{{ message }}</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         {% endfor %}
     </div>
     {% endif %}
 
-    <main class="main-content">
+    <main class="main-wrapper">
         {% block content %}{% endblock %}
     </main>
 
-    {% block footer %}
+    {% if request.path != '/' %}
         {% include 'components/footer.html' %}
-    {% endblock %}
+    {% endif %}
 
     {% include 'components/cookie_banner.html' %}
 
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Preferences Side Panel -->
+    <div id="preferencesOverlay" class="preferences-overlay"></div>
+    <div id="preferencesPanel" class="preferences-panel shadow-2xl">
+        <div class="preferences-header">
+            <div class="d-flex align-items-center gap-2">
+                <div class="pref-header-icon"><i class="bi bi-sliders2"></i></div>
+                <div>
+                    <h5 class="mb-0">Preferences</h5>
+                    <small class="text-white-50">Customize your experience</small>
+                </div>
+            </div>
+            <button class="btn btn-sm btn-ghost-light" id="closePreferencesBtn">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
 
-    <script>
-        AOS.init({
-            duration: 900,
-            once: true,
-            offset: 70,
-            easing: 'ease-out-cubic'
-        });
-    </script>
+        <div class="preferences-body">
+            <div class="preferences-section">
+                <label class="pref-label"><i class="bi bi-palette me-2"></i>Theme Preset</label>
+                <div class="theme-grid" id="themeGrid">
+                    <button class="theme-swatch active" data-theme="theme-tech-blue" title="Tech Blue">
+                        <span style="background:linear-gradient(135deg,#00d2ff,#7a5cff)"></span>
+                        <small>Tech Blue</small>
+                    </button>
+                    <button class="theme-swatch" data-theme="theme-matrix-green" title="Matrix Green">
+                        <span style="background:linear-gradient(135deg,#00ff87,#00b85f)"></span>
+                        <small>Matrix Green</small>
+                    </button>
+                    <button class="theme-swatch" data-theme="theme-cyber-purple" title="Cyber Purple">
+                        <span style="background:linear-gradient(135deg,#c44dff,#6f7bff)"></span>
+                        <small>Cyber Purple</small>
+                    </button>
+                    <button class="theme-swatch" data-theme="theme-neon-sunset" title="Neon Sunset">
+                        <span style="background:linear-gradient(135deg,#ff7a18,#ff2d95)"></span>
+                        <small>Neon Sunset</small>
+                    </button>
+                    <button class="theme-swatch" data-theme="theme-minimal-light" title="Minimal Light">
+                        <span style="background:linear-gradient(135deg,#e0e7ff,#f8fafc)"></span>
+                        <small>Minimal Light</small>
+                    </button>
+                    <button class="theme-swatch" data-theme="theme-midnight-gold" title="Midnight Gold">
+                        <span style="background:linear-gradient(135deg,#d4a574,#1a1a2e)"></span>
+                        <small>Midnight Gold</small>
+                    </button>
+                </div>
+            </div>
+
+            <div class="preferences-section">
+                <label class="pref-label"><i class="bi bi-cursor me-2"></i>Cursor Effect</label>
+                <select id="cursorSelector" class="form-select premium-select">
+                    <option value="default">Default</option>
+                    <option value="fire">🔥 Fire Trail</option>
+                    <option value="matrix">💚 Matrix Rain</option>
+                    <option value="tech">⚡ Tech Pulse</option>
+                    <option value="minimal">✨ Minimal Dot</option>
+                    <option value="katana">⚔️ Katana Slash</option>
+                    <option value="binary">🔢 Binary Trail</option>
+                    <option value="lightning">🌩️ Lightning</option>
+                </select>
+            </div>
+
+            <div class="preferences-section">
+                <label class="pref-label"><i class="bi bi-translate me-2"></i>Language</label>
+                <select id="languageSelector" class="form-select premium-select">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="hi">🇮🇳 Hindi</option>
+                    <option value="mr">🇮🇳 Marathi</option>
+                    <option value="te">🇮🇳 Telugu</option>
+                    <option value="ta">🇮🇳 Tamil</option>
+                    <option value="kn">🇮🇳 Kannada</option>
+                    <option value="fr">🇫🇷 French</option>
+                    <option value="ja">🇯🇵 Japanese</option>
+                </select>
+            </div>
+
+            <div class="preferences-section">
+                <button id="toggleThemeModeBtn" class="btn btn-glow-outline w-100">
+                    <i class="bi bi-moon-stars me-2"></i>Toggle Light / Dark
+                </button>
+            </div>
+
+            <div class="preferences-section">
+                <div class="pref-info-box">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Preferences are saved locally in your browser and persist across sessions.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAB Button -->
+    <button id="openPreferencesBtn" class="preferences-fab" type="button" aria-label="Open Preferences">
+        <div class="fab-inner">
+            <i class="bi bi-gear-fill"></i>
+        </div>
+        <div class="fab-ring"></div>
+    </button>
+
+    <!-- Back to Top -->
+    <button id="backToTopBtn" class="back-to-top-btn" type="button" aria-label="Back to top">
+        <i class="bi bi-chevron-up"></i>
+    </button>
+
+    <!-- Loading Screen -->
+    <div id="pageLoader" class="page-loader">
+        <div class="loader-content">
+            <div class="loader-logo">
+                <i class="bi bi-shield-shaded"></i>
+            </div>
+            <div class="loader-bar">
+                <div class="loader-bar-inner"></div>
+            </div>
+            <p class="loader-text">Initializing DeepFake Shield...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.16/dist/typed.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/countup.js@2.8.0/dist/countUp.umd.js"></script>
 
     <script src="{% static 'js/main.js' %}"></script>
     <script src="{% static 'js/theme-toggle.js' %}"></script>
@@ -193,6 +205,10 @@
     <script src="{% static 'js/preferences.js' %}"></script>
     <script src="{% static 'js/i18n.js' %}"></script>
     <script src="{% static 'js/cursor.js' %}"></script>
+    <script src="{% static 'js/landing.js' %}"></script>
+    <script src="{% static 'js/three-bg.js' %}"></script>
+
+    <script>AOS.init({duration:800,easing:'ease-out-cubic',once:true,offset:60});</script>
 
     {% block extra_js %}{% endblock %}
 </body>

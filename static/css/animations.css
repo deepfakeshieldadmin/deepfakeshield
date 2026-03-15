@@ -1,57 +1,135 @@
-/* ==========================================================
-   GLOBAL ANIMATIONS
-   ========================================================== */
+/* ============================================
+   DEEPFAKE SHIELD — ANIMATIONS CSS
+   ============================================ */
 
-@keyframes fadeUp {
-    from {
-        opacity: 0;
-        transform: translateY(24px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* AOS Custom Enhancements */
+[data-aos] { transition-timing-function: cubic-bezier(.4,0,.2,1) !important; }
+
+/* Reveal animations */
+.reveal-up { opacity:0; transform:translateY(30px); transition: all .8s cubic-bezier(.4,0,.2,1); }
+.reveal-right { opacity:0; transform:translateX(50px); transition: all .8s cubic-bezier(.4,0,.2,1); }
+.reveal-left { opacity:0; transform:translateX(-50px); transition: all .8s cubic-bezier(.4,0,.2,1); }
+.reveal-fade { opacity:0; transition: opacity .8s ease; }
+.reveal-scale { opacity:0; transform:scale(.9); transition: all .8s cubic-bezier(.4,0,.2,1); }
+
+.reveal-visible {
+    opacity:1 !important;
+    transform:translate(0,0) scale(1) !important;
 }
 
-@keyframes fadeDown {
-    from {
-        opacity: 0;
-        transform: translateY(-24px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.delay-1 { transition-delay:.1s; }
+.delay-2 { transition-delay:.2s; }
+.delay-3 { transition-delay:.3s; }
+.delay-4 { transition-delay:.4s; }
+.delay-5 { transition-delay:.5s; }
+
+/* Floating */
+@keyframes floatY {
+    0%,100% { transform:translateY(0); }
+    50% { transform:translateY(-12px); }
+}
+@keyframes floatX {
+    0%,100% { transform:translateX(0); }
+    50% { transform:translateX(10px); }
 }
 
-@keyframes scaleIn {
-    from {
-        opacity: 0;
-        transform: scale(0.96);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+/* Glow Pulse */
+@keyframes glowPulse {
+    0%,100% { box-shadow:0 0 20px rgba(0,210,255,.2); }
+    50% { box-shadow:0 0 40px rgba(0,210,255,.4); }
 }
 
+/* Shimmer */
 @keyframes shimmer {
-    0% {
-        background-position: -200% 0;
-    }
-    100% {
-        background-position: 200% 0;
-    }
+    0% { background-position:-200% center; }
+    100% { background-position:200% center; }
 }
 
-.animate-fade-up {
-    animation: fadeUp 0.8s ease both;
+.shimmer-effect {
+    background: linear-gradient(90deg, transparent 30%, rgba(255,255,255,.08) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
 }
 
-.animate-fade-down {
-    animation: fadeDown 0.8s ease both;
+/* Gradient Flow */
+@keyframes gradientFlow {
+    0% { background-position:0% 50%; }
+    50% { background-position:100% 50%; }
+    100% { background-position:0% 50%; }
 }
 
-.animate-scale-in {
-    animation: scaleIn 0.7s ease both;
+/* Typing Cursor */
+@keyframes typingBlink {
+    0%,100% { opacity:1; }
+    50% { opacity:0; }
+}
+
+/* Stagger children */
+.stagger-children > *:nth-child(1) { animation-delay:.1s; }
+.stagger-children > *:nth-child(2) { animation-delay:.2s; }
+.stagger-children > *:nth-child(3) { animation-delay:.3s; }
+.stagger-children > *:nth-child(4) { animation-delay:.4s; }
+.stagger-children > *:nth-child(5) { animation-delay:.5s; }
+.stagger-children > *:nth-child(6) { animation-delay:.6s; }
+
+/* Particle float */
+@keyframes particleFloat {
+    0% { transform:translateY(100vh) rotate(0); opacity:0; }
+    10% { opacity:.6; }
+    90% { opacity:.6; }
+    100% { transform:translateY(-10vh) rotate(720deg); opacity:0; }
+}
+
+.floating-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: .3;
+    animation: particleFloat linear infinite;
+}
+
+/* Rotate */
+@keyframes slowRotate {
+    from { transform:rotate(0); }
+    to { transform:rotate(360deg); }
+}
+
+/* Bounce */
+@keyframes gentleBounce {
+    0%,100% { transform:translateY(0); }
+    50% { transform:translateY(-6px); }
+}
+
+/* Scale In */
+@keyframes scaleIn {
+    from { transform:scale(0); opacity:0; }
+    to { transform:scale(1); opacity:1; }
+}
+
+/* Slide In Up */
+@keyframes slideInUp {
+    from { transform:translateY(40px); opacity:0; }
+    to { transform:translateY(0); opacity:1; }
+}
+
+/* Glitch */
+@keyframes glitch {
+    0%,100% { transform:translate(0); }
+    20% { transform:translate(-2px,2px); }
+    40% { transform:translate(2px,-1px); }
+    60% { transform:translate(-1px,1px); }
+    80% { transform:translate(1px,-2px); }
+}
+
+.glitch-hover:hover {
+    animation: glitch .3s ease;
+}
+
+/* Number Counter Animation */
+@keyframes countPulse {
+    0% { transform:scale(1); }
+    50% { transform:scale(1.05); }
+    100% { transform:scale(1); }
 }

@@ -1,343 +1,90 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Login — Deep Fake Shield{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/auth.css' %}">
-<style>
-    .auth-page {
-        min-height: 100vh;
-        padding: 90px 15px 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-    }
-
-    .auth-layout {
-        max-width: 1100px;
-        width: 100%;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        background: rgba(255,255,255,0.82);
-        border: 1px solid rgba(0,0,0,0.06);
-        border-radius: 28px;
-        overflow: hidden;
-        box-shadow: 0 25px 70px rgba(0,0,0,0.10);
-        backdrop-filter: blur(18px);
-    }
-
-    [data-theme="dark"] .auth-layout {
-        background: rgba(18, 24, 35, 0.84);
-        border-color: rgba(255,255,255,0.08);
-    }
-
-    .auth-showcase {
-        position: relative;
-        padding: 40px 34px;
-        background:
-            radial-gradient(circle at top left, rgba(0,123,255,0.22), transparent 35%),
-            radial-gradient(circle at bottom right, rgba(111,66,193,0.22), transparent 35%),
-            linear-gradient(135deg, rgba(0,123,255,0.14), rgba(111,66,193,0.08));
-        color: #fff;
-        min-height: 100%;
-    }
-
-    .auth-showcase::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(5,12,22,0.35), rgba(10,20,35,0.15));
-    }
-
-    .auth-showcase-inner {
-        position: relative;
-        z-index: 2;
-    }
-
-    .auth-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.12);
-        border: 1px solid rgba(255,255,255,0.15);
-        font-size: 0.82rem;
-        font-weight: 700;
-        margin-bottom: 18px;
-    }
-
-    .auth-pulse-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #00ff95;
-        box-shadow: 0 0 10px #00ff95;
-        animation: authPulseDot 1.8s infinite;
-    }
-
-    @keyframes authPulseDot {
-        0%,100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.6); opacity: 0.45; }
-    }
-
-    .auth-shield-hero {
-        font-size: 5.5rem;
-        line-height: 1;
-        margin: 18px 0 16px;
-        filter: drop-shadow(0 0 20px rgba(255,255,255,0.20));
-        animation: floatShield 3s ease-in-out infinite;
-    }
-
-    @keyframes floatShield {
-        0%,100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-    }
-
-    .auth-showcase h2 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 800;
-        font-size: 2rem;
-        margin-bottom: 12px;
-    }
-
-    .auth-showcase p {
-        font-family: 'Roboto', sans-serif;
-        color: rgba(255,255,255,0.84);
-        line-height: 1.8;
-        margin-bottom: 20px;
-    }
-
-    .auth-feature-list {
-        display: grid;
-        gap: 12px;
-    }
-
-    .auth-feature-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 14px;
-        border-radius: 14px;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.10);
-        font-weight: 600;
-        font-size: 0.95rem;
-    }
-
-    .auth-form-zone {
-        padding: 42px 34px;
-    }
-
-    .auth-mini-note {
-        margin-top: 14px;
-        padding: 14px;
-        border-radius: 14px;
-        background: rgba(0,123,255,0.05);
-        border: 1px dashed rgba(0,123,255,0.15);
-        color: var(--text-secondary, #5f6e82);
-        font-size: 0.88rem;
-        line-height: 1.7;
-    }
-
-    .auth-title {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 800;
-        font-size: 2rem;
-        margin-bottom: 8px;
-    }
-
-    .auth-subtitle {
-        color: var(--text-secondary, #666);
-        margin-bottom: 22px;
-        line-height: 1.8;
-    }
-
-    .auth-input-group {
-        position: relative;
-        margin-bottom: 18px;
-    }
-
-    .auth-label {
-        display: block;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        font-size: 0.82rem;
-        margin-bottom: 7px;
-        color: var(--text-primary, #222);
-    }
-
-    .auth-input {
-        width: 100%;
-        padding: 14px 46px 14px 42px;
-        border-radius: 14px;
-        border: 1px solid rgba(0,0,0,0.08);
-        background: rgba(255,255,255,0.7);
-        outline: none;
-    }
-
-    [data-theme="dark"] .auth-input {
-        background: rgba(255,255,255,0.06);
-        border-color: rgba(255,255,255,0.08);
-        color: #fff;
-    }
-
-    .auth-input-icon {
-        position: absolute;
-        left: 14px;
-        top: 41px;
-        color: var(--text-secondary, #6c757d);
-        z-index: 2;
-    }
-
-    .auth-password-toggle {
-        position: absolute;
-        right: 14px;
-        top: 39px;
-        border: none;
-        background: transparent;
-        color: var(--text-secondary, #6c757d);
-        cursor: pointer;
-        z-index: 5;
-    }
-
-    .auth-submit-btn {
-        width: 100%;
-        border: none;
-        border-radius: 14px;
-        padding: 14px 18px;
-        font-weight: 800;
-        color: #fff;
-        background: linear-gradient(135deg, #007bff, #6f42c1);
-        box-shadow: 0 16px 36px rgba(0,123,255,0.18);
-    }
-
-    .auth-footer-links {
-        margin-top: 20px;
-        text-align: center;
-    }
-
-    .auth-back-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-        margin-bottom: 16px;
-        color: var(--text-secondary, #666);
-        font-weight: 600;
-    }
-
-    input[type="password"]::-ms-reveal,
-    input[type="password"]::-ms-clear {
-        display: none;
-    }
-
-    @media (max-width: 900px) {
-        .auth-layout {
-            grid-template-columns: 1fr;
-        }
-        .auth-showcase {
-            display: none;
-        }
-    }
-</style>
-{% endblock %}
-
-{% block navbar %}{% endblock %}
-{% block footer %}{% endblock %}
+{% block title %}Login | DeepFake Shield{% endblock %}
 
 {% block content %}
-<div class="auth-page">
-    <div class="auth-layout" data-aos="zoom-in">
-        <div class="auth-showcase">
-            <div class="auth-showcase-inner">
-                <div class="auth-badge">
-                    <span class="auth-pulse-dot"></span>
-                    Secure Login Portal
+<section class="auth-premium-section">
+    <div class="auth-bg-effects">
+        <div class="auth-orb auth-orb-1"></div>
+        <div class="auth-orb auth-orb-2"></div>
+    </div>
+
+    <div class="container py-5">
+        <div class="row justify-content-center align-items-center min-vh-80">
+            <div class="col-lg-5 col-xl-5">
+                <div class="auth-card-premium" data-aos="zoom-in" data-aos-duration="600">
+                    <div class="auth-card-glow"></div>
+
+                    <div class="text-center mb-4">
+                        <div class="auth-icon-premium" data-aos="zoom-in" data-aos-delay="200">
+                            <i class="bi bi-person-lock"></i>
+                            <div class="auth-icon-ring"></div>
+                        </div>
+                        <h2 class="auth-premium-title" data-aos="fade-up" data-aos-delay="300">Welcome Back</h2>
+                        <p class="auth-premium-subtitle" data-aos="fade-up" data-aos-delay="400">Login to access your scan history and dashboard.</p>
+                    </div>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger glass-alert-premium" data-aos="shake">
+                                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="premium-input-group" data-aos="fade-up" data-aos-delay="450">
+                            <label class="premium-input-label"><i class="bi bi-person me-1"></i>Username or Email</label>
+                            <div class="premium-input-wrap">
+                                <i class="bi bi-person-fill premium-input-icon"></i>
+                                {{ form.username }}
+                            </div>
+                            {% if form.username.errors %}
+                                <div class="premium-input-error">{{ form.username.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="premium-input-group" data-aos="fade-up" data-aos-delay="500">
+                            <label class="premium-input-label"><i class="bi bi-key me-1"></i>Password</label>
+                            <div class="premium-input-wrap password-field-wrap">
+                                <i class="bi bi-lock-fill premium-input-icon"></i>
+                                {{ form.password }}
+                                <button type="button" class="password-toggle-btn" data-target="id_password">
+                                    <i class="bi bi-eye-fill"></i>
+                                </button>
+                            </div>
+                            {% if form.password.errors %}
+                                <div class="premium-input-error">{{ form.password.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="premium-input-group" data-aos="fade-up" data-aos-delay="550">
+                            <label class="premium-input-label"><i class="bi bi-puzzle me-1"></i>Captcha</label>
+                            <div class="captcha-premium-box">
+                                <div class="captcha-premium-question">
+                                    <i class="bi bi-shield-lock me-2"></i>{{ captcha_question|default:"What is 7 + 3 ?" }}
+                                </div>
+                                <div class="premium-input-wrap">
+                                    <i class="bi bi-hash premium-input-icon"></i>
+                                    {{ form.captcha }}
+                                </div>
+                            </div>
+                            {% if form.captcha.errors %}
+                                <div class="premium-input-error">{{ form.captcha.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-glow w-100 btn-xl mt-3" data-aos="fade-up" data-aos-delay="600">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </button>
+                    </form>
+
+                    <p class="text-center mt-4 mb-0 auth-footer-text" data-aos="fade-up" data-aos-delay="650">
+                        Don't have an account?
+                        <a href="{% url 'signup' %}" class="auth-premium-link">Create one <i class="bi bi-arrow-right"></i></a>
+                    </p>
                 </div>
-
-                <div class="auth-shield-hero">🛡️</div>
-
-                <h2>Welcome Back to Deep Fake Shield</h2>
-                <p>
-                    Login to access your personal dashboard, scan media files, review analysis reports, and explore authenticity verification results.
-                </p>
-
-                <div class="auth-feature-list">
-                    <div class="auth-feature-item"><i class="bi bi-image-fill"></i> Image Authenticity Detection</div>
-                    <div class="auth-feature-item"><i class="bi bi-camera-video-fill"></i> Video Frame Analysis</div>
-                    <div class="auth-feature-item"><i class="bi bi-music-note-beamed"></i> Audio Signal Verification</div>
-                    <div class="auth-feature-item"><i class="bi bi-file-earmark-text-fill"></i> AI Text Pattern Detection</div>
-                </div>
-
-                <div class="auth-mini-note mt-4">
-                    Real is rare, fake is everywhere
-                </div>
-            </div>
-        </div>
-
-        <div class="auth-form-zone">
-            <a href="{% url 'home' %}" class="auth-back-link">
-                <i class="bi bi-arrow-left"></i> Back to Home
-            </a>
-
-            <h1 class="auth-title">Sign In</h1>
-            <p class="auth-subtitle">
-                Use your verified account credentials to continue.
-            </p>
-
-            {% if form.errors %}
-            <div class="alert alert-danger rounded-4">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                Invalid username or password.
-            </div>
-            {% endif %}
-
-            <form method="POST" action="{% url 'login' %}">
-                {% csrf_token %}
-
-                <div class="auth-input-group">
-                    <label class="auth-label" for="id_username">Username</label>
-                    <div class="auth-input-icon"><i class="bi bi-person"></i></div>
-                    {{ form.username }}
-                </div>
-
-                <div class="auth-input-group">
-                    <label class="auth-label" for="id_password">Password</label>
-                    <div class="auth-input-icon"><i class="bi bi-lock"></i></div>
-                    {{ form.password }}
-                    <button type="button" class="auth-password-toggle" onclick="togglePassword('id_password', this)">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                </div>
-
-                <button type="submit" class="auth-submit-btn">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Sign In
-                </button>
-            </form>
-
-            <div class="auth-footer-links">
-                <p>Don't have an account? <a href="{% url 'signup' %}" class="fw-bold text-decoration-none">Create Account</a></p>
-                <p><a href="{% url 'resend_verification' %}" class="text-decoration-none">Resend Verification Email</a></p>
             </div>
         </div>
     </div>
-</div>
-
-<script>
-function togglePassword(inputId, btn) {
-    const input = document.getElementById(inputId);
-    const icon = btn.querySelector('i');
-    if (!input) return;
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.className = 'bi bi-eye-slash';
-    } else {
-        input.type = 'password';
-        icon.className = 'bi bi-eye';
-    }
-}
-</script>
+</section>
 {% endblock %}

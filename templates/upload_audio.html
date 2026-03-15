@@ -1,41 +1,28 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Audio Scan — Deep Fake Shield{% endblock %}
+{% block title %}Audio Scan | DeepFake Shield{% endblock %}
 
 {% block content %}
-<section class="scan-page-wrap">
-    <div class="container">
-        <div class="scan-hero-box" data-aos="fade-up">
-            <h1>Audio Authenticity Scan</h1>
-            <p>Upload an audio file to inspect clipping, spectral flatness, and authenticity-related signal properties.</p>
-        </div>
-
-        <div class="upload-card-main" data-aos="zoom-in">
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                <label for="id_audio" class="drop-zone">
-                    <div class="upload-icon-hero"><i class="bi bi-music-note-beamed"></i></div>
-                    <h3>Upload Audio</h3>
-                    <p>Supported formats: WAV, MP3, OGG, FLAC, AAC</p>
-                </label>
-
-                <div style="display:none;">{{ form.audio }}</div>
-
-                {% if form.errors %}
-                <div class="alert alert-danger rounded-4 mt-3">
-                    {% for field in form %}
-                        {% for error in field.errors %}
-                            <div>{{ error }}</div>
-                        {% endfor %}
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                <button type="submit" class="scan-btn-main">
-                    <i class="bi bi-soundwave me-2"></i> Analyze Audio
-                </button>
-            </form>
+<section class="container py-5">
+    <div class="text-center mb-5">
+        <div class="section-badge" data-aos="fade-down"><i class="bi bi-soundwave me-2"></i>Audio Detection</div>
+        <h1 class="premium-section-title" data-aos="fade-up">Audio <span class="title-gradient">Authenticity</span> Detection</h1>
+        <p class="premium-section-desc mx-auto" data-aos="fade-up" data-aos-delay="100">Analyze RMS energy, clipping, and spectral flatness.</p>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-lg-8" data-aos="zoom-in">
+            <div class="upload-card-premium">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="upload-zone-premium">
+                        <div class="upload-zone-icon"><i class="bi bi-mic-fill"></i></div>
+                        <div class="upload-zone-ring"></div>
+                        <h4>Upload Audio File</h4>
+                        <p>Supported: WAV, MP3</p>
+                        {{ form.file }}
+                    </div>
+                    <button type="submit" class="btn btn-glow btn-xl w-100 mt-4"><i class="bi bi-soundwave me-2"></i>Analyze Audio</button>
+                </form>
+            </div>
         </div>
     </div>
 </section>

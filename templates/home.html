@@ -1,361 +1,125 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Home — Deep Fake Shield{% endblock %}
-
-{% block extra_css %}
-<style>
-    .hero-home {
-        padding: 115px 0 80px;
-        position: relative;
-    }
-
-    .hero-panel {
-        background: rgba(15, 22, 34, 0.82);
-        border: 1px solid rgba(255,255,255,0.08);
-        backdrop-filter: blur(18px);
-        border-radius: 28px;
-        padding: 42px 30px;
-        box-shadow: 0 28px 70px rgba(0,0,0,0.24);
-    }
-
-    html[data-theme="light"] .hero-panel {
-        background: rgba(255,255,255,0.84);
-        border: 1px solid rgba(0,0,0,0.06);
-        box-shadow: 0 18px 50px rgba(0,0,0,0.08);
-    }
-
-    .hero-badge-home {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 18px;
-        border-radius: 999px;
-        background: rgba(0,191,255,0.08);
-        border: 1px solid rgba(0,191,255,0.15);
-        color: var(--primary-color);
-        font-weight: 700;
-        font-size: 0.84rem;
-        margin-bottom: 18px;
-    }
-
-    .pulse-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #00ff95;
-        box-shadow: 0 0 10px #00ff95;
-        animation: pulseDot 1.9s infinite;
-    }
-
-    @keyframes pulseDot {
-        0%,100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.6); opacity: 0.45; }
-    }
-
-    .hero-title-home {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 900;
-        font-size: clamp(2.3rem, 5vw, 4.8rem);
-        line-height: 1.08;
-        margin-bottom: 18px;
-    }
-
-    .hero-desc-home {
-        font-size: 1.05rem;
-        line-height: 1.9;
-        color: var(--text-secondary);
-        max-width: 680px;
-        margin-bottom: 26px;
-    }
-
-    .hero-btn-row {
-        display: flex;
-        gap: 14px;
-        flex-wrap: wrap;
-        margin-bottom: 24px;
-    }
-
-    .hero-btn-main,
-    .hero-btn-secondary {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 14px 22px;
-        border-radius: 14px;
-        text-decoration: none;
-        font-weight: 800;
-    }
-
-    .hero-btn-main {
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
-        color: #fff;
-        box-shadow: 0 16px 34px rgba(0,191,255,0.18);
-    }
-
-    .hero-btn-secondary {
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.08);
-        color: var(--text-primary);
-    }
-
-    html[data-theme="light"] .hero-btn-secondary {
-        background: rgba(255,255,255,0.75);
-        border: 1px solid rgba(0,0,0,0.06);
-    }
-
-    .hero-meta-box {
-        margin-top: 22px;
-        padding: 16px 18px;
-        border-radius: 18px;
-        background: rgba(0,191,255,0.05);
-        border: 1px dashed rgba(0,191,255,0.14);
-        color: var(--text-secondary);
-        line-height: 1.8;
-    }
-
-    .hero-visual-card {
-        border-radius: 28px;
-        padding: 30px 24px;
-        background:
-            radial-gradient(circle at top left, rgba(0,191,255,0.12), transparent 35%),
-            radial-gradient(circle at bottom right, rgba(123,77,255,0.12), transparent 35%),
-            rgba(15, 22, 34, 0.82);
-        border: 1px solid rgba(255,255,255,0.08);
-        box-shadow: 0 24px 60px rgba(0,0,0,0.24);
-        text-align: center;
-    }
-
-    html[data-theme="light"] .hero-visual-card {
-        background:
-            radial-gradient(circle at top left, rgba(0,123,255,0.08), transparent 35%),
-            radial-gradient(circle at bottom right, rgba(111,66,193,0.08), transparent 35%),
-            rgba(255,255,255,0.84);
-        border: 1px solid rgba(0,0,0,0.06);
-        box-shadow: 0 16px 46px rgba(0,0,0,0.08);
-    }
-
-    .shield-glow-home {
-        font-size: 6.4rem;
-        line-height: 1;
-        filter: drop-shadow(0 0 24px rgba(0,191,255,0.35));
-        animation: floatShield 3s ease-in-out infinite;
-    }
-
-    @keyframes floatShield {
-        0%,100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-    }
-
-    .scan-mini-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        margin-top: 22px;
-    }
-
-    .scan-mini-card {
-        padding: 16px 14px;
-        border-radius: 16px;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.08);
-        font-weight: 700;
-    }
-
-    html[data-theme="light"] .scan-mini-card {
-        background: rgba(255,255,255,0.75);
-        border: 1px solid rgba(0,0,0,0.06);
-    }
-
-    .features-section,
-    .how-section,
-    .cta-section {
-        padding: 78px 0;
-    }
-
-    .section-title {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 900;
-        font-size: clamp(2rem, 4vw, 3.1rem);
-        margin-bottom: 12px;
-        text-align: center;
-    }
-
-    .section-subtitle {
-        text-align: center;
-        max-width: 780px;
-        margin: 0 auto 38px;
-        color: var(--text-secondary);
-        line-height: 1.9;
-    }
-
-    .feature-card {
-        height: 100%;
-        border-radius: 22px;
-        padding: 28px 24px;
-        background: rgba(15,22,34,0.82);
-        border: 1px solid rgba(255,255,255,0.08);
-        box-shadow: 0 18px 46px rgba(0,0,0,0.22);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    html[data-theme="light"] .feature-card {
-        background: rgba(255,255,255,0.86);
-        border: 1px solid rgba(0,0,0,0.06);
-        box-shadow: 0 16px 40px rgba(0,0,0,0.06);
-    }
-
-    .feature-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 24px 54px rgba(0,0,0,0.24);
-    }
-
-    .feature-icon {
-        font-size: 2.8rem;
-        margin-bottom: 16px;
-        display: inline-block;
-    }
-
-    .feature-card h3 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 800;
-        margin-bottom: 10px;
-    }
-
-    .feature-card p {
-        color: var(--text-secondary);
-        line-height: 1.8;
-    }
-
-    .feature-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        text-decoration: none;
-        font-weight: 800;
-        margin-top: 10px;
-    }
-
-    .step-card {
-        text-align: center;
-        padding: 26px 18px;
-    }
-
-    .step-number {
-        width: 64px;
-        height: 64px;
-        margin: 0 auto 16px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 900;
-        font-size: 1.3rem;
-        box-shadow: 0 14px 30px rgba(0,191,255,0.18);
-    }
-
-    .step-card h5 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 800;
-    }
-
-    .step-card p {
-        color: var(--text-secondary);
-        line-height: 1.8;
-    }
-
-    .cta-box {
-        border-radius: 28px;
-        padding: 48px 34px;
-        text-align: center;
-        color: #fff;
-        background:
-            radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 25%),
-            radial-gradient(circle at bottom right, rgba(255,107,53,0.10), transparent 25%),
-            linear-gradient(135deg, rgba(0,191,255,0.18), rgba(123,77,255,0.24));
-        border: 1px solid rgba(255,255,255,0.08);
-        box-shadow: 0 26px 60px rgba(0,0,0,0.24);
-    }
-
-    .cta-box h2 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 900;
-        margin-bottom: 14px;
-    }
-
-    .cta-box p {
-        max-width: 760px;
-        margin: 0 auto 20px;
-        opacity: 0.92;
-        line-height: 1.85;
-    }
-
-    .btn-cta-main {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 14px 26px;
-        border-radius: 14px;
-        text-decoration: none;
-        font-weight: 800;
-        background: #fff;
-        color: #0d6efd;
-    }
-</style>
-{% endblock %}
+{% block title %}DeepFake Shield | Home{% endblock %}
 
 {% block content %}
-<section class="hero-home">
-    <div class="container">
-        <div class="row g-4 align-items-center">
-            <div class="col-lg-7" data-aos="fade-right">
-                <div class="hero-panel">
-                    <div class="hero-badge-home">
-                        <span class="pulse-dot"></span>
-                        Advanced Authenticity Analysis Platform
+<!-- Hero Section -->
+<section class="premium-hero-section">
+    <div class="hero-bg-particles" id="heroParticles"></div>
+    <div class="hero-gradient-mesh"></div>
+
+    <div class="container position-relative" style="z-index:5;">
+        <div class="row align-items-center g-5 min-vh-85">
+            <div class="col-lg-6">
+                <div class="hero-status-pill" data-aos="fade-down" data-aos-duration="600">
+                    <div class="status-live-dot"></div>
+                    <span>Real-Time Verification Active</span>
+                </div>
+
+                <h1 class="premium-hero-title" data-aos="fade-up" data-aos-duration="800" data-aos-delay="100">
+                    Verify Media
+                    <br>
+                    <span class="title-gradient">with Confidence</span>
+                </h1>
+
+                <p class="premium-hero-desc" data-aos="fade-up" data-aos-duration="800" data-aos-delay="250">
+                    DeepFake Shield analyzes images, videos, audio, and text to estimate media authenticity using practical AI-assisted heuristic signals. Protect yourself from deepfakes and synthetic content.
+                </p>
+
+                <div class="hero-cta-row" data-aos="fade-up" data-aos-duration="800" data-aos-delay="400">
+                    <a href="{% url 'upload_image' %}" class="btn btn-glow btn-xl">
+                        <i class="bi bi-search-heart me-2"></i>Scan Image
+                    </a>
+                    <a href="{% url 'upload_video' %}" class="btn btn-outline-glow btn-xl">
+                        <i class="bi bi-camera-reels me-2"></i>Scan Video
+                    </a>
+                    <a href="{% url 'dashboard' %}" class="btn btn-ghost-premium btn-xl">
+                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                    </a>
+                </div>
+
+                <!-- Trust Indicators -->
+                <div class="hero-trust-row" data-aos="fade-up" data-aos-duration="600" data-aos-delay="550">
+                    <div class="trust-item">
+                        <i class="bi bi-shield-check"></i>
+                        <span>4 Detection Modules</span>
                     </div>
-
-                    <h1 class="hero-title-home">
-                        Verify <span class="gradient-text">Digital Media</span><br>
-                        Before It Misleads
-                    </h1>
-
-                    <p class="hero-desc-home">
-                        Deep Fake Shield is a multi-module verification platform designed to inspect images, videos, audio, and text for authenticity-related indicators. It combines metadata checks, pattern analysis, signal heuristics, and structured scoring to help users assess whether content appears trustworthy or suspicious.
-                    </p>
-
-                    <div class="hero-btn-row">
-                        {% if user.is_authenticated %}
-                        <a href="{% url 'dashboard' %}" class="hero-btn-main">
-                            <i class="bi bi-speedometer2"></i> Open Dashboard
-                        </a>
-                        {% else %}
-                        <a href="{% url 'signup' %}" class="hero-btn-main">
-                            <i class="bi bi-person-plus-fill"></i> Get Started
-                        </a>
-                        <a href="{% url 'login' %}" class="hero-btn-secondary">
-                            <i class="bi bi-box-arrow-in-right"></i> Sign In
-                        </a>
-                        {% endif %}
+                    <div class="trust-item">
+                        <i class="bi bi-cpu"></i>
+                        <span>Heuristic AI Analysis</span>
                     </div>
-
-                    <div class="hero-meta-box">
-                        The platform is built to make authenticity analysis more accessible, understandable, and actionable through a clear workflow, visual scoring system, and detailed scan reports.
+                    <div class="trust-item">
+                        <i class="bi bi-file-earmark-pdf"></i>
+                        <span>PDF Reports</span>
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-5" data-aos="zoom-in">
-                <div class="hero-visual-card">
-                    <div class="shield-glow-home">◈</div>
-                    <h4 class="mt-3 fw-bold" style="font-family:'Montserrat',sans-serif;">Core Verification Modules</h4>
-                    <div class="scan-mini-grid">
-                        <div class="scan-mini-card">📸 Image Analysis</div>
-                        <div class="scan-mini-card">🎬 Video Review</div>
-                        <div class="scan-mini-card">🎵 Audio Signals</div>
-                        <div class="scan-mini-card">📝 Text Detection</div>
+            <div class="col-lg-6" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="300">
+                <div class="hero-visual-container">
+                    <!-- Animated Dashboard Preview -->
+                    <div class="hero-preview-card">
+                        <div class="preview-header">
+                            <div class="preview-dots">
+                                <span class="dot-red"></span>
+                                <span class="dot-yellow"></span>
+                                <span class="dot-green"></span>
+                            </div>
+                            <span class="preview-title-bar">scan_result.analysis</span>
+                        </div>
+                        <div class="preview-body">
+                            <div class="preview-row">
+                                <div class="preview-label">Authenticity Score</div>
+                                <div class="preview-score-bar">
+                                    <div class="preview-score-fill" style="width:87%">
+                                        <span>87</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="preview-row">
+                                <div class="preview-label">EXIF Metadata</div>
+                                <div class="preview-tag preview-tag-success">Present</div>
+                            </div>
+                            <div class="preview-row">
+                                <div class="preview-label">Faces Detected</div>
+                                <div class="preview-tag preview-tag-info">3 Found</div>
+                            </div>
+                            <div class="preview-row">
+                                <div class="preview-label">AI Artifacts</div>
+                                <div class="preview-tag preview-tag-success">None</div>
+                            </div>
+                            <div class="preview-row">
+                                <div class="preview-label">Classification</div>
+                                <div class="preview-tag preview-tag-info">Likely Real</div>
+                            </div>
+                            <div class="preview-code-block">
+                                <code>
+                                    <span class="code-key">result</span>: {<br>
+                                    &nbsp;&nbsp;<span class="code-key">score</span>: <span class="code-val">87</span>,<br>
+                                    &nbsp;&nbsp;<span class="code-key">classification</span>: <span class="code-str">"likely_real"</span>,<br>
+                                    &nbsp;&nbsp;<span class="code-key">faces</span>: <span class="code-val">3</span>,<br>
+                                    &nbsp;&nbsp;<span class="code-key">exif</span>: <span class="code-bool">true</span><br>
+                                    }
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Floating badges -->
+                    <div class="hero-float-badge badge-1" data-aos="fade-up" data-aos-delay="600">
+                        <i class="bi bi-image-fill"></i>
+                        <span>Image AI</span>
+                    </div>
+                    <div class="hero-float-badge badge-2" data-aos="fade-up" data-aos-delay="700">
+                        <i class="bi bi-film"></i>
+                        <span>Video</span>
+                    </div>
+                    <div class="hero-float-badge badge-3" data-aos="fade-up" data-aos-delay="800">
+                        <i class="bi bi-mic-fill"></i>
+                        <span>Audio</span>
+                    </div>
+                    <div class="hero-float-badge badge-4" data-aos="fade-up" data-aos-delay="900">
+                        <i class="bi bi-file-text-fill"></i>
+                        <span>Text</span>
                     </div>
                 </div>
             </div>
@@ -363,113 +127,338 @@
     </div>
 </section>
 
-<section class="features-section">
+<!-- Stats Counter Section -->
+<section class="premium-stats-section" data-aos="fade-up" data-aos-duration="800">
     <div class="container">
-        <h2 class="section-title" data-aos="fade-up">Core Detection Features</h2>
-        <p class="section-subtitle" data-aos="fade-up">
-            A structured digital verification workflow powered by practical forensic-style checks and accessible reporting.
-        </p>
+        <div class="stats-premium-grid">
+            <div class="stat-premium-card" data-aos="zoom-in" data-aos-delay="100">
+                <div class="stat-premium-icon" style="--si-color:#00d2ff">
+                    <i class="bi bi-image-fill"></i>
+                </div>
+                <div class="stat-premium-value" data-count="6">0</div>
+                <div class="stat-premium-label">Image Analysis Points</div>
+                <div class="stat-premium-bar" style="--sb-color:#00d2ff"></div>
+            </div>
+            <div class="stat-premium-card" data-aos="zoom-in" data-aos-delay="200">
+                <div class="stat-premium-icon" style="--si-color:#7a5cff">
+                    <i class="bi bi-film"></i>
+                </div>
+                <div class="stat-premium-value" data-count="10">0</div>
+                <div class="stat-premium-label">Frames Sampled per Video</div>
+                <div class="stat-premium-bar" style="--sb-color:#7a5cff"></div>
+            </div>
+            <div class="stat-premium-card" data-aos="zoom-in" data-aos-delay="300">
+                <div class="stat-premium-icon" style="--si-color:#21d07a">
+                    <i class="bi bi-soundwave"></i>
+                </div>
+                <div class="stat-premium-value" data-count="3">0</div>
+                <div class="stat-premium-label">Audio Signal Checks</div>
+                <div class="stat-premium-bar" style="--sb-color:#21d07a"></div>
+            </div>
+            <div class="stat-premium-card" data-aos="zoom-in" data-aos-delay="400">
+                <div class="stat-premium-icon" style="--si-color:#ff7a18">
+                    <i class="bi bi-file-text-fill"></i>
+                </div>
+                <div class="stat-premium-value" data-count="4">0</div>
+                <div class="stat-premium-label">Linguistic Heuristics</div>
+                <div class="stat-premium-bar" style="--sb-color:#ff7a18"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Detection Modules Section -->
+<section class="premium-modules-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="section-badge" data-aos="fade-down"><i class="bi bi-cpu-fill me-2"></i>Detection Modules</div>
+            <h2 class="premium-section-title" data-aos="fade-up" data-aos-delay="100">
+                Comprehensive <span class="title-gradient">Analysis</span> Suite
+            </h2>
+            <p class="premium-section-desc mx-auto" data-aos="fade-up" data-aos-delay="200">
+                Each module examines different signals to provide a holistic authenticity assessment.
+            </p>
+        </div>
+
+        <!-- Module Cards - Alternating Layout -->
+        <div class="module-showcase">
+            <!-- Image Module -->
+            <div class="module-row" data-aos="fade-right" data-aos-duration="800">
+                <div class="row align-items-center g-5">
+                    <div class="col-lg-6">
+                        <div class="module-info-card">
+                            <div class="module-icon-lg" style="--mi-gradient:linear-gradient(135deg,#00d2ff,#7a5cff)">
+                                <i class="bi bi-image-fill"></i>
+                            </div>
+                            <h3>Image Deepfake Detection</h3>
+                            <p>Upload any image and our engine analyzes it across multiple dimensions:</p>
+                            <ul class="module-feature-list">
+                                <li><i class="bi bi-check-circle-fill"></i>EXIF metadata extraction and analysis</li>
+                                <li><i class="bi bi-check-circle-fill"></i>Camera make and model identification</li>
+                                <li><i class="bi bi-check-circle-fill"></i>Face detection with bounding boxes</li>
+                                <li><i class="bi bi-check-circle-fill"></i>AI artifact pattern detection</li>
+                                <li><i class="bi bi-check-circle-fill"></i>Compression noise evaluation</li>
+                                <li><i class="bi bi-check-circle-fill"></i>Natural noise pattern analysis</li>
+                            </ul>
+                            <a href="{% url 'upload_image' %}" class="btn btn-glow mt-3">
+                                <i class="bi bi-arrow-right me-2"></i>Try Image Scan
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6" data-aos="fade-left" data-aos-delay="200">
+                        <div class="module-visual-card">
+                            <div class="module-visual-header">
+                                <span class="module-visual-tag">Image Analysis Pipeline</span>
+                            </div>
+                            <div class="module-pipeline">
+                                <div class="pipeline-step">
+                                    <div class="pipeline-dot"></div>
+                                    <div class="pipeline-content">
+                                        <strong>Upload</strong>
+                                        <small>JPG, PNG, WEBP</small>
+                                    </div>
+                                </div>
+                                <div class="pipeline-connector"></div>
+                                <div class="pipeline-step">
+                                    <div class="pipeline-dot"></div>
+                                    <div class="pipeline-content">
+                                        <strong>EXIF Scan</strong>
+                                        <small>Metadata extraction</small>
+                                    </div>
+                                </div>
+                                <div class="pipeline-connector"></div>
+                                <div class="pipeline-step">
+                                    <div class="pipeline-dot"></div>
+                                    <div class="pipeline-content">
+                                        <strong>Face Detection</strong>
+                                        <small>OpenCV cascade</small>
+                                    </div>
+                                </div>
+                                <div class="pipeline-connector"></div>
+                                <div class="pipeline-step">
+                                    <div class="pipeline-dot"></div>
+                                    <div class="pipeline-content">
+                                        <strong>Artifact Analysis</strong>
+                                        <small>Noise & patterns</small>
+                                    </div>
+                                </div>
+                                <div class="pipeline-connector"></div>
+                                <div class="pipeline-step pipeline-step-final">
+                                    <div class="pipeline-dot"></div>
+                                    <div class="pipeline-content">
+                                        <strong>Score & Report</strong>
+                                        <small>0–100 + PDF</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Module -->
+            <div class="module-row" data-aos="fade-left" data-aos-duration="800">
+                <div class="row align-items-center g-5 flex-lg-row-reverse">
+                    <div class="col-lg-6">
+                        <div class="module-info-card">
+                            <div class="module-icon-lg" style="--mi-gradient:linear-gradient(135deg,#7a5cff,#c44dff)">
+                                <i class="bi bi-film"></i>
+                            </div>
+                            <h3>Video Deepfake Detection</h3>
+                            <p>Videos are decomposed into frames, each analyzed individually:</p>
+                            <ul class="module-feature-list">
+                                <li><i class="bi bi-check-circle-fill"></i>Automatic frame extraction</li>
+                                <li><i class="bi bi-check-circle-fill"></i>Per-frame authenticity scoring</li>
+                                <li><i class="bi bi-check-circle-fill"></i>Average confidence calculation</li>
+                                <li><i class="bi bi-check-circle-fill"></i>Frame-level breakdown report</li>
+                            </ul>
+                            <a href="{% url 'upload_video' %}" class="btn btn-glow mt-3">
+                                <i class="bi bi-arrow-right me-2"></i>Try Video Scan
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6" data-aos="fade-right" data-aos-delay="200">
+                        <div class="module-visual-card module-visual-alt">
+                            <div class="module-visual-header">
+                                <span class="module-visual-tag">Frame Analysis</span>
+                            </div>
+                            <div class="frame-grid-visual">
+                                <div class="frame-cell"><span>F1</span><small>84</small></div>
+                                <div class="frame-cell"><span>F2</span><small>91</small></div>
+                                <div class="frame-cell"><span>F3</span><small>78</small></div>
+                                <div class="frame-cell"><span>F4</span><small>88</small></div>
+                                <div class="frame-cell"><span>F5</span><small>92</small></div>
+                                <div class="frame-cell frame-cell-avg"><span>AVG</span><small>87</small></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Module -->
+            <div class="module-row" data-aos="fade-right" data-aos-duration="800">
+                <div class="row align-items-center g-5">
+                    <div class="col-lg-6">
+                        <div class="module-info-card">
+                            <div class="module-icon-lg" style="--mi-gradient:linear-gradient(135deg,#21d07a,#00b85f)">
+                                <i class="bi bi-soundwave"></i>
+                            </div>
+                            <h3>Audio Deepfake Detection</h3>
+                            <p>Audio signals are inspected for synthetic patterns:</p>
+                            <ul class="module-feature-list">
+                                <li><i class="bi bi-check-circle-fill"></i>RMS energy measurement</li>
+                                <li><i class="bi bi-check-circle-fill"></i>Spectral flatness analysis</li>
+                                <li><i class="bi bi-check-circle-fill"></i>Clipping detection ratio</li>
+                            </ul>
+                            <a href="{% url 'upload_audio' %}" class="btn btn-glow mt-3">
+                                <i class="bi bi-arrow-right me-2"></i>Try Audio Scan
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6" data-aos="fade-left" data-aos-delay="200">
+                        <div class="module-visual-card">
+                            <div class="module-visual-header">
+                                <span class="module-visual-tag">Signal Analysis</span>
+                            </div>
+                            <div class="waveform-visual">
+                                <div class="wave-bar" style="height:35%"></div>
+                                <div class="wave-bar" style="height:55%"></div>
+                                <div class="wave-bar" style="height:75%"></div>
+                                <div class="wave-bar" style="height:90%"></div>
+                                <div class="wave-bar" style="height:65%"></div>
+                                <div class="wave-bar" style="height:80%"></div>
+                                <div class="wave-bar" style="height:45%"></div>
+                                <div class="wave-bar" style="height:70%"></div>
+                                <div class="wave-bar" style="height:55%"></div>
+                                <div class="wave-bar" style="height:85%"></div>
+                                <div class="wave-bar" style="height:40%"></div>
+                                <div class="wave-bar" style="height:60%"></div>
+                                <div class="wave-bar" style="height:50%"></div>
+                                <div class="wave-bar" style="height:75%"></div>
+                                <div class="wave-bar" style="height:30%"></div>
+                                <div class="wave-bar" style="height:65%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Text Module -->
+            <div class="module-row" data-aos="fade-left" data-aos-duration="800">
+                <div class="row align-items-center g-5 flex-lg-row-reverse">
+                    <div class="col-lg-6">
+                        <div class="module-info-card">
+                            <div class="module-icon-lg" style="--mi-gradient:linear-gradient(135deg,#ff7a18,#ff2d95)">
+                                <i class="bi bi-file-earmark-text-fill"></i>
+                            </div>
+                            <h3>Text AI Detection</h3>
+                            <p>Linguistic heuristics identify AI-generated patterns:</p>
+                            <ul class="module-feature-list">
+                                <li><i class="bi bi-check-circle-fill"></i>Repetition pattern detection</li>
+                                <li><i class="bi bi-check-circle-fill"></i>Stopword ratio analysis</li>
+                                <li><i class="bi bi-check-circle-fill"></i>Punctuation density scoring</li>
+                                <li><i class="bi bi-check-circle-fill"></i>Sentence length variance</li>
+                            </ul>
+                            <a href="{% url 'text_scan' %}" class="btn btn-glow mt-3">
+                                <i class="bi bi-arrow-right me-2"></i>Try Text Scan
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6" data-aos="fade-right" data-aos-delay="200">
+                        <div class="module-visual-card module-visual-alt">
+                            <div class="module-visual-header">
+                                <span class="module-visual-tag">Text Analysis</span>
+                            </div>
+                            <div class="text-analysis-visual">
+                                <div class="text-analysis-line">
+                                    <span class="text-word text-word-normal">The</span>
+                                    <span class="text-word text-word-normal">quick</span>
+                                    <span class="text-word text-word-flagged">quick</span>
+                                    <span class="text-word text-word-normal">brown</span>
+                                    <span class="text-word text-word-normal">fox</span>
+                                    <span class="text-word text-word-flagged">fox</span>
+                                </div>
+                                <div class="text-analysis-metric">
+                                    <small>Repetition</small>
+                                    <div class="text-metric-bar"><div class="text-metric-fill" style="width:68%"></div></div>
+                                </div>
+                                <div class="text-analysis-metric">
+                                    <small>Stopword Ratio</small>
+                                    <div class="text-metric-bar"><div class="text-metric-fill" style="width:42%"></div></div>
+                                </div>
+                                <div class="text-analysis-metric">
+                                    <small>Punctuation</small>
+                                    <div class="text-metric-bar"><div class="text-metric-fill" style="width:81%"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Educational Section -->
+<section class="premium-education-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="section-badge" data-aos="fade-down"><i class="bi bi-mortarboard-fill me-2"></i>Learn</div>
+            <h2 class="premium-section-title" data-aos="fade-up">
+                Understanding <span class="title-gradient">Authenticity</span>
+            </h2>
+        </div>
 
         <div class="row g-4">
-            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="50">
-                <div class="feature-card">
-                    <span class="feature-icon">🖼️</span>
-                    <h3>Image Verification</h3>
-                    <p>Inspect visual patterns, metadata, compression behavior, face detection, and suspicious image characteristics.</p>
-                    <a href="{% url 'upload_image' %}" class="feature-link">Open Image Scan <i class="bi bi-arrow-right"></i></a>
-                </div>
-            </div>
-
             <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
-                <div class="feature-card">
-                    <span class="feature-icon">🎞️</span>
-                    <h3>Video Verification</h3>
-                    <p>Break videos into frames and analyze visual consistency to identify possible manipulation patterns.</p>
-                    <a href="{% url 'upload_video' %}" class="feature-link">Open Video Scan <i class="bi bi-arrow-right"></i></a>
+                <div class="edu-card-premium">
+                    <div class="edu-card-icon"><i class="bi bi-camera-fill"></i></div>
+                    <h5>What is EXIF?</h5>
+                    <p>EXIF stores camera make, model, date, GPS, and technical settings. Its presence often indicates an original camera capture.</p>
                 </div>
             </div>
-
-            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="150">
-                <div class="feature-card">
-                    <span class="feature-icon">🎧</span>
-                    <h3>Audio Verification</h3>
-                    <p>Inspect clipping, flatness, and energy behavior to highlight potentially synthetic or altered audio content.</p>
-                    <a href="{% url 'upload_audio' %}" class="feature-link">Open Audio Scan <i class="bi bi-arrow-right"></i></a>
-                </div>
-            </div>
-
             <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
-                <div class="feature-card">
-                    <span class="feature-icon">🧠</span>
-                    <h3>Text Verification</h3>
-                    <p>Review repetition, phrase style, punctuation density, and structured writing patterns associated with AI text.</p>
-                    <a href="{% url 'text_scan' %}" class="feature-link">Open Text Scan <i class="bi bi-arrow-right"></i></a>
+                <div class="edu-card-premium">
+                    <div class="edu-card-icon"><i class="bi bi-x-circle"></i></div>
+                    <h5>Missing EXIF</h5>
+                    <p>Screenshots, edited images, and AI-generated content typically lack EXIF metadata, reducing authenticity confidence.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="edu-card-premium">
+                    <div class="edu-card-icon"><i class="bi bi-share"></i></div>
+                    <h5>Social Media Effect</h5>
+                    <p>Platforms like Instagram and WhatsApp strip metadata during upload. This is why score alone is not final proof.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="400">
+                <div class="edu-card-premium">
+                    <div class="edu-card-icon"><i class="bi bi-pencil-square"></i></div>
+                    <h5>Edited Images</h5>
+                    <p>Photoshop and editing tools can modify metadata. Our engine checks for inconsistencies beyond metadata alone.</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="how-section">
+<!-- CTA Banner -->
+<section class="premium-cta-banner py-5" data-aos="zoom-in" data-aos-duration="800">
     <div class="container">
-        <h2 class="section-title" data-aos="fade-up">How It Works</h2>
-        <p class="section-subtitle" data-aos="fade-up">
-            A simple workflow designed for fast analysis, understandable results, and practical digital verification.
-        </p>
-
-        <div class="row">
-            <div class="col-md-3" data-aos="zoom-in" data-aos-delay="50">
-                <div class="step-card">
-                    <div class="step-number">1</div>
-                    <h5>Upload</h5>
-                    <p>Select the media or text you want to evaluate.</p>
-                </div>
-            </div>
-
-            <div class="col-md-3" data-aos="zoom-in" data-aos-delay="100">
-                <div class="step-card">
-                    <div class="step-number">2</div>
-                    <h5>Analyze</h5>
-                    <p>The system runs structured checks depending on content type.</p>
-                </div>
-            </div>
-
-            <div class="col-md-3" data-aos="zoom-in" data-aos-delay="150">
-                <div class="step-card">
-                    <div class="step-number">3</div>
-                    <h5>Score</h5>
-                    <p>An authenticity score and classification are generated.</p>
-                </div>
-            </div>
-
-            <div class="col-md-3" data-aos="zoom-in" data-aos-delay="200">
-                <div class="step-card">
-                    <div class="step-number">4</div>
-                    <h5>Report</h5>
-                    <p>Review the explanation, technical metrics, and downloadable PDF summary.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="cta-section">
-    <div class="container">
-        <div class="cta-box" data-aos="fade-up">
-            <h2>Move Beyond Guesswork</h2>
-            <p>
-                Whether you are checking suspicious media, studying authenticity signals, or exploring how digital verification works, Deep Fake Shield provides a more structured and transparent experience.
+        <div class="cta-banner-card text-center">
+            <div class="cta-banner-bg-effect"></div>
+            <h2 class="premium-section-title mb-3" data-aos="fade-up">
+                Start <span class="title-gradient">Scanning</span> Now
+            </h2>
+            <p class="premium-section-desc mx-auto mb-4" data-aos="fade-up" data-aos-delay="100">
+                Upload any media file and get a detailed authenticity score with classification and explanation.
             </p>
-
-            {% if user.is_authenticated %}
-            <a href="{% url 'dashboard' %}" class="btn-cta-main">
-                <i class="bi bi-speedometer2"></i> Continue to Dashboard
-            </a>
-            {% else %}
-            <a href="{% url 'signup' %}" class="btn-cta-main">
-                <i class="bi bi-rocket-takeoff-fill"></i> Create an Account
-            </a>
-            {% endif %}
+            <div class="d-flex flex-wrap justify-content-center gap-3" data-aos="fade-up" data-aos-delay="200">
+                <a href="{% url 'upload_image' %}" class="btn btn-glow btn-xl"><i class="bi bi-image me-2"></i>Image</a>
+                <a href="{% url 'upload_video' %}" class="btn btn-glow btn-xl"><i class="bi bi-film me-2"></i>Video</a>
+                <a href="{% url 'upload_audio' %}" class="btn btn-glow btn-xl"><i class="bi bi-mic me-2"></i>Audio</a>
+                <a href="{% url 'text_scan' %}" class="btn btn-glow btn-xl"><i class="bi bi-file-text me-2"></i>Text</a>
+            </div>
         </div>
     </div>
 </section>

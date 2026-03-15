@@ -1,574 +1,803 @@
+import os
 import cv2
 import numpy as np
 from PIL import Image
-import exifread
-import os
-from .utils import get_classification
+
+try:
+    import exifread
+except ImportError:
+    exifread = None
+
+try:
+    import torch
+    import torchvision.transforms as transforms
+    from torchvision import models
+    TORCH_AVAILABLE = True
+except Exception:
+    TORCH_AVAILABLE = False
+
+_DEEP_MODEL = None
 
 
-def analyze_image(image_path):
-    """
-    Precision-focused heuristic image authenticity analyzer.
+def _get_deep_model():
+    global _DEEP_MODEL
+    if not TORCH_AVAILABLE:
+        return None
+    if _DEEP_MODEL is None:
+        try:
+            model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+            model.eval()
+            _DEEP_MODEL = model
+        except Exception:
+            _DEEP_MODEL = None
+    return _DEEP_MODEL
 
-    Target behavior:
-    - Real camera images with EXIF + natural patterns -> high score
-    - AI / synthetic / overprocessed images -> low score
-    - Edited / compressed / metadata-removed images -> suspicious range
-    """
-    result = {
-        'authenticity_score': 50.0,
-        'classification': 'suspicious',
-        'is_ai_generated': False,
-        'is_edited': False,
-        'face_count': 0,
-        'has_exif': False,
-        'exif_data': {},
-        'details': {},
-        'explanation': '',
+
+def analyze_image(file_path):
+    results = {
+        "exif_present": False,
+        "exif_data": {},
+        "camera_make": "",
+        "camera_model": "",
+        "face_count": 0,
+        "face_boxes": [],
+        "face_detector_used": "Balanced Multi-Pass Haar",
+        "face_quality_score": 0,
+        "ai_artifact_score": 0,
+        "compression_noise_score": 0,
+        "noise_score": 0,
+        "edge_score": 0,
+        "texture_score": 0,
+        "color_score": 0,
+        "deep_feature_score": 0,
+        "screenshot_likelihood": 0,
+        "synthetic_smoothness_score": 0,
+        "compression_label": "Normal",
+        "artifact_label": "Low",
+        "image_width": 0,
+        "image_height": 0,
+        "file_format": "",
+        "description": "",
+        "analysis_summary": "",
+        "real_vs_fake": "Uncertain",
+        "scene_description": "",
     }
 
     try:
-        img_cv = cv2.imread(image_path)
+        img_cv = cv2.imread(file_path)
         if img_cv is None:
-            result['explanation'] = 'Image could not be read.'
-            return result
+            results["description"] = "Failed to load image file."
+            return results, 0
 
-        # Resize for speed and stable processing
-        max_dim = 1400
         h, w = img_cv.shape[:2]
-        if max(h, w) > max_dim:
-            scale = max_dim / max(h, w)
-            img_cv = cv2.resize(img_cv, (int(w * scale), int(h * scale)))
+        results["image_width"] = w
+        results["image_height"] = h
+        _, ext = os.path.splitext(file_path)
+        results["file_format"] = ext.upper().replace(".", "")
 
-        img_pil = Image.open(image_path)
+        exif_score = _analyze_exif(file_path, results)
+        face_score = _detect_faces_balanced(img_cv, results)
+        face_quality_score = _analyze_face_regions(img_cv, results)
+        results["face_quality_score"] = round(face_quality_score, 2)
 
-        # ---- ANALYSIS BLOCKS ----
-        exif_info = analyze_exif(image_path)
-        noise_info = analyze_noise(img_cv)
-        edge_info = analyze_edges(img_cv)
-        color_info = analyze_color_distribution(img_cv)
-        face_info = analyze_faces(img_cv)
-        compression_info = analyze_compression(img_cv, image_path)
-        texture_info = analyze_texture(img_cv)
-        format_info = analyze_format(img_pil, image_path)
+        artifact_score = _detect_ai_artifacts(img_cv, results)
+        compression_score = _analyze_compression_blocks(img_cv, results)
+        noise_score = _analyze_natural_noise(img_cv, results)
+        edge_score = _analyze_edge_consistency(img_cv, results)
+        texture_score = _analyze_texture_realism(img_cv, results)
+        color_score = _analyze_color_realism(img_cv, results)
+        screenshot_penalty = _detect_screenshot_like_properties(img_cv, results)
+        smoothness_penalty = _detect_synthetic_smoothness(img_cv, results)
+        deep_feature_score = _analyze_deep_visual_features(file_path)
+        results["deep_feature_score"] = round(deep_feature_score, 2)
 
-        # Store raw outputs
-        result['has_exif'] = exif_info['has_exif']
-        result['exif_data'] = exif_info['exif_data']
-        result['face_count'] = face_info['face_count']
-        result['face_locations'] = face_info['face_locations']
+        has_faces = results["face_count"] > 0
 
-        # ---- SCORING ----
-        score = 0
-        notes = []
-
-        # 1. EXIF + CAMERA AUTHENTICITY (0–30)
-        score += exif_info['score']
-        if exif_info['score'] >= 24:
-            notes.append("Strong camera metadata found")
-        elif exif_info['score'] >= 12:
-            notes.append("Partial metadata found")
+        if has_faces:
+            base_score = (
+                exif_score * 0.18 +
+                face_score * 0.10 +
+                face_quality_score * 0.08 +
+                (100 - artifact_score) * 0.14 +
+                (100 - compression_score) * 0.08 +
+                noise_score * 0.10 +
+                edge_score * 0.08 +
+                texture_score * 0.08 +
+                color_score * 0.07 +
+                deep_feature_score * 0.09
+            )
         else:
-            notes.append("Metadata is weak or missing")
+            base_score = (
+                exif_score * 0.23 +
+                (100 - artifact_score) * 0.16 +
+                (100 - compression_score) * 0.10 +
+                noise_score * 0.11 +
+                edge_score * 0.10 +
+                texture_score * 0.09 +
+                color_score * 0.08 +
+                deep_feature_score * 0.13
+            )
 
-        # 2. NOISE NATURALNESS (0–15)
-        score += noise_info['score']
-        if noise_info['score'] >= 12:
-            notes.append("Noise pattern appears natural")
-        elif noise_info['score'] <= 5:
-            notes.append("Noise pattern appears unnatural")
+        base_score -= screenshot_penalty * 0.10
+        base_score -= smoothness_penalty * 0.12
 
-        # 3. EDGE NATURALNESS (0–15)
-        score += edge_info['score']
-        if edge_info['score'] >= 12:
-            notes.append("Edge structure is realistic")
-        elif edge_info['score'] <= 5:
-            notes.append("Edge structure is unusual")
+        if (
+            results["exif_present"]
+            and results["camera_make"]
+            and results["camera_model"]
+            and artifact_score < 15
+            and compression_score < 18
+            and noise_score > 72
+        ):
+            base_score += 10
 
-        # 4. COLOR DISTRIBUTION (0–10)
-        score += color_info['score']
-        if color_info['score'] >= 8:
-            notes.append("Color distribution is natural")
-        elif color_info['score'] <= 4:
-            notes.append("Color distribution is suspicious")
+        if (
+            not results["exif_present"]
+            and artifact_score > 45
+            and smoothness_penalty > 22
+            and deep_feature_score < 45
+        ):
+            base_score -= 10
 
-        # 5. FACE CONSISTENCY (0–10)
-        score += face_info['score']
-        if face_info['face_count'] > 0:
-            if face_info['score'] >= 8:
-                notes.append(f"{face_info['face_count']} face(s) detected with acceptable consistency")
-            else:
-                notes.append(f"Face analysis suggests possible irregularity")
+        final_score = int(round(max(0, min(100, base_score))))
+
+        if final_score >= 75:
+            results["real_vs_fake"] = "Real"
+        elif final_score <= 39:
+            results["real_vs_fake"] = "Fake"
         else:
-            notes.append("No clear faces detected")
+            results["real_vs_fake"] = "Uncertain"
 
-        # 6. COMPRESSION / FILE PATTERN (0–10)
-        score += compression_info['score']
-        if compression_info['score'] >= 8:
-            notes.append("Compression pattern appears normal")
-        elif compression_info['score'] <= 4:
-            notes.append("Compression pattern is suspicious")
+        results["scene_description"] = _generate_scene_description(results)
+        results["analysis_summary"] = _generate_summary(final_score)
+        results["description"] = _generate_full_description(results, final_score)
 
-        # 7. TEXTURE CONSISTENCY (0–5)
-        score += texture_info['score']
-        if texture_info['score'] >= 4:
-            notes.append("Texture consistency appears natural")
-        elif texture_info['score'] <= 2:
-            notes.append("Texture inconsistency detected")
-
-        # 8. FORMAT QUALITY (0–5)
-        score += format_info['score']
-
-        # ---- HARD PENALTIES FOR SYNTHETIC-LIKE BEHAVIOR ----
-        penalties = 0
-
-        # No EXIF + too smooth + weird edges = strong synthetic suspicion
-        if not exif_info['has_exif'] and noise_info['variance'] < 35:
-            penalties += 12
-
-        if edge_info['edge_density'] < 0.015 or edge_info['edge_density'] > 0.30:
-            penalties += 8
-
-        if color_info['entropy'] < 3.4 or color_info['entropy'] > 8.3:
-            penalties += 6
-
-        if face_info['face_count'] > 0 and face_info['face_score_flag'] == 'smooth':
-            penalties += 10
-
-        if exif_info['editing_software_detected']:
-            penalties += 6
-
-        score -= penalties
-
-        # ---- BONUS FOR CLEARLY GENUINE CAMERA IMAGE ----
-        bonus = 0
-        if exif_info['has_exif'] and exif_info['has_camera']:
-            bonus += 6
-        if noise_info['variance'] > 100 and noise_info['variance'] < 1800:
-            bonus += 4
-        if compression_info['bits_per_pixel'] > 1.8 and compression_info['bits_per_pixel'] < 14:
-            bonus += 3
-        if face_info['face_count'] > 0 and face_info['score'] >= 8:
-            bonus += 2
-
-        score += bonus
-
-        final_score = min(max(round(score, 1), 0), 100)
-
-        # ---- CLASSIFICATION ----
-        classification = get_classification(final_score)
-
-        result['authenticity_score'] = final_score
-        result['classification'] = classification
-        result['is_ai_generated'] = final_score < 40
-        result['is_edited'] = 40 <= final_score < 75
-
-        # ---- DETAILS ----
-        result['details'] = {
-            'EXIF Score': exif_info['score'],
-            'Noise Score': noise_info['score'],
-            'Edge Score': edge_info['score'],
-            'Color Score': color_info['score'],
-            'Face Score': face_info['score'],
-            'Compression Score': compression_info['score'],
-            'Texture Score': texture_info['score'],
-            'Format Score': format_info['score'],
-            'Noise Variance': round(noise_info['variance'], 2),
-            'Edge Density': round(edge_info['edge_density'], 4),
-            'Color Entropy': round(color_info['entropy'], 2),
-            'Bits Per Pixel': round(compression_info['bits_per_pixel'], 2),
-            'Penalty Applied': penalties,
-            'Bonus Applied': bonus,
-        }
-
-        # ---- SHORT EXPLANATION ----
-        verdict_map = {
-            'authentic': 'Highly authentic image',
-            'likely_real': 'Likely real image',
-            'suspicious': 'Suspicious or edited image',
-            'likely_fake': 'Likely AI-generated or fake image',
-        }
-
-        short_notes = notes[:5]
-        result['explanation'] = f"{verdict_map.get(classification, 'Analysis completed')}.\n" + " • ".join(short_notes)
+        return results, final_score
 
     except Exception as e:
-        result['explanation'] = f'Image analysis error: {str(e)}'
+        results["description"] = f"Error during image analysis: {str(e)}"
+        results["analysis_summary"] = "The analysis process could not complete successfully."
+        return results, 0
 
-    return result
 
-
-# ==========================================================
-# EXIF ANALYSIS
-# ==========================================================
-
-def analyze_exif(image_path):
+def _analyze_exif(file_path, results):
     score = 0
-    exif_data = {}
-    has_exif = False
-    has_camera = False
-    editing_software_detected = False
-
     try:
-        with open(image_path, 'rb') as f:
-            tags = exifread.process_file(f, details=False)
+        if exifread:
+            with open(file_path, "rb") as f:
+                tags = exifread.process_file(f, details=False)
 
-        if tags:
-            has_exif = True
+            if tags:
+                results["exif_present"] = True
+                score += 45
 
-            if 'Image Make' in tags:
-                exif_data['Camera Make'] = str(tags['Image Make'])
-                score += 10
-                has_camera = True
+                important_tags = [
+                    "Image Make", "Image Model", "EXIF DateTimeOriginal",
+                    "EXIF DateTimeDigitized", "Image Software",
+                    "EXIF ISOSpeedRatings", "EXIF FocalLength",
+                    "EXIF ExposureTime", "EXIF FNumber",
+                    "GPS GPSLatitude", "GPS GPSLongitude",
+                    "Image Orientation", "EXIF Flash",
+                ]
 
-            if 'Image Model' in tags:
-                exif_data['Camera Model'] = str(tags['Image Model'])
-                score += 10
-                has_camera = True
+                exif_data = {}
+                for tag in important_tags:
+                    if tag in tags:
+                        clean = tag.replace("Image ", "").replace("EXIF ", "").replace("GPS ", "")
+                        exif_data[clean] = str(tags[tag])
 
-            if 'EXIF DateTimeOriginal' in tags:
-                exif_data['Date Taken'] = str(tags['EXIF DateTimeOriginal'])
-                score += 4
-            elif 'Image DateTime' in tags:
-                exif_data['Date Modified'] = str(tags['Image DateTime'])
-                score += 2
+                results["exif_data"] = exif_data
 
-            if 'Image Software' in tags:
-                software = str(tags['Image Software'])
-                exif_data['Software'] = software
-                if any(s in software.lower() for s in ['photoshop', 'gimp', 'lightroom', 'snapseed', 'canva']):
-                    editing_software_detected = True
-                    score -= 4
-
+                if "Image Make" in tags:
+                    results["camera_make"] = str(tags["Image Make"]).strip()
+                    score += 18
+                if "Image Model" in tags:
+                    results["camera_model"] = str(tags["Image Model"]).strip()
+                    score += 15
+                if "EXIF DateTimeOriginal" in tags:
+                    score += 10
+                if "GPS GPSLatitude" in tags or "GPS GPSLongitude" in tags:
+                    score += 5
     except Exception:
         pass
 
-    return {
-        'score': min(max(score, 0), 30),
-        'has_exif': has_exif,
-        'has_camera': has_camera,
-        'editing_software_detected': editing_software_detected,
-        'exif_data': exif_data,
-    }
-
-
-# ==========================================================
-# NOISE ANALYSIS
-# ==========================================================
-
-def analyze_noise(img_cv):
     try:
-        gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
-        variance = cv2.Laplacian(gray, cv2.CV_64F).var()
-
-        if 120 < variance < 1800:
-            score = 15
-        elif 70 < variance <= 120 or 1800 <= variance < 2800:
-            score = 11
-        elif 35 < variance <= 70:
-            score = 6
-        else:
-            score = 2
-
-        return {
-            'score': score,
-            'variance': variance,
-        }
+        img = Image.open(file_path)
+        exif = img.getexif()
+        if exif and not results["exif_present"]:
+            results["exif_present"] = True
+            score += 30
+            if 271 in exif:
+                results["camera_make"] = str(exif[271])
+                score += 15
+            if 272 in exif:
+                results["camera_model"] = str(exif[272])
+                score += 10
     except Exception:
-        return {
-            'score': 7,
-            'variance': 0,
-        }
+        pass
+
+    return min(100, score)
 
 
-# ==========================================================
-# EDGE ANALYSIS
-# ==========================================================
+def _detect_faces_balanced(img_cv, results):
+    gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+    gray = cv2.equalizeHist(gray)
 
-def analyze_edges(img_cv):
+    img_h, img_w = gray.shape
+    min_face = max(34, int(min(img_w, img_h) * 0.045))
+
+    frontal = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+    profile = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_profileface.xml")
+
+    boxes = []
+
+    passes = [
+        (1.18, 6),
+        (1.14, 5),
+        (1.10, 4),
+    ]
+
+    for scale_factor, min_neighbors in passes:
+        try:
+            found = frontal.detectMultiScale(
+                gray,
+                scaleFactor=scale_factor,
+                minNeighbors=min_neighbors,
+                minSize=(min_face, min_face),
+                flags=cv2.CASCADE_SCALE_IMAGE,
+            )
+            for b in found:
+                boxes.append(b)
+        except Exception:
+            pass
+
     try:
-        gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
-        edges = cv2.Canny(gray, 80, 180)
-        edge_density = np.count_nonzero(edges) / edges.size
-
-        if 0.025 < edge_density < 0.16:
-            score = 15
-        elif 0.016 < edge_density <= 0.025 or 0.16 <= edge_density < 0.24:
-            score = 10
-        elif 0.010 < edge_density <= 0.016 or 0.24 <= edge_density < 0.30:
-            score = 6
-        else:
-            score = 2
-
-        return {
-            'score': score,
-            'edge_density': edge_density,
-        }
-    except Exception:
-        return {
-            'score': 7,
-            'edge_density': 0,
-        }
-
-
-# ==========================================================
-# COLOR ANALYSIS
-# ==========================================================
-
-def analyze_color_distribution(img_cv):
-    try:
-        hist_b = cv2.calcHist([img_cv], [0], None, [256], [0, 256]).flatten()
-        hist_g = cv2.calcHist([img_cv], [1], None, [256], [0, 256]).flatten()
-        hist_r = cv2.calcHist([img_cv], [2], None, [256], [0, 256]).flatten()
-
-        total_pixels = img_cv.shape[0] * img_cv.shape[1]
-        hist_b = hist_b / total_pixels
-        hist_g = hist_g / total_pixels
-        hist_r = hist_r / total_pixels
-
-        def entropy(hist):
-            hist = hist[hist > 0]
-            return -np.sum(hist * np.log2(hist))
-
-        avg_entropy = (entropy(hist_b) + entropy(hist_g) + entropy(hist_r)) / 3
-
-        if 4.8 < avg_entropy < 7.2:
-            score = 10
-        elif 4.0 < avg_entropy <= 4.8 or 7.2 <= avg_entropy < 8.0:
-            score = 7
-        elif 3.4 < avg_entropy <= 4.0 or 8.0 <= avg_entropy < 8.3:
-            score = 4
-        else:
-            score = 1
-
-        return {
-            'score': score,
-            'entropy': avg_entropy,
-        }
-    except Exception:
-        return {
-            'score': 5,
-            'entropy': 0,
-        }
-
-
-# ==========================================================
-# FACE ANALYSIS
-# ==========================================================
-
-def analyze_faces(img_cv):
-    try:
-        gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
-        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-
-        faces = face_cascade.detectMultiScale(
+        p1 = profile.detectMultiScale(
             gray,
-            scaleFactor=1.1,
-            minNeighbors=8,
-            minSize=(60, 60)
+            scaleFactor=1.15,
+            minNeighbors=4,
+            minSize=(min_face, min_face),
         )
+        for b in p1:
+            boxes.append(b)
+    except Exception:
+        pass
 
-        filtered = []
-        for (x, y, w, h) in faces:
-            if w >= 60 and h >= 60:
-                filtered.append((x, y, w, h))
+    try:
+        flip = cv2.flip(gray, 1)
+        p2 = profile.detectMultiScale(
+            flip,
+            scaleFactor=1.15,
+            minNeighbors=4,
+            minSize=(min_face, min_face),
+        )
+        for (x, y, fw, fh) in p2:
+            boxes.append([img_w - x - fw, y, fw, fh])
+    except Exception:
+        pass
 
-        face_locations = []
-        smooth_flag = None
+    boxes = _non_max_suppression(boxes, threshold=0.22)
 
-        for (x, y, w, h) in filtered:
-            face_locations.append({
-                'x': int(x),
-                'y': int(y),
-                'w': int(w),
-                'h': int(h),
-            })
+    validated = []
+    for box in boxes:
+        x, y, w, h = [int(v) for v in box]
 
-        face_count = len(filtered)
+        if w < min_face or h < min_face:
+            continue
 
-        if face_count == 0:
-            score = 5
+        aspect = w / max(h, 1)
+        if not (0.58 <= aspect <= 1.38):
+            continue
+
+        area_ratio = (w * h) / float(img_w * img_h)
+        if area_ratio < 0.012:
+            continue
+
+        border_margin = 6
+        if (x <= border_margin or y <= border_margin or x + w >= img_w - border_margin or y + h >= img_h - border_margin):
+            if area_ratio < 0.022:
+                continue
+
+        roi = gray[y:y+h, x:x+w]
+        if roi.size == 0:
+            continue
+
+        lap_var = cv2.Laplacian(roi, cv2.CV_64F).var()
+        if lap_var < 8:
+            continue
+
+        mean_intensity = np.mean(roi)
+        if mean_intensity < 18 or mean_intensity > 245:
+            continue
+
+        blur = cv2.GaussianBlur(roi, (3, 3), 0)
+        diff = cv2.absdiff(roi, blur)
+        texture_energy = np.mean(diff)
+        if texture_energy < 0.9:
+            continue
+
+        edges = cv2.Canny(roi, 50, 150)
+        edge_density = np.sum(edges > 0) / max(edges.size, 1)
+        if edge_density < 0.010:
+            continue
+
+        upper_half = roi[:roi.shape[0] // 2, :]
+        lower_half = roi[roi.shape[0] // 2:, :]
+        if upper_half.size == 0 or lower_half.size == 0:
+            continue
+
+        upper_edges = cv2.Canny(upper_half, 50, 150)
+        lower_edges = cv2.Canny(lower_half, 50, 150)
+        upper_density = np.sum(upper_edges > 0) / max(upper_edges.size, 1)
+        lower_density = np.sum(lower_edges > 0) / max(lower_edges.size, 1)
+
+        if upper_density < 0.009:
+            continue
+
+        if lower_density > upper_density * 2.8 and area_ratio < 0.05:
+            continue
+
+        cx1 = roi.shape[1] // 4
+        cx2 = 3 * roi.shape[1] // 4
+        center_band = roi[:, cx1:cx2]
+        if center_band.size == 0:
+            continue
+        center_edges = cv2.Canny(center_band, 50, 150)
+        center_density = np.sum(center_edges > 0) / max(center_edges.size, 1)
+        if center_density < 0.010:
+            continue
+
+        center_y = y + h / 2
+        if center_y > img_h * 0.74 and area_ratio < 0.035:
+            if texture_energy < 2.5:
+                continue
+
+        validated.append([x, y, w, h])
+
+    results["face_boxes"] = validated
+    results["face_count"] = len(validated)
+
+    if len(validated) > 0:
+        return min(100, 58 + len(validated) * 6)
+    return 50
+
+
+def _non_max_suppression(boxes, threshold=0.22):
+    if not boxes:
+        return []
+
+    boxes = np.array(boxes, dtype=np.float32)
+    x1 = boxes[:, 0]
+    y1 = boxes[:, 1]
+    x2 = boxes[:, 0] + boxes[:, 2]
+    y2 = boxes[:, 1] + boxes[:, 3]
+    areas = boxes[:, 2] * boxes[:, 3]
+
+    order = np.argsort(areas)[::-1]
+    keep = []
+
+    while order.size > 0:
+        i = order[0]
+        keep.append(i)
+
+        xx1 = np.maximum(x1[i], x1[order[1:]])
+        yy1 = np.maximum(y1[i], y1[order[1:]])
+        xx2 = np.minimum(x2[i], x2[order[1:]])
+        yy2 = np.minimum(y2[i], y2[order[1:]])
+
+        w = np.maximum(0, xx2 - xx1)
+        h = np.maximum(0, yy2 - yy1)
+        inter = w * h
+
+        union = areas[i] + areas[order[1:]] - inter
+        iou = inter / np.maximum(union, 1e-6)
+
+        inds = np.where(iou <= threshold)[0]
+        order = order[inds + 1]
+
+    return boxes[keep].astype(int).tolist()
+
+
+def _analyze_face_regions(img_cv, results):
+    boxes = results.get("face_boxes", [])
+    if not boxes:
+        return 50
+
+    region_scores = []
+    for (x, y, w, h) in boxes:
+        try:
+            roi = img_cv[y:y+h, x:x+w]
+            if roi.size == 0:
+                continue
+
+            gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+            lap_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+            blur = cv2.GaussianBlur(gray, (3, 3), 0)
+            diff = cv2.absdiff(gray, blur)
+            texture_energy = np.mean(diff)
+
+            score = 50
+            if lap_var > 90:
+                score += 15
+            elif lap_var < 20:
+                score -= 6
+
+            if 3 < texture_energy < 22:
+                score += 12
+            elif texture_energy < 1.8:
+                score -= 6
+
+            region_scores.append(max(0, min(100, score)))
+        except Exception:
+            continue
+
+    if not region_scores:
+        return 50
+    return float(np.mean(region_scores))
+
+
+def _detect_ai_artifacts(img_cv, results):
+    score = 0
+    gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+
+    try:
+        size = min(gray.shape[0], gray.shape[1], 256)
+        crop = gray[:size, :size].astype(np.float32)
+        dct = cv2.dct(crop)
+        dct_abs = np.abs(dct)
+
+        half = size // 2
+        low = np.mean(dct_abs[:half, :half])
+        high = np.mean(dct_abs[half:, half:])
+
+        if low > 0:
+            ratio = high / low
+            if ratio < 0.008:
+                score += 35
+            elif ratio < 0.03:
+                score += 18
+    except Exception:
+        pass
+
+    try:
+        lap_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+        if lap_var < 40:
+            score += 18
+        elif lap_var < 90:
+            score += 7
+    except Exception:
+        pass
+
+    try:
+        small = cv2.resize(gray, (128, 128))
+        fft = np.fft.fft2(small)
+        fft_shift = np.fft.fftshift(fft)
+        mag = np.log1p(np.abs(fft_shift))
+        center = mag[50:78, 50:78]
+        corners = np.concatenate([mag[:20, :20].flatten(), mag[-20:, -20:].flatten()])
+        if np.mean(corners) > 0 and np.mean(center) / np.mean(corners) > 5.2:
+            score += 12
+    except Exception:
+        pass
+
+    results["ai_artifact_score"] = min(100, score)
+
+    if score > 55:
+        results["artifact_label"] = "High — Synthetic Traits"
+    elif score > 28:
+        results["artifact_label"] = "Moderate — Suspicious"
+    else:
+        results["artifact_label"] = "Low — Natural Looking"
+
+    return min(100, score)
+
+
+def _analyze_compression_blocks(img_cv, results):
+    score = 0
+    gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+    h, w = gray.shape
+
+    try:
+        diffs = []
+        for y in range(8, min(h - 8, 256), 8):
+            for x in range(8, min(w - 8, 256), 8):
+                boundary = abs(int(gray[y, x]) - int(gray[y - 1, x]))
+                inside = abs(int(gray[y + 1, x]) - int(gray[y + 2, x]))
+                if inside > 0:
+                    diffs.append(boundary / inside)
+
+        if diffs:
+            avg = np.mean(diffs)
+            if avg > 2.0:
+                score += 42
+            elif avg > 1.5:
+                score += 24
+            elif avg > 1.2:
+                score += 10
+    except Exception:
+        pass
+
+    results["compression_noise_score"] = min(100, score)
+
+    if score > 40:
+        results["compression_label"] = "Heavy"
+    elif score > 20:
+        results["compression_label"] = "Moderate"
+    else:
+        results["compression_label"] = "Normal"
+
+    return min(100, score)
+
+
+def _analyze_natural_noise(img_cv, results):
+    score = 50
+    gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY).astype(np.float64)
+
+    try:
+        kernel = np.ones((5, 5), np.float64) / 25
+        local_mean = cv2.filter2D(gray, -1, kernel)
+        local_var = cv2.filter2D((gray - local_mean) ** 2, -1, kernel)
+        noise_var = np.mean(local_var)
+
+        if 5 < noise_var < 500:
+            score = 68 + min(noise_var / 25, 24)
+        elif noise_var <= 5:
+            score = 20
+        else:
+            score = 40
+
+        if len(img_cv.shape) == 3:
+            b, g, r = cv2.split(img_cv)
+            stds = [np.std(ch.astype(np.float64)) for ch in [b, g, r]]
+            if np.std(stds) < 1:
+                score -= 8
+            else:
+                score += 5
+    except Exception:
+        pass
+
+    results["noise_score"] = round(max(0, min(100, score)), 2)
+    return max(0, min(100, score))
+
+
+def _analyze_edge_consistency(img_cv, results):
+    score = 50
+    try:
+        gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+        edges = cv2.Canny(gray, 50, 150)
+        density = np.sum(edges > 0) / edges.size
+
+        if 0.02 < density < 0.20:
+            score = 70
+        elif density < 0.01:
+            score = 28
+        elif density > 0.25:
+            score = 38
+    except Exception:
+        pass
+
+    results["edge_score"] = round(score, 2)
+    return max(0, min(100, score))
+
+
+def _analyze_texture_realism(img_cv, results):
+    score = 50
+    try:
+        gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (3, 3), 0)
+        diff = cv2.absdiff(gray, blur)
+        texture_energy = np.mean(diff)
+
+        if 4 < texture_energy < 18:
+            score = 72
+        elif texture_energy <= 3:
+            score = 26
+        elif texture_energy > 25:
+            score = 42
+    except Exception:
+        pass
+
+    results["texture_score"] = round(score, 2)
+    return max(0, min(100, score))
+
+
+def _analyze_color_realism(img_cv, results):
+    score = 50
+    try:
+        hsv = cv2.cvtColor(img_cv, cv2.COLOR_BGR2HSV)
+        sat_std = np.std(hsv[:, :, 1])
+        val_std = np.std(hsv[:, :, 2])
+
+        if sat_std > 28:
+            score += 10
+        elif sat_std < 10:
+            score -= 10
+
+        if val_std > 35:
+            score += 8
+        elif val_std < 14:
+            score -= 8
+
+        small = cv2.resize(img_cv, (64, 64))
+        uniq = len(np.unique(small.reshape(-1, 3), axis=0))
+        if uniq > 1800:
+            score += 8
+        elif uniq < 500:
+            score -= 8
+    except Exception:
+        pass
+
+    results["color_score"] = round(max(0, min(100, score)), 2)
+    return max(0, min(100, score))
+
+
+def _detect_screenshot_like_properties(img_cv, results):
+    penalty = 0
+    try:
+        gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+        edges = cv2.Canny(gray, 80, 160)
+
+        vertical = np.sum(edges[:, ::20] > 0)
+        horizontal = np.sum(edges[::20, :] > 0)
+        line_density = (vertical + horizontal) / max(edges.size, 1)
+
+        if line_density > 0.01:
+            penalty += 15
+
+        if results.get("noise_score", 50) < 30:
+            penalty += 12
+
+        if not results.get("exif_present"):
+            penalty += 10
+    except Exception:
+        pass
+
+    results["screenshot_likelihood"] = min(100, penalty)
+    return min(100, penalty)
+
+
+def _detect_synthetic_smoothness(img_cv, results):
+    penalty = 0
+    try:
+        gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (5, 5), 0)
+        residual = cv2.absdiff(gray, blur)
+        mean_residual = np.mean(residual)
+
+        if mean_residual < 2.8:
+            penalty += 35
+        elif mean_residual < 4.5:
+            penalty += 18
+    except Exception:
+        pass
+
+    results["synthetic_smoothness_score"] = min(100, penalty)
+    return min(100, penalty)
+
+
+def _analyze_deep_visual_features(file_path):
+    if not TORCH_AVAILABLE:
+        return 50
+
+    model = _get_deep_model()
+    if model is None:
+        return 50
+
+    try:
+        img = Image.open(file_path).convert("RGB")
+        transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
+        ])
+
+        tensor = transform(img).unsqueeze(0)
+
+        with torch.no_grad():
+            logits = model(tensor)
+            probs = torch.nn.functional.softmax(logits, dim=1).cpu().numpy()[0]
+
+        top1 = float(np.max(probs))
+        entropy = -np.sum(probs * np.log(probs + 1e-9))
+
+        score = 50
+        if top1 > 0.50:
+            score += 20
+        elif top1 > 0.25:
+            score += 10
+        elif top1 < 0.08:
+            score -= 10
+
+        if entropy < 4.5:
+            score += 15
+        elif entropy > 5.5:
+            score -= 12
+
+        return max(0, min(100, score))
+    except Exception:
+        return 50
+
+
+def _generate_scene_description(results):
+    face_count = results.get("face_count", 0)
+    width = results.get("image_width", 0)
+    height = results.get("image_height", 0)
+    has_exif = results.get("exif_present", False)
+    make = results.get("camera_make", "")
+    model = results.get("camera_model", "")
+
+    if face_count > 0:
+        if face_count == 1:
+            scene = "The image appears to contain a single visible person."
         elif face_count <= 4:
-            score = 10
+            scene = f"The image appears to contain approximately {face_count} visible people."
         else:
-            score = 6
+            scene = f"The image appears to contain multiple people (approximately {face_count})."
+    else:
+        scene = "No human faces were detected, so the image may represent a landscape, object, building, screenshot, document, or artwork."
 
-        # inspect smoothness of faces
-        for (x, y, w, h) in filtered:
-            face_region = gray[y:y+h, x:x+w]
-            face_variance = cv2.Laplacian(face_region, cv2.CV_64F).var()
-            if face_variance < 18:
-                smooth_flag = 'smooth'
-                score = max(score - 4, 0)
-                break
+    scene += f" Resolution is {width}×{height}."
+    if has_exif and (make or model):
+        scene += f" Metadata suggests capture from {make} {model}."
+    elif has_exif:
+        scene += " Metadata is present, suggesting camera-origin content."
+    else:
+        scene += " No reliable camera metadata was detected."
 
-        return {
-            'score': score,
-            'face_count': face_count,
-            'face_locations': face_locations,
-            'face_score_flag': smooth_flag,
-        }
-
-    except Exception:
-        return {
-            'score': 5,
-            'face_count': 0,
-            'face_locations': [],
-            'face_score_flag': None,
-        }
+    return scene
 
 
-# ==========================================================
-# COMPRESSION ANALYSIS
-# ==========================================================
+def _generate_summary(score):
+    if score >= 90:
+        return "Highly authentic image with strong camera-origin evidence and very low synthetic indicators."
+    elif score >= 75:
+        return "Likely real image with mostly natural visual characteristics."
+    elif score >= 40:
+        return "Suspicious image with mixed authenticity signals."
+    return "Likely fake or AI-generated image due to multiple synthetic indicators."
 
-def analyze_compression(img_cv, image_path):
+
+def _generate_full_description(results, score):
+    parts = []
+    parts.append(results.get("scene_description", "Scene details unavailable."))
+    parts.append(f"Authenticity score calculated: {score}/100.")
+
+    if results["exif_present"]:
+        parts.append("EXIF metadata is present, supporting possible real-camera origin.")
+    else:
+        parts.append("EXIF metadata is missing, which may indicate screenshot origin, metadata stripping, or synthetic generation.")
+
+    if results.get("camera_make") or results.get("camera_model"):
+        parts.append(f"Detected source device: {results.get('camera_make', '')} {results.get('camera_model', '')}.")
+
+    parts.append(f"Face detection found {results.get('face_count', 0)} face(s) using {results.get('face_detector_used', 'Unknown')}.")
+    parts.append(f"Artifact analysis result: {results.get('artifact_label', 'Unknown')}.")
+    parts.append(f"Compression analysis result: {results.get('compression_label', 'Unknown')}.")
+    parts.append(f"Deep visual realism score: {results.get('deep_feature_score', 0)}.")
+    parts.append(f"Real/Fake interpretation: {results.get('real_vs_fake', 'Uncertain')}.")
+
+    return " ".join(parts)
+
+
+def draw_face_boxes(file_path, output_path):
     try:
-        file_size = os.path.getsize(image_path)
-        height, width = img_cv.shape[:2]
-        total_pixels = height * width
-        bits_per_pixel = (file_size * 8) / total_pixels if total_pixels > 0 else 0
-
-        if 2.0 < bits_per_pixel < 12:
-            score = 10
-        elif 1.2 < bits_per_pixel <= 2.0 or 12 <= bits_per_pixel < 18:
-            score = 7
-        elif 0.8 < bits_per_pixel <= 1.2 or 18 <= bits_per_pixel < 25:
-            score = 4
-        else:
-            score = 2
-
-        return {
-            'score': score,
-            'bits_per_pixel': bits_per_pixel,
-        }
-    except Exception:
-        return {
-            'score': 5,
-            'bits_per_pixel': 0,
-        }
-
-
-# ==========================================================
-# TEXTURE ANALYSIS
-# ==========================================================
-
-def analyze_texture(img_cv):
-    try:
-        gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
-        h, w = gray.shape
-        h2, w2 = h // 2, w // 2
-
-        if h2 < 20 or w2 < 20:
-            return {'score': 3}
-
-        regions = [
-            gray[:h2, :w2],
-            gray[:h2, w2:],
-            gray[h2:, :w2],
-            gray[h2:, w2:],
-        ]
-
-        values = [cv2.Laplacian(region, cv2.CV_64F).var() for region in regions]
-        mean_val = np.mean(values)
-        std_val = np.std(values)
-
-        if mean_val > 50 and std_val < mean_val * 0.55:
-            score = 5
-        elif std_val < mean_val:
-            score = 3
-        else:
-            score = 1
-
-        return {'score': score}
-    except Exception:
-        return {'score': 3}
-
-
-# ==========================================================
-# FORMAT ANALYSIS
-# ==========================================================
-
-def analyze_format(img_pil, image_path):
-    try:
-        width, height = img_pil.size
-        ext = os.path.splitext(image_path)[1].lower()
-
-        score = 3
-        if ext in ['.jpg', '.jpeg']:
-            score += 2
-        elif ext == '.png':
-            score += 1
-
-        if width < 200 or height < 200:
-            score -= 1
-
-        return {
-            'score': min(max(score, 0), 5),
-            'resolution': f"{width}x{height}",
-            'format': ext.upper(),
-        }
-    except Exception:
-        return {
-            'score': 3,
-            'resolution': 'Unknown',
-            'format': 'Unknown',
-        }
-
-
-# ==========================================================
-# FACE BOX IMAGE GENERATOR
-# ==========================================================
-
-def generate_face_detection_image(image_path, output_path=None):
-    try:
-        img = cv2.imread(image_path)
+        img = cv2.imread(file_path)
         if img is None:
-            return None, 0, []
+            return False
 
-        max_dim = 1400
-        h, w = img.shape[:2]
-        if max(h, w) > max_dim:
-            scale = max_dim / max(h, w)
-            img = cv2.resize(img, (int(w * scale), int(h * scale)))
+        temp_results, _ = analyze_image(file_path)
+        boxes = temp_results.get("face_boxes", [])
 
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-
-        faces = face_cascade.detectMultiScale(
-            gray,
-            scaleFactor=1.1,
-            minNeighbors=8,
-            minSize=(60, 60)
-        )
-
-        filtered = []
-        for (x, y, w, h) in faces:
-            if w >= 60 and h >= 60:
-                filtered.append((x, y, w, h))
-
-        face_locations = []
-        for i, (x, y, w, h) in enumerate(filtered):
+        for (x, y, w, h) in boxes:
             cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            label = f"Face {i + 1}"
-            cv2.putText(img, label, (x, y - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-            face_locations.append({
-                'x': int(x),
-                'y': int(y),
-                'w': int(w),
-                'h': int(h),
-                'label': label
-            })
-
-        cv2.putText(img, f"Faces Detected: {len(filtered)}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-
-        if output_path is None:
-            dir_name = os.path.dirname(image_path)
-            base_name = os.path.splitext(os.path.basename(image_path))[0]
-            output_path = os.path.join(dir_name, f"{base_name}_faces.jpg")
+            label_y = max(y - 26, 0)
+            cv2.rectangle(img, (x, label_y), (x + 68, y), (0, 255, 0), -1)
+            cv2.putText(img, "Face", (x + 5, y - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.52, (0, 0, 0), 2)
 
         cv2.imwrite(output_path, img)
-        return output_path, len(filtered), face_locations
-
+        return True
     except Exception:
-        return None, 0, []
+        return False
