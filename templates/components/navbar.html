@@ -2,10 +2,7 @@
 <nav class="navbar" id="navbar">
     <div class="nav-container">
         <a href="{% url 'core:landing' %}" class="nav-logo">
-            <div class="logo-icon">
-                <i class="fas fa-shield-halved"></i>
-                <div class="logo-pulse"></div>
-            </div>
+            <div class="logo-icon"><i class="fas fa-shield-halved"></i><div class="logo-pulse"></div></div>
             <div class="logo-text">
                 <span class="logo-title">DeepFake<span class="logo-highlight">Shield</span></span>
                 <span class="logo-subtitle">Media Authenticity</span>
@@ -13,22 +10,12 @@
         </a>
 
         <div class="nav-links" id="nav-links">
-            <a href="{% url 'core:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-                <i class="fas fa-home"></i><span>Home</span>
-            </a>
-            <a href="{% url 'core:about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
-                <i class="fas fa-info-circle"></i><span>About</span>
-            </a>
-            <a href="{% url 'core:education' %}" class="nav-link {% if request.resolver_match.url_name == 'education' %}active{% endif %}">
-                <i class="fas fa-graduation-cap"></i><span>Learn</span>
-            </a>
-
+            <a href="{% url 'core:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"><i class="fas fa-home"></i><span>Home</span></a>
+            <a href="{% url 'core:about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}"><i class="fas fa-info-circle"></i><span>About</span></a>
+            <a href="{% url 'core:education' %}" class="nav-link {% if request.resolver_match.url_name == 'education' %}active{% endif %}"><i class="fas fa-graduation-cap"></i><span>Learn</span></a>
             {% if user.is_authenticated %}
             <div class="nav-dropdown">
-                <button class="nav-link dropdown-trigger">
-                    <i class="fas fa-search-plus"></i><span>Scan</span>
-                    <i class="fas fa-chevron-down dropdown-arrow"></i>
-                </button>
+                <button class="nav-link dropdown-trigger"><i class="fas fa-search-plus"></i><span>Scan</span><i class="fas fa-chevron-down dropdown-arrow"></i></button>
                 <div class="dropdown-menu">
                     <a href="{% url 'core:upload_image' %}" class="dropdown-item"><i class="fas fa-image"></i><span>Image Scan</span></a>
                     <a href="{% url 'core:upload_video' %}" class="dropdown-item"><i class="fas fa-video"></i><span>Video Scan</span></a>
@@ -36,26 +23,44 @@
                     <a href="{% url 'core:text_scan' %}" class="dropdown-item"><i class="fas fa-file-alt"></i><span>Text Scan</span></a>
                 </div>
             </div>
-            <a href="{% url 'core:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
-            </a>
-            {% if user.is_staff %}
-            <a href="{% url 'admin:index' %}" class="nav-link nav-admin" target="_blank">
-                <i class="fas fa-cog"></i><span>Admin</span>
-            </a>
-            {% endif %}
+            <a href="{% url 'core:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+            {% if user.is_staff %}<a href="{% url 'admin:index' %}" class="nav-link nav-admin" target="_blank"><i class="fas fa-cog"></i><span>Admin</span></a>{% endif %}
             {% endif %}
         </div>
 
         <div class="nav-right">
-            <!-- GOOGLE TRANSLATE WIDGET -->
-            <div id="google_translate_element" style="display:inline-block;"></div>
+            <!-- BUILT-IN TRANSLATE (works everywhere, no API, no ad-blocker issues) -->
+            <!-- Translate -->
+            <div class="dfs-translate-bar">
+                <span style="font-size:0.95rem;">🌐</span>
+                <select class="dfs-lang-select" aria-label="Translate">
+                    <option value="en" selected>English</option>
+                    <optgroup label="─ Indian ─">
+                        <option value="hi">हिन्दी</option>
+                        <option value="te">తెలుగు</option>
+                        <option value="ta">தமிழ்</option>
+                        <option value="kn">ಕನ್ನಡ</option>
+                        <option value="ml">മലയാളം</option>
+                        <option value="bn">বাংলা</option>
+                        <option value="mr">मराठी</option>
+                        <option value="gu">ગુજરાતી</option>
+                        <option value="pa">ਪੰਜਾਬੀ</option>
+                        <option value="ur">اردو</option>
+                    </optgroup>
+                    <optgroup label="─ Other ─">
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                        <option value="ar">العربية</option>
+                    </optgroup>
+                </select>
+            </div>
 
-            <!-- Theme Toggle -->
-            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+            <!-- Theme Toggle — Clear visible icons -->
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Toggle Dark/Light Mode">
                 <div class="theme-toggle-track">
-                    <i class="fas fa-moon theme-icon-dark"></i>
-                    <i class="fas fa-sun theme-icon-light"></i>
+                    <span class="theme-icon-dark">🌙</span>
+                    <span class="theme-icon-light">☀️</span>
                     <div class="theme-toggle-thumb"></div>
                 </div>
             </button>
@@ -68,17 +73,10 @@
                     <i class="fas fa-chevron-down dropdown-arrow"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-right">
-                    <div class="dropdown-header">
-                        <div class="dropdown-user-info">
-                            <span class="dropdown-user-name">{{ user.username }}</span>
-                            <span class="dropdown-user-email">{{ user.email }}</span>
-                        </div>
-                    </div>
+                    <div class="dropdown-header"><div class="dropdown-user-info"><span class="dropdown-user-name">{{ user.username }}</span><span class="dropdown-user-email">{{ user.email }}</span></div></div>
                     <div class="dropdown-divider"></div>
                     <a href="{% url 'core:dashboard' %}" class="dropdown-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
-                    {% if user.is_staff %}
-                    <a href="{% url 'admin:index' %}" class="dropdown-item" target="_blank"><i class="fas fa-cog"></i><span>Admin Panel</span></a>
-                    {% endif %}
+                    {% if user.is_staff %}<a href="{% url 'admin:index' %}" class="dropdown-item" target="_blank"><i class="fas fa-cog"></i><span>Admin Panel</span></a>{% endif %}
                     <div class="dropdown-divider"></div>
                     <a href="{% url 'core:logout' %}" class="dropdown-item dropdown-item-danger"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
                 </div>
@@ -90,17 +88,39 @@
             </div>
             {% endif %}
 
-            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Menu">
+                <span class="hamburger-line"></span><span class="hamburger-line"></span><span class="hamburger-line"></span>
             </button>
         </div>
     </div>
 
-    <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobile-menu">
         <div class="mobile-menu-inner">
+            <!-- Mobile translate -->
+            <div style="padding:8px 12px;">
+                <select class="dfs-lang-select" style="width:100%;padding:10px;border-radius:8px;font-size:0.9rem;" aria-label="Translate">
+                    <option value="en" selected>🌐 Select Language</option>
+                    <optgroup label="─ Indian Languages ─">
+                        <option value="hi">हिन्दी (Hindi)</option>
+                        <option value="te">తెలుగు (Telugu)</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
+                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                        <option value="ml">മലയാളം (Malayalam)</option>
+                        <option value="bn">বাংলা (Bengali)</option>
+                        <option value="mr">मराठी (Marathi)</option>
+                        <option value="gu">ગુજરાતી (Gujarati)</option>
+                        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                        <option value="ur">اردو (Urdu)</option>
+                    </optgroup>
+                    <optgroup label="─ Other Languages ─">
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                        <option value="ar">العربية</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="mobile-menu-divider"></div>
             <a href="{% url 'core:home' %}" class="mobile-nav-link"><i class="fas fa-home"></i><span>Home</span></a>
             <a href="{% url 'core:about' %}" class="mobile-nav-link"><i class="fas fa-info-circle"></i><span>About</span></a>
             <a href="{% url 'core:education' %}" class="mobile-nav-link"><i class="fas fa-graduation-cap"></i><span>Learn</span></a>
@@ -113,9 +133,7 @@
             <a href="{% url 'core:text_scan' %}" class="mobile-nav-link"><i class="fas fa-file-alt"></i><span>Text</span></a>
             <div class="mobile-menu-divider"></div>
             <a href="{% url 'core:dashboard' %}" class="mobile-nav-link"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
-            {% if user.is_staff %}
-            <a href="{% url 'admin:index' %}" class="mobile-nav-link" target="_blank"><i class="fas fa-cog"></i><span>Admin</span></a>
-            {% endif %}
+            {% if user.is_staff %}<a href="{% url 'admin:index' %}" class="mobile-nav-link" target="_blank"><i class="fas fa-cog"></i><span>Admin</span></a>{% endif %}
             <div class="mobile-menu-divider"></div>
             <a href="{% url 'core:logout' %}" class="mobile-nav-link mobile-nav-link-danger"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
             {% else %}

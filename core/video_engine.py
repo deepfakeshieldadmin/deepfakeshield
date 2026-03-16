@@ -148,16 +148,16 @@ def analyze_video(file_bytes, filename='unknown.mp4'):
         score_values = [f['score'] for f in frame_scores]
         avg_score = np.mean(score_values)
 
-        # Temporal variation (consistent scores = more trustworthy)
+        # Temporal variation (DON'T penalize static/slideshow content)
         score_std = np.std(score_values)
         if score_std < 5:
-            temporal_score = 85.0
+            temporal_score = 80.0  # Consistent = good
         elif score_std < 15:
-            temporal_score = 65.0
+            temporal_score = 70.0  # Slightly varying = still ok
         elif score_std < 25:
-            temporal_score = 45.0
+            temporal_score = 55.0
         else:
-            temporal_score = 30.0
+            temporal_score = 40.0
 
         # Face consistency
         if len(set(frame_face_counts)) <= 2 and max(frame_face_counts) > 0:
@@ -169,66 +169,92 @@ def analyze_video(file_bytes, filename='unknown.mp4'):
         else:
             face_consistency = 35.0
 
-        # Motion realism
+        # Motion analysis — DON'T penalize static/slideshow videos
         if motion_diffs:
             avg_motion = np.mean(motion_diffs)
             motion_std = np.std(motion_diffs)
-            if 1.0 < avg_motion < 30.0 and motion_std > 0.5:
+            if avg_motion < 1.0:
+                motion_score = 65.0  # Static/slideshow — NOT fake, just static
+            elif 1.0 <= avg_motion < 30.0 and motion_std > 0.5:
                 motion_score = 80.0
-            elif avg_motion < 1.0:
-                motion_score = 40.0  # Static = suspicious
             elif avg_motion > 50:
-                motion_score = 45.0  # Too much motion
+                motion_score = 50.0
             else:
-                motion_score = 60.0
+                motion_score = 65.0
         else:
-            motion_score = 50.0
+            motion_score = 65.0
 
         results['temporal_variation_score'] = round(temporal_score, 1)
         results['face_consistency_score'] = round(face_consistency, 1)
         results['motion_score'] = round(motion_score, 1)
         results['average_score'] = round(avg_score, 1)
 
+        # ═══ SMART SCORING — Don't penalize slideshows/collages ═══
+        
+        # Detect if this is a slideshow/collage (low motion, high score variance is OK)
+        is_slideshow = False
+        if motion_diffs:
+            avg_motion = np.mean(motion_diffs)
+            if avg_motion < 2.0:  # Very little motion = slideshow
+                is_slideshow = True
+        
+        if is_slideshow:
+            # For slideshows: score is just the average frame authenticity
+            # Don't penalize for temporal inconsistency or motion
+            temporal_score = 75.0
+            face_consistency = 70.0
+            motion_score = 70.0  # Neutral — static content is NOT fake
+        else:
+            # For real videos: check temporal consistency
+            if score_std < 5:
+                temporal_score = 85.0
+            elif score_std < 15:
+                temporal_score = 70.0
+            elif score_std < 25:
+                temporal_score = 50.0
+            else:
+                temporal_score = 35.0
+
+            # Face consistency
+            if len(set(frame_face_counts)) <= 2 and max(frame_face_counts) > 0:
+                face_consistency = 80.0
+            elif len(set(frame_face_counts)) <= 3:
+                face_consistency = 65.0
+            elif max(frame_face_counts) == 0:
+                face_consistency = 70.0
+            else:
+                face_consistency = 40.0
+
+            # Motion realism
+            if motion_diffs:
+                avg_motion = np.mean(motion_diffs)
+                if 1.0 < avg_motion < 30.0:
+                    motion_score = 80.0
+                elif avg_motion > 50:
+                    motion_score = 50.0
+                else:
+                    motion_score = 65.0
+            else:
+                motion_score = 65.0
+
+        results['temporal_variation_score'] = round(temporal_score, 1)
+        results['face_consistency_score'] = round(face_consistency, 1)
+        results['motion_score'] = round(motion_score, 1)
+
         # Final video score
-        final_score = (
-            avg_score * 0.50 +
-            temporal_score * 0.20 +
-            face_consistency * 0.15 +
-            motion_score * 0.15
-        )
+        if is_slideshow:
+            # Slideshow: 80% frame quality, 20% basic checks
+            final_score = avg_score * 0.80 + temporal_score * 0.10 + 70.0 * 0.10
+        else:
+            final_score = (
+                avg_score * 0.50 +
+                temporal_score * 0.20 +
+                face_consistency * 0.15 +
+                motion_score * 0.15
+            )
+        
         final_score = max(0.0, min(100.0, round(final_score, 1)))
         results['authenticity_score'] = final_score
-
-        # Classification
-        if final_score >= 75:
-            results['classification'] = 'likely_real'
-            results['real_vs_fake'] = 'Likely Real / Authentic'
-        elif final_score >= 40:
-            results['classification'] = 'suspicious'
-            results['real_vs_fake'] = 'Suspicious / Inconclusive'
-        else:
-            results['classification'] = 'likely_fake'
-            results['real_vs_fake'] = 'Likely Fake / Synthetic'
-
-        # Summary
-        results['description'] = (
-            f"Video analysis of '{filename}': {duration:.1f}s duration, {total_frames} total frames, "
-            f"{fps:.1f} FPS, resolution {width}x{height}. "
-            f"Analyzed {len(frame_scores)} sample frames."
-        )
-
-        results['explanation'] = (
-            f"Average frame authenticity: {avg_score:.1f}%. "
-            f"Temporal consistency: {temporal_score:.1f}%. "
-            f"Face consistency: {face_consistency:.1f}%. "
-            f"Motion realism: {motion_score:.1f}%. "
-            f"{'Frame scores were consistent across the video.' if score_std < 10 else 'Frame scores varied significantly, suggesting potential manipulation in some segments.'}"
-        )
-
-        results['summary'] = (
-            f"Video Authenticity Score: {final_score:.1f}/100 — {results['classification'].replace('_', ' ').title()}. "
-            f"{results['explanation']}"
-        )
 
         results['detailed_metrics'] = {
             'total_frames': total_frames,

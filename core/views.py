@@ -172,16 +172,33 @@ def logout_view(request):
 # ═══════════════════════════════════════════════
 
 def verify_email_view(request, token):
-    """Verify email address using token."""
+    """
+    Verify email with security checks.
+    Even if admin clicks the link, the user account gets verified
+    BUT we log who clicked it for audit trail.
+    """
     success, user, message = validate_verification_token(token)
 
     if success and user:
-        # Mark profile as verified
+        # Security: Log the verification event
+        verifier_info = 'anonymous'
+        if request.user.is_authenticated:
+            verifier_info = request.user.username
+            # If admin is verifying someone else's account, log it
+            if request.user != user and request.user.is_staff:
+                logger.warning(
+                    f"SECURITY AUDIT: Admin '{request.user.username}' verified "
+                    f"user '{user.username}' account. This may indicate the admin "
+                    f"accessed the verification link from sent emails."
+                )
+        
+        logger.info(f"Email verified for user '{user.username}' by '{verifier_info}'")
+        
         profile, _ = UserProfile.objects.get_or_create(user=user)
         profile.is_email_verified = True
         profile.save(update_fields=['is_email_verified'])
 
-        messages.success(request, message)
+        messages.success(request, 'Email verified successfully!')
         return render(request, 'email_verification_success.html', {'user': user})
     else:
         messages.error(request, message)

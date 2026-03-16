@@ -1,100 +1,62 @@
 /* ═══════════════════════════════════════════════════════════════
-   DeepFake Shield — Cursor Trail Animation
-   Standard arrow cursor + animated trailing glow dot/ring
-   Desktop only. Touch devices use native cursor.
+   DeepFake Shield — Cursor Sparkle Trail
+   Normal arrow cursor stays. Sparkle particles follow mouse.
+   Desktop only.
    ═══════════════════════════════════════════════════════════════ */
 
-/* Trail dot — follows mouse with delay */
-.cursor-dot {
+/* Hide the wrapper div itself — particles are appended to body */
+.custom-cursor {
+    display: none !important;
+}
+
+/* Each sparkle particle */
+.cursor-sparkle {
     position: fixed;
-    width: 8px;
-    height: 8px;
-    background: #667eea;
-    border-radius: 50%;
     pointer-events: none;
     z-index: 999999;
-    opacity: 0;
-    transition: width 0.2s, height 0.2s, opacity 0.3s, background 0.2s;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 0 15px rgba(102, 126, 234, 0.6),
-                0 0 30px rgba(102, 126, 234, 0.3);
+    border-radius: 50%;
+    animation: sparkleFade 0.8s ease-out forwards;
     mix-blend-mode: screen;
 }
 
-/* Trail ring — follows with more delay */
-.cursor-ring {
-    position: fixed;
-    width: 36px;
-    height: 36px;
-    border: 2px solid rgba(102, 126, 234, 0.3);
+@keyframes sparkleFade {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.1) translateY(-20px);
+    }
+}
+
+/* Hover glow effect on interactive elements */
+.cursor-glow-hover {
+    position: relative;
+}
+.cursor-glow-hover::after {
+    content: '';
+    position: absolute;
+    top: var(--glow-y, 50%);
+    left: var(--glow-x, 50%);
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(102,126,234,0.12) 0%, transparent 70%);
     border-radius: 50%;
-    pointer-events: none;
-    z-index: 999998;
-    opacity: 0;
-    transition: width 0.35s ease, height 0.35s ease,
-                border-color 0.3s ease, opacity 0.3s ease;
     transform: translate(-50%, -50%);
-}
-
-/* Container hidden by default */
-.custom-cursor {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 999999;
     pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
 }
-
-/* Active state — shown by JS */
-.custom-cursor.active .cursor-dot,
-.custom-cursor.active .cursor-ring {
+.cursor-glow-hover:hover::after {
     opacity: 1;
 }
 
-/* Hover on clickable elements — ring expands, dot grows */
-.custom-cursor.hovering .cursor-dot {
-    width: 14px;
-    height: 14px;
-    background: #fff;
-    box-shadow: 0 0 25px rgba(102, 126, 234, 0.9),
-                0 0 50px rgba(118, 75, 162, 0.4);
-}
-.custom-cursor.hovering .cursor-ring {
-    width: 50px;
-    height: 50px;
-    border-color: rgba(102, 126, 234, 0.6);
-    border-width: 2px;
-}
-
-/* Click — shrink effect */
-.custom-cursor.clicking .cursor-dot {
-    width: 5px;
-    height: 5px;
-    background: #764ba2;
-}
-.custom-cursor.clicking .cursor-ring {
-    width: 25px;
-    height: 25px;
-    border-width: 3px;
-    border-color: #764ba2;
-}
-
-/* IMPORTANT: Keep standard cursor everywhere */
-/* The trail effect is ADDITIONAL to the normal arrow cursor */
-/* We do NOT hide the default cursor */
-
-/* Disable trail on mobile/touch */
-@media (hover: none), (pointer: coarse) {
-    .custom-cursor,
-    .cursor-dot,
-    .cursor-ring {
-        display: none !important;
-    }
-}
-@media (max-width: 768px) {
-    .custom-cursor,
-    .cursor-dot,
-    .cursor-ring {
-        display: none !important;
-    }
+/* Disable everything on mobile */
+@media (hover: none), (pointer: coarse), (max-width: 768px) {
+    .cursor-sparkle { display: none !important; }
 }

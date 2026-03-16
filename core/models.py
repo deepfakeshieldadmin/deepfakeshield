@@ -23,6 +23,9 @@ class ScanResult(models.Model):
         ('likely_real', 'Likely Real'),
         ('suspicious', 'Suspicious'),
         ('likely_fake', 'Likely Fake'),
+        ('ai_generated', 'AI Generated'),
+        ('deepfake', 'DeepFake'),
+        ('edited', 'Edited'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -42,11 +45,11 @@ class ScanResult(models.Model):
     # Analysis results
     authenticity_score = models.FloatField(default=0.0)
     classification = models.CharField(
-        max_length=20,
+        max_length=100,
         choices=CLASSIFICATION_CHOICES,
         default='suspicious'
     )
-    real_vs_fake = models.CharField(max_length=50, default='Unknown')
+    real_vs_fake = models.CharField(max_length=255, default='Unknown')
     explanation = models.TextField(blank=True, default='')
     summary = models.TextField(blank=True, default='')
     description = models.TextField(blank=True, default='')
@@ -68,45 +71,41 @@ class ScanResult(models.Model):
     def __str__(self):
         return f"{self.scan_type.upper()} Scan - {self.original_filename or 'Text'} - {self.authenticity_score:.1f}%"
 
-    @property
-    def score_color(self):
-        """Return CSS color class based on score."""
-        if self.authenticity_score >= 75:
-            return 'success'
-        elif self.authenticity_score >= 40:
-            return 'warning'
-        return 'danger'
-
+    @classmethod
+    def get_real_vs_fake(cls, score):
+        """Get real vs fake label from score."""
+        if score >= 90:
+            return 'Authentic — No manipulation detected'
+        elif score >= 70:
+            return 'Likely Real — No manipulation found'
+        elif score >= 40:
+            return 'Suspicious — Possible manipulation'
+        return 'Likely Fake / Manipulated'
+    
     @property
     def score_label(self):
-        """Return human-readable score label."""
-        if self.authenticity_score >= 100:
+        if self.authenticity_score >= 90:
             return 'Highly Authentic'
-        elif self.authenticity_score >= 75:
+        elif self.authenticity_score >= 70:
             return 'Likely Real'
         elif self.authenticity_score >= 40:
             return 'Suspicious'
         return 'Likely Fake'
 
-    @classmethod
-    def classify_score(cls, score):
-        """Classify a score into a category."""
-        if score >= 100:
-            return 'highly_authentic'
-        elif score >= 75:
-            return 'likely_real'
-        elif score >= 40:
-            return 'suspicious'
-        return 'likely_fake'
+    @property
+    def score_color(self):
+        if self.authenticity_score >= 70:
+            return 'success'
+        elif self.authenticity_score >= 40:
+            return 'warning'
+        return 'danger'
 
     @classmethod
-    def get_real_vs_fake(cls, score):
-        """Get real vs fake label from score."""
-        if score >= 75:
-            return 'Likely Real / Authentic'
-        elif score >= 40:
-            return 'Suspicious / Inconclusive'
-        return 'Likely Fake / Synthetic'
+    def classify_score(cls, score):
+        if score >= 90: return 'highly_authentic'
+        elif score >= 70: return 'likely_real'
+        elif score >= 40: return 'suspicious'
+        return 'likely_fake'
 
 
 class EmailVerificationToken(models.Model):

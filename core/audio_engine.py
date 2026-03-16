@@ -9,6 +9,10 @@ import logging
 import tempfile
 import numpy as np
 from pathlib import Path
+# Suppress numba JIT compilation debug output
+import logging
+logging.getLogger('numba').setLevel(logging.WARNING)
+logging.getLogger('numba.core').setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
@@ -152,74 +156,78 @@ def analyze_audio(file_bytes, filename='unknown.wav'):
 
         # ═══════════════════════════════════════
         # AUTHENTICITY SCORING
+        # RULES:
+        # - Real voice recording = HIGH score (70-90)
+        # - Real song/music = HIGH score (70-90) 
+        # - TTS (text-to-speech) = LOW score (20-50)
+        # - AI cloned voice = LOW score (20-50)
         # ═══════════════════════════════════════
 
-        score = 50.0  # Base score
+        score = 55.0  # Start neutral
 
-        # 1. RMS Energy (natural audio has moderate energy)
-        if 0.01 < rms_mean < 0.3:
-            score += 10.0
-        elif rms_mean < 0.005:
-            score -= 5.0  # Very quiet = suspicious
+        # 1. RMS Energy (real audio has moderate energy)
+        if 0.01 < rms_mean < 0.4:
+            score += 8.0  # Normal range
+        elif rms_mean < 0.003:
+            score -= 8.0  # Too quiet = suspicious
         elif rms_mean > 0.5:
-            score -= 5.0  # Clipping/distortion
+            score -= 3.0  # Clipping
 
-        # 2. Spectral Flatness (pure tones have low flatness, noise has high)
-        if 0.01 < flatness_mean < 0.3:
-            score += 10.0  # Natural speech/music range
+        # 2. Spectral Flatness
+        # Real voice/music: 0.01-0.3 | Pure synthetic tone: < 0.005 | White noise: > 0.5
+        if 0.005 < flatness_mean < 0.35:
+            score += 8.0
         elif flatness_mean > 0.5:
-            score -= 8.0  # Too noisy/synthetic
-        elif flatness_mean < 0.005:
-            score -= 5.0  # Too pure/synthetic tone
+            score -= 5.0
+        elif flatness_mean < 0.003:
+            score -= 8.0  # Pure tone = synthetic
 
         # 3. Clipping
         if clipping_ratio < 0.001:
-            score += 8.0  # Clean recording
+            score += 5.0
         elif clipping_ratio > 0.01:
-            score -= 10.0  # Significant clipping
-        elif clipping_ratio > 0.005:
-            score -= 5.0
+            score -= 8.0
 
-        # 4. Zero Crossing Rate (speech: moderate, synthetic: extreme)
-        if 0.03 < zcr_mean < 0.15:
-            score += 8.0  # Natural speech range
-        elif zcr_mean > 0.3:
-            score -= 5.0  # Too noisy
-        elif zcr_mean < 0.01:
-            score -= 5.0  # Unnaturally smooth
+        # 4. Zero Crossing Rate
+        if 0.02 < zcr_mean < 0.2:
+            score += 6.0
+        elif zcr_mean > 0.35:
+            score -= 3.0
+        elif zcr_mean < 0.005:
+            score -= 8.0  # Unnaturally smooth
 
-        # 5. Spectral Centroid (voice: ~1000-4000 Hz)
-        if 500 < centroid_mean < 5000:
-            score += 8.0  # Voice/music range
-        elif centroid_mean > 8000:
-            score -= 5.0  # High frequency dominant
+        # 5. Spectral Centroid (voice: ~1000-5000 Hz, music: wider range)
+        if 300 < centroid_mean < 6000:
+            score += 6.0
 
-        # 6. Harmonic Confidence
-        if harmonic_confidence > 0.3:
-            score += 8.0  # Good harmonic content (voice/music)
+        # 6. Harmonic Confidence — KEY METRIC
+        # Real voices and instruments have strong harmonics
+        # TTS and AI voices have weaker/artificial harmonics
+        if harmonic_confidence > 0.4:
+            score += 10.0  # Strong harmonics = REAL voice/music
+        elif harmonic_confidence > 0.25:
+            score += 5.0
         elif harmonic_confidence < 0.1:
-            score -= 5.0  # Low harmonic content
+            score -= 8.0  # Very low harmonics = synthetic
 
-        # 7. Duration sanity
-        if 0.5 < duration < 300:
-            score += 3.0
-        elif duration < 0.5:
-            score -= 5.0  # Too short
-
-        # 8. Silence ratio
-        if silence_ratio < 0.5:
-            score += 3.0
-        elif silence_ratio > 0.8:
-            score -= 8.0  # Mostly silence
-
-        # 9. Dynamic range check
+        # 7. Dynamic range (real audio varies in loudness)
         if rms.size > 1:
             rms_std = np.std(rms)
             rms_cv = rms_std / rms_mean if rms_mean > 0 else 0
-            if 0.3 < rms_cv < 2.0:
-                score += 5.0  # Good dynamic range
-            elif rms_cv < 0.1:
-                score -= 5.0  # Too constant (TTS-like)
+            if 0.2 < rms_cv < 2.5:
+                score += 6.0  # Good dynamics = REAL
+            elif rms_cv < 0.05:
+                score -= 8.0  # Too constant = TTS-like
+
+        # 8. Duration sanity
+        if 1.0 < duration < 600:
+            score += 2.0
+
+        # 9. Silence ratio
+        if 0.05 < silence_ratio < 0.4:
+            score += 3.0  # Natural pauses
+        elif silence_ratio > 0.8:
+            score -= 5.0
 
         # Clamp score
         final_score = max(0.0, min(100.0, round(score, 1)))

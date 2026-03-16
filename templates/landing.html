@@ -111,14 +111,42 @@
                 </div>
 
                 <div class="language-selector" data-aos="fade-up" data-aos-delay="1000">
-                    <span class="lang-label"><i class="fas fa-globe"></i> Language:</span>
-                    <div class="lang-options">
-                        <button class="lang-btn active" data-lang="en">EN</button>
-                        <button class="lang-btn" data-lang="hi">HI</button>
-                        <button class="lang-btn" data-lang="es">ES</button>
-                        <button class="lang-btn" data-lang="fr">FR</button>
-                        <button class="lang-btn" data-lang="de">DE</button>
-                    </div>
+                    <span class="lang-label">🌐</span>
+                    <select class="dfs-lang-select" id="landing-lang-select" style="
+                        padding: 8px 14px;
+                        border-radius: 10px;
+                        border: 1px solid rgba(255,255,255,0.25);
+                        background-color: #1a1a2e;
+                        color: #ffffff;
+                        font-size: 0.88rem;
+                        font-family: 'Inter', sans-serif;
+                        cursor: pointer;
+                        outline: none;
+                        min-width: 170px;
+                        -webkit-appearance: none;
+                        -moz-appearance: none;
+                        appearance: none;
+                        background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22><path fill=%22%23ffffff%22 d=%22M6 8L1 3h10z%22/></svg>');
+                        background-repeat: no-repeat;
+                        background-position: right 10px center;
+                        padding-right: 30px;
+                    ">
+                        <option value="en" style="background:#1a1a2e;color:#fff;">🌐 English</option>
+                        <option value="hi" style="background:#1a1a2e;color:#fff;">🇮🇳 हिन्दी (Hindi)</option>
+                        <option value="te" style="background:#1a1a2e;color:#fff;">🇮🇳 తెలుగు (Telugu)</option>
+                        <option value="ta" style="background:#1a1a2e;color:#fff;">🇮🇳 தமிழ் (Tamil)</option>
+                        <option value="kn" style="background:#1a1a2e;color:#fff;">🇮🇳 ಕನ್ನಡ (Kannada)</option>
+                        <option value="ml" style="background:#1a1a2e;color:#fff;">🇮🇳 മലയാളം (Malayalam)</option>
+                        <option value="bn" style="background:#1a1a2e;color:#fff;">🇮🇳 বাংলা (Bengali)</option>
+                        <option value="mr" style="background:#1a1a2e;color:#fff;">🇮🇳 मराठी (Marathi)</option>
+                        <option value="gu" style="background:#1a1a2e;color:#fff;">🇮🇳 ગુજરાતી (Gujarati)</option>
+                        <option value="pa" style="background:#1a1a2e;color:#fff;">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+                        <option value="ur" style="background:#1a1a2e;color:#fff;">🇮🇳 اردو (Urdu)</option>
+                        <option value="es" style="background:#1a1a2e;color:#fff;">🇪🇸 Español</option>
+                        <option value="fr" style="background:#1a1a2e;color:#fff;">🇫🇷 Français</option>
+                        <option value="de" style="background:#1a1a2e;color:#fff;">🇩🇪 Deutsch</option>
+                        <option value="ar" style="background:#1a1a2e;color:#fff;">🇸🇦 العربية</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -171,17 +199,56 @@
     <script>AOS.init({duration:800,easing:'ease-out-cubic',once:false,offset:50});</script>
 
     <!-- GOOGLE TRANSLATE -->
+    <!-- Landing translate handler -->
     <script>
-    function googleTranslateElementInit(){
-        new google.translate.TranslateElement({
-            pageLanguage:'en',
-            includedLanguages:'en,hi,te,ta,kn,ml,bn,es,fr,de,ja,ko,zh-CN,ar,pt,ru',
-            layout:google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay:false
-        },'google_translate_element');
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        var sel = document.getElementById('landing-lang-select');
+        if (!sel) return;
+
+        sel.addEventListener('change', function() {
+            var lang = this.value;
+            if (lang === 'en') { location.reload(); return; }
+
+            // Step 1: Translate hero text using dictionary (works on localhost)
+            var heroDict = {
+                hi: { l1:'डिजिटल धोखाधड़ी से', l2:'सुरक्षा करें', e:'शील्ड में प्रवेश', c:'खाता बनाएं', sub:'हाइब्रिड AI विश्लेषण द्वारा संचालित रियल-टाइम मीडिया प्रामाणिकता सत्यापन प्रणाली।' },
+                te: { l1:'డిజిటల్ మోసం నుండి', l2:'రక్షణ పొందండి', e:'షీల్డ్ లోకి', c:'ఖాతా సృష్టించు', sub:'హైబ్రిడ్ AI విశ్లేషణ ద్వారా నిజ-సమయ మీడియా ప్రామాణికత ధృవీకరణ వ్యవస్థ.' },
+                ta: { l1:'டிஜிட்டல் ஏமாற்றத்திலிருந்து', l2:'பாதுகாப்பு பெறுங்கள்', e:'ஷீல்டு நுழைய', c:'கணக்கு உருவாக்கு', sub:'ஹைப்ரிட் AI பகுப்பாய்வு மூலம் நிகழ்நேர ஊடக நம்பகத்தன்மை சரிபார்ப்பு.' },
+                kn: { l1:'ಡಿಜಿಟಲ್ ಮೋಸದಿಂದ', l2:'ರಕ್ಷಣೆ ಪಡೆಯಿರಿ', e:'ಶೀಲ್ಡ್ ಪ್ರವೇಶ', c:'ಖಾತೆ ರಚಿಸಿ', sub:'ಹೈಬ್ರಿಡ್ AI ವಿಶ್ಲೇಷಣೆ ಮೂಲಕ ನೈಜ-ಸಮಯ ಮಾಧ್ಯಮ ದೃಢೀಕರಣ.' },
+                ml: { l1:'ഡിജിറ്റൽ വഞ്ചനയ്‌ക്കെതിരെ', l2:'സംരക്ഷണം നേടുക', e:'ഷീൽഡ് പ്രവേശനം', c:'അക്കൗണ്ട് സൃഷ്ടിക്കുക', sub:'ഹൈബ്രിഡ് AI വിശകലനം ഉപയോഗിച്ച് തത്സമയ മീഡിയ ആധികാരികത പരിശോധന.' },
+                bn: { l1:'ডিজিটাল প্রতারণা থেকে', l2:'সুরক্ষা পান', e:'শিল্ড প্রবেশ', c:'অ্যাকাউন্ট তৈরি', sub:'হাইব্রিড AI বিশ্লেষণ দ্বারা রিয়েল-টাইম মিডিয়া প্রমাণীকরণ।' },
+                mr: { l1:'डिजिटल फसवणुकीपासून', l2:'संरक्षण मिळवा', e:'शील्ड प्रवेश', c:'खाते तयार करा', sub:'हायब्रिड AI विश्लेषणाद्वारे रिअल-टाइम मीडिया प्रमाणीकरण.' },
+                gu: { l1:'ડિજિટલ છેતરપિંડી સામે', l2:'રક્ષણ મેળવો', e:'શીલ્ડ પ્રવેશ', c:'ખાતું બનાવો', sub:'હાઇબ્રિડ AI વિશ્લેષણ દ્વારા રીઅલ-ટાઇમ મીડિયા પ્રમાણીકરણ.' },
+                pa: { l1:'ਡਿਜੀਟਲ ਧੋਖੇ ਤੋਂ', l2:'ਬਚਾਅ ਕਰੋ', e:'ਸ਼ੀਲਡ ਦਾਖਲ', c:'ਖਾਤਾ ਬਣਾਓ', sub:'ਹਾਈਬ੍ਰਿਡ AI ਵਿਸ਼ਲੇਸ਼ਣ ਦੁਆਰਾ ਰੀਅਲ-ਟਾਈਮ ਮੀਡੀਆ ਪ੍ਰਮਾਣਿਕਤਾ.' },
+                ur: { l1:'ڈیجیٹل دھوکے سے', l2:'حفاظت حاصل کریں', e:'شیلڈ میں داخل', c:'اکاؤنٹ بنائیں', sub:'ہائبرڈ AI تجزیہ کے ذریعے ریئل ٹائم میڈیا تصدیق۔' },
+                es: { l1:'Defiéndete Contra', l2:'El Engaño Digital', e:'Entrar al Escudo', c:'Crear Cuenta', sub:'Sistema de verificación de autenticidad de medios en tiempo real.' },
+                fr: { l1:'Défendez-vous Contre', l2:'La Tromperie Numérique', e:'Entrer', c:'Créer Compte', sub:'Système de vérification d\'authenticité des médias en temps réel.' },
+                de: { l1:'Verteidigen Sie Sich Gegen', l2:'Digitale Täuschung', e:'Schild Betreten', c:'Konto Erstellen', sub:'Echtzeit-Medien-Authentizitätsprüfung.' },
+                ar: { l1:'الدفاع ضد', l2:'الخداع الرقمي', e:'دخول الدرع', c:'إنشاء حساب', sub:'نظام التحقق من صحة الوسائط في الوقت الفعلي.' }
+            };
+
+            var d = heroDict[lang];
+            if (d) {
+                var l1 = document.querySelector('.hero-title-line');
+                var l2 = document.querySelector('.hero-title-gradient');
+                var sub = document.querySelector('.hero-subtitle');
+                if (l1) l1.textContent = d.l1;
+                if (l2) l2.textContent = d.l2;
+                if (sub) sub.textContent = d.sub;
+                var btns = document.querySelectorAll('.hero-actions .btn-content span');
+                if (btns.length >= 2) { btns[0].textContent = d.e; btns[1].textContent = d.c; }
+            }
+
+            // Step 2: For hosted version — also try Google Translate for FULL page
+            var host = window.location.hostname;
+            if (host !== 'localhost' && host !== '127.0.0.1') {
+                // On production, redirect for full translation
+                var url = window.location.href;
+                window.open('https://translate.google.com/translate?sl=en&tl=' + lang + '&u=' + encodeURIComponent(url), '_blank');
+            }
+        });
+    });
     </script>
-    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
     <!-- CURSOR SPARKLE TRAIL -->
     <script>
