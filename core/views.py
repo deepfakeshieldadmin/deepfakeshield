@@ -67,7 +67,7 @@ def education_view(request):
 # ═══════════════════════════════════════════════
 
 def signup_view(request):
-    """User registration with image CAPTCHA."""
+    """User registration with CAPTCHA and email verification."""
     if request.user.is_authenticated:
         return redirect('core:dashboard')
 
@@ -76,7 +76,7 @@ def signup_view(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
 
-        # Validate CAPTCHA FIRST using the session answer set during GET
+        # Validate CAPTCHA
         captcha_answer = request.POST.get('captcha', '')
         expected = request.session.get('captcha_answer', '')
         captcha_valid = expected and captcha_answer.strip().upper() == expected.upper()
@@ -89,25 +89,41 @@ def signup_view(request):
                     password=form.cleaned_data['password1'],
                     is_active=True,
                 )
+
+                # Create profile
                 profile, _ = UserProfile.objects.get_or_create(user=user)
+
+                # Create verification token
                 token = create_verification_token(user)
-                email_sent = send_verification_email(user, token, request)
+
+                # Send verification email
+                email_sent, error_msg = send_verification_email(user, token, request)
 
                 if email_sent:
-                    messages.success(request, 'Account created! Check your email for verification link.')
+                    messages.success(
+                        request,
+                        f'Account created! Verification email sent to {user.email}. '
+                        f'Please check your inbox (and spam folder).'
+                    )
                 else:
-                    messages.success(request, 'Account created! Check terminal for verification link.')
+                    # Show the actual error to help debug
+                    messages.warning(
+                        request,
+                        f'Account created but email delivery failed: {error_msg}. '
+                        f'You can still login. Contact admin for verification.'
+                    )
+                    logger.error(f"Email failed for {user.email}: {error_msg}")
 
                 return redirect('core:email_verification_sent')
+
             except Exception as e:
                 logger.error(f"Signup error: {e}")
-                messages.error(request, 'Registration failed. Please try again.')
+                messages.error(request, f'Registration failed: {str(e)}')
         else:
             if not captcha_valid:
                 messages.error(request, 'Incorrect CAPTCHA. Please try again.')
-            # Fall through to regenerate captcha below
 
-    # Generate NEW captcha for the form (both GET and failed POST)
+    # Generate new CAPTCHA
     captcha_ctx = form.setup_captcha(request)
 
     return render(request, 'signup.html', {

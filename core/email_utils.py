@@ -1,9 +1,9 @@
 """
 Email utilities for DeepFake Shield.
-Handles sending verification emails with proper error handling.
+Shows real errors instead of failing silently.
 """
 import logging
-from django.core.mail import send_mail, EmailMessage
+from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def send_verification_email(user, token, request):
-    """Send email verification link to user. Returns True on success."""
+    """Send email verification link. Returns (success, error_message)."""
     verify_url = ''
     try:
         scheme = 'https' if request.is_secure() else 'http'
@@ -22,15 +22,21 @@ def send_verification_email(user, token, request):
         context = {
             'user': user,
             'verify_url': verify_url,
-            'project_name': settings.DEEPFAKE_SHIELD.get('PROJECT_NAME', 'DeepFake Shield'),
+            'project_name': 'DeepFake Shield',
         }
 
         html_message = render_to_string('emails/verify_email.html', context)
         plain_message = strip_tags(html_message)
 
-        subject = f'Verify your email - {settings.DEEPFAKE_SHIELD.get("PROJECT_NAME", "DeepFake Shield")}'
+        subject = 'Verify your email - DeepFake Shield'
 
-        # Try sending email
+        # Log what we're about to do
+        logger.info(f"Sending verification email to: {user.email}")
+        logger.info(f"Using backend: {settings.EMAIL_BACKEND}")
+        logger.info(f"SMTP Host: {settings.EMAIL_HOST}:{settings.EMAIL_PORT}")
+        logger.info(f"From: {settings.DEFAULT_FROM_EMAIL}")
+        logger.info(f"Verify URL: {verify_url}")
+
         email = EmailMessage(
             subject=subject,
             body=html_message,
@@ -40,18 +46,15 @@ def send_verification_email(user, token, request):
         email.content_subtype = 'html'
         email.send(fail_silently=False)
 
-        logger.info(f"Verification email sent to {user.email}")
-        return True
+        logger.info(f"✅ Email sent successfully to {user.email}")
+        return True, None
 
     except Exception as e:
-        logger.warning(f"Email sending failed: {e}")
-        # Always log the verification URL so user can still verify
-        logger.info(f"=== VERIFICATION URL FOR {user.email}: {verify_url} ===")
-
-        # If using console backend, the email IS printed — this is success
-        backend = getattr(settings, 'EMAIL_BACKEND', '')
-        if 'console' in backend.lower():
-            logger.info("Console email backend is active — email printed to terminal.")
-            return True
-
-        return Falsew
+        error_msg = str(e)
+        logger.error(f"❌ EMAIL FAILED: {error_msg}")
+        logger.error(f"   Backend: {settings.EMAIL_BACKEND}")
+        logger.error(f"   Host: {settings.EMAIL_HOST}:{settings.EMAIL_PORT}")
+        logger.error(f"   User: {settings.EMAIL_HOST_USER}")
+        logger.error(f"   TLS: {settings.EMAIL_USE_TLS}")
+        logger.error(f"   Verify URL: {verify_url}")
+        return False, error_msg
