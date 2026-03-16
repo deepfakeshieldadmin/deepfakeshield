@@ -1,8 +1,8 @@
 """
-Email utilities for DeepFake Shield.
-Shows real errors instead of failing silently.
+Email utilities — with timeout to prevent worker crash.
 """
 import logging
+import threading
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
@@ -11,9 +11,31 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 
+def _send_email_thread(subject, html_body, from_email, to_email):
+    """Send email in a separate thread so it doesn't block the request."""
+    try:
+        email = EmailMessage(
+            subject=subject,
+            body=html_body,
+            from_email=from_email,
+            to=[to_email],
+        )
+        email.content_subtype = 'html'
+        # Set a 10-second timeout on the connection
+        import socket
+        old_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(10)
+        try:
+            email.send(fail_silently=False)
+            logger.info(f"✅ Email sent to {to_email}")
+        finally:
+            socket.setdefaulttimeout(old_timeout)
+    except Exception as e:
+        logger.error(f"❌ Email thread failed for {to_email}: {e}")
+
+
 def send_verification_email(user, token, request):
-    """Send email verification link. Returns (success, error_message)."""
-    verify_url = ''
+    """Send verification email without blocking the request."""
     try:
         scheme = 'https' if request.is_secure() else 'http'
         host = request.get_host()
@@ -26,35 +48,22 @@ def send_verification_email(user, token, request):
         }
 
         html_message = render_to_string('emails/verify_email.html', context)
-        plain_message = strip_tags(html_message)
-
         subject = 'Verify your email - DeepFake Shield'
+        from_email = settings.DEFAULT_FROM_EMAIL
 
-        # Log what we're about to do
-        logger.info(f"Sending verification email to: {user.email}")
-        logger.info(f"Using backend: {settings.EMAIL_BACKEND}")
-        logger.info(f"SMTP Host: {settings.EMAIL_HOST}:{settings.EMAIL_PORT}")
-        logger.info(f"From: {settings.DEFAULT_FROM_EMAIL}")
+        logger.info(f"Sending email to {user.email} via {settings.EMAIL_HOST}:{settings.EMAIL_PORT}")
         logger.info(f"Verify URL: {verify_url}")
 
-        email = EmailMessage(
-            subject=subject,
-            body=html_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[user.email],
+        # Send in background thread — don't block the HTTP request
+        thread = threading.Thread(
+            target=_send_email_thread,
+            args=(subject, html_message, from_email, user.email),
+            daemon=True
         )
-        email.content_subtype = 'html'
-        email.send(fail_silently=False)
+        thread.start()
 
-        logger.info(f"✅ Email sent successfully to {user.email}")
         return True, None
 
     except Exception as e:
-        error_msg = str(e)
-        logger.error(f"❌ EMAIL FAILED: {error_msg}")
-        logger.error(f"   Backend: {settings.EMAIL_BACKEND}")
-        logger.error(f"   Host: {settings.EMAIL_HOST}:{settings.EMAIL_PORT}")
-        logger.error(f"   User: {settings.EMAIL_HOST_USER}")
-        logger.error(f"   TLS: {settings.EMAIL_USE_TLS}")
-        logger.error(f"   Verify URL: {verify_url}")
-        return False, error_msg
+        logger.error(f"❌ Email setup failed: {e}")
+        return False, str(e)
