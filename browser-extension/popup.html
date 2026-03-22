@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 320px;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0a0e1a;
+      color: #f0f4f8;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .logo { font-size: 32px; margin-bottom: 8px; }
+    .title {
+      font-size: 18px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      font-size: 11px;
+      color: #718096;
+      margin-top: 4px;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(102,126,234,0.3);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+    .btn-scan {
+      background: linear-gradient(135deg, #43e97b, #38f9d7);
+      color: #1a1a2e;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #667eea;
+      color: #667eea;
+    }
+    .info {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: #a0aec0;
+      text-align: center;
+    }
+    .info strong { color: #667eea; }
+    .divider {
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+      margin: 12px 0;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .feature {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      font-size: 11px;
+    }
+    .feature-icon { font-size: 20px; margin-bottom: 4px; }
+    .version {
+      text-align: center;
+      font-size: 10px;
+      color: #4a5568;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🛡️</div>
+    <div class="title">DeepFake Shield</div>
+    <div class="subtitle">Media Authenticity Verification</div>
+  </div>
+
+  <a href="#" class="btn btn-scan" id="btn-scan">
+    🔍 Scan Image for DeepFakes
+  </a>
+
+  <a href="#" class="btn btn-primary" id="btn-dashboard">
+    📊 Open Dashboard
+  </a>
+
+  <div class="divider"></div>
+
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">🖼️</div>
+      Image
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🎬</div>
+      Video
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🎵</div>
+      Audio
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📝</div>
+      Text
+    </div>
+  </div>
+
+  <div class="info">
+    <strong>Tip:</strong> Right-click any image on any webpage and select
+    "Check with DeepFake Shield" to instantly verify it!
+  </div>
+
+  <div class="version">v1.0.0 • Made with ❤️</div>
+
+  <script>
+    const SITE = "http://127.0.0.1:8000"; // Change to your domain later
+
+    document.getElementById('btn-scan').addEventListener('click', () => {
+      chrome.tabs.create({ url: SITE + '/scan/image/' });
+    });
+
+    document.getElementById('btn-dashboard').addEventListener('click', () => {
+      chrome.tabs.create({ url: SITE + '/dashboard/' });
+    });
+  </script>
+</body>
+</html>

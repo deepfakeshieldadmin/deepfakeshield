@@ -19,6 +19,12 @@
     <link rel="stylesheet" href="{% static 'css/auth.css' %}">
     <link rel="stylesheet" href="{% static 'css/scan_pages.css' %}">
 
+    <!-- PWA Support — Makes website installable like an app -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <style id="dfs-inline-styles">
         /* Cursor sparkle particles */
         .dfs-sparkle {
