@@ -1,17 +1,47 @@
+# ═══════════════════════════════════════════════════════
+# DeepFake Shield — requirements-minimal.txt
+# Compatible with: Azure App Service, Render, Oracle VM
+# Python: 3.11
+# Updated: March 2026
+# ═══════════════════════════════════════════════════════
+
+# ── Core Django Stack ──
 Django==4.2.16
 gunicorn==21.2.0
 whitenoise==6.7.0
 psycopg2-binary==2.9.9
 dj-database-url==2.2.0
 python-dotenv==1.0.1
+
+# ── Image Processing ──
 numpy==1.26.4
 Pillow==10.4.0
 opencv-python-headless==4.10.0.84
 exifread==3.0.0
-scikit-learn==1.5.2
 scikit-image==0.22.0
 scipy==1.13.1
+scikit-learn==1.5.2
+
+# ── Audio Processing ──
 librosa==0.10.2.post1
 soundfile==0.12.1
-moviepy==1.0.3
+
+# ── Video Processing ──
+# NOTE: moviepy 1.0.3 conflicts with numpy 1.26+
+# Use imageio-ffmpeg as a safer alternative
+imageio==2.34.1
+imageio-ffmpeg==0.4.9
+
+# ── PDF Report Generation ──
 reportlab==4.2.2
+
+# ── Email (async support) ──
+# No extra packages needed — uses Django's built-in email
+
+# ═══════════════════════════════════════════════════════
+# OPTIONAL: Deep Learning (MTCNN face detection)
+# These are large packages — install separately if needed
+# pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# pip install facenet-pytorch==2.5.3
+# The system works WITHOUT these (falls back to OpenCV Haar cascade)
+# ═══════════════════════════════════════════════════════
