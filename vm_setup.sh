@@ -25,7 +25,8 @@ SECRET_KEY=$(python3 -c "import secrets; print(secrets.token_urlsafe(50))")
 
 echo ">>> STEP 1: Updating system packages..."
 sudo apt update -y && sudo apt upgrade -y
-sudo apt install -y python3.11 python3.11-pip python3.11-venv python3-dev
+sudo apt install python3.11.0 python3.11.0-venv python3.11.0-distutils -y
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
 sudo apt install -y postgresql postgresql-contrib
 sudo apt install -y nginx git curl wget unzip
 sudo apt install -y libpq-dev build-essential
