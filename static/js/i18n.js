@@ -1,244 +1,217 @@
 /**
- * DeepFake Shield — Custom Translation Widget
- * File: static/js/i18n.js
- * 
- * REPLACES Google Translate widget completely.
- * - No Google logo
- * - No page redirect  
- * - Stays on same page
- * - Uses Google Translate Element API invisibly
- * - Clean dropdown in navbar
+ * DeepFake Shield — i18n.js v3.0
+ * Full-page inline translation. No Google logo. No redirect. No new tab.
+ * Uses Google Translate Element API invisibly in background.
  */
-
 (function () {
     'use strict';
 
-    // ── Supported Languages ──
     const LANGUAGES = [
-        { code: 'en', name: 'English', flag: '🇬🇧' },
-        { code: 'hi', name: 'हिंदी', flag: '🇮🇳' },
-        { code: 'ta', name: 'தமிழ்', flag: '🇮🇳' },
-        { code: 'te', name: 'తెలుగు', flag: '🇮🇳' },
-        { code: 'ml', name: 'മലയാളം', flag: '🇮🇳' },
-        { code: 'kn', name: 'ಕನ್ನಡ', flag: '🇮🇳' },
-        { code: 'mr', name: 'मराठी', flag: '🇮🇳' },
-        { code: 'bn', name: 'বাংলা', flag: '🇧🇩' },
-        { code: 'fr', name: 'Français', flag: '🇫🇷' },
-        { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-        { code: 'es', name: 'Español', flag: '🇪🇸' },
-        { code: 'ar', name: 'العربية', flag: '🇸🇦' },
-        { code: 'zh-CN', name: '中文', flag: '🇨🇳' },
-        { code: 'ja', name: '日本語', flag: '🇯🇵' },
+        { code: 'en',    name: 'English',    flag: '🇬🇧' },
+        { code: 'hi',    name: 'हिंदी',       flag: '🇮🇳' },
+        { code: 'ta',    name: 'தமிழ்',       flag: '🇮🇳' },
+        { code: 'te',    name: 'తెలుగు',      flag: '🇮🇳' },
+        { code: 'ml',    name: 'മലയാളം',     flag: '🇮🇳' },
+        { code: 'kn',    name: 'ಕನ್ನಡ',      flag: '🇮🇳' },
+        { code: 'mr',    name: 'मराठी',       flag: '🇮🇳' },
+        { code: 'bn',    name: 'বাংলা',       flag: '🇧🇩' },
+        { code: 'fr',    name: 'Français',    flag: '🇫🇷' },
+        { code: 'de',    name: 'Deutsch',     flag: '🇩🇪' },
+        { code: 'es',    name: 'Español',     flag: '🇪🇸' },
+        { code: 'ar',    name: 'العربية',     flag: '🇸🇦' },
+        { code: 'zh-CN', name: '中文',         flag: '🇨🇳' },
+        { code: 'ja',    name: '日本語',       flag: '🇯🇵' },
     ];
 
-    // ── Hidden Google Translate container ──
-    function injectGoogleTranslate() {
-        // Add hidden container for Google Translate
-        const container = document.createElement('div');
-        container.id = 'google_translate_element';
-        container.style.cssText = 'position:absolute;top:-9999px;left:-9999px;visibility:hidden;';
-        document.body.appendChild(container);
-
-        // Hide Google Translate bar that appears at top
-        const style = document.createElement('style');
-        style.textContent = `
-            /* Hide Google Translate bar completely */
-            .goog-te-banner-frame,
-            .goog-te-balloon-frame,
-            #goog-gt-tt,
-            .goog-te-balloon-frame,
-            .skiptranslate {
-                display: none !important;
-                visibility: hidden !important;
-            }
-            body { top: 0 !important; }
-            .goog-tooltip { display: none !important; }
-            .goog-tooltip:hover { display: none !important; }
-            .goog-text-highlight {
-                background-color: transparent !important;
-                box-shadow: none !important;
-            }
-            /* Hide Google logo in translate bar */
-            .goog-logo-link { display: none !important; }
-            .goog-te-gadget { display: none !important; }
+    function injectHideStyles() {
+        const s = document.createElement('style');
+        s.textContent = `
+            .goog-te-banner-frame,.goog-te-balloon-frame,.goog-te-menu-frame,
+            #goog-gt-tt,.skiptranslate,.goog-te-gadget,.goog-logo-link,
+            iframe.skiptranslate { display:none!important; visibility:hidden!important; }
+            body { top:0!important; }
+            .goog-tooltip,.goog-tooltip:hover { display:none!important; }
+            .goog-text-highlight { background:none!important; box-shadow:none!important; }
         `;
-        document.head.appendChild(style);
+        document.head.appendChild(s);
     }
 
-    // ── Initialize Google Translate API ──
+    function injectGTContainer() {
+        if (document.getElementById('google_translate_element')) return;
+        const d = document.createElement('div');
+        d.id = 'google_translate_element';
+        d.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden;';
+        document.body.appendChild(d);
+    }
+
     window.googleTranslateElementInit = function () {
-        new google.translate.TranslateElement({
-            pageLanguage: 'en',
-            includedLanguages: LANGUAGES.map(l => l.code).join(','),
-            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false,
-        }, 'google_translate_element');
+        try {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: LANGUAGES.map(l => l.code).join(','),
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false,
+            }, 'google_translate_element');
+        } catch(e) {}
     };
 
-    // ── Load Google Translate Script ──
-    function loadGoogleTranslate() {
-        const script = document.createElement('script');
-        script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-        script.async = true;
-        document.head.appendChild(script);
+    function loadGT() {
+        if (document.getElementById('gt-script')) return;
+        const scr = document.createElement('script');
+        scr.id = 'gt-script';
+        scr.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+        scr.async = true;
+        document.head.appendChild(scr);
     }
 
-    // ── Change Language Function ──
-    function changeLanguage(langCode) {
-        if (langCode === 'en') {
-            // Restore original language
-            const cookieName = '/';
-            document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + location.hostname;
-            window.location.reload();
+    function applyLanguage(code) {
+        if (code === 'en') {
+            document.cookie = 'googtrans=; expires=Thu,01 Jan 1970 00:00:00 UTC; path=/;';
+            document.cookie = `googtrans=; expires=Thu,01 Jan 1970 00:00:00 UTC; path=/; domain=.${location.hostname}`;
+            localStorage.removeItem('dfs_lang');
+            location.reload();
             return;
         }
+        const val = `/en/${code}`;
+        document.cookie = `googtrans=${val}; path=/`;
+        document.cookie = `googtrans=${val}; path=/; domain=.${location.hostname}`;
+        localStorage.setItem('dfs_lang', code);
 
-        // Set Google Translate cookie
-        const value = `/en/${langCode}`;
-        document.cookie = `googtrans=${value}; path=/`;
-        document.cookie = `googtrans=${value}; path=/; domain=.${location.hostname}`;
-
-        // Trigger translation using hidden select element
-        const select = document.querySelector('.goog-te-combo');
-        if (select) {
-            select.value = langCode;
-            select.dispatchEvent(new Event('change'));
-        } else {
-            // Fallback: reload with cookie set
-            window.location.reload();
-        }
-
-        // Save preference
-        localStorage.setItem('dfs_language', langCode);
-        updateLanguageButton(langCode);
+        const trySelect = (n) => {
+            const sel = document.querySelector('.goog-te-combo');
+            if (sel) {
+                sel.value = code;
+                sel.dispatchEvent(new Event('change'));
+                updateDropdowns(code);
+            } else if (n > 0) {
+                setTimeout(() => trySelect(n - 1), 400);
+            } else {
+                location.reload();
+            }
+        };
+        trySelect(12);
     }
 
-    // ── Update language button display ──
-    function updateLanguageButton(langCode) {
-        const lang = LANGUAGES.find(l => l.code === langCode) || LANGUAGES[0];
-        const btn = document.getElementById('dfs-lang-btn');
-        if (btn) {
-            btn.innerHTML = `<span class="lang-flag">${lang.flag}</span> <span class="lang-name">${lang.name}</span> <i class="fas fa-chevron-down ms-1" style="font-size:0.7rem;"></i>`;
-        }
-    }
-
-    // ── Build custom language dropdown ──
-    function buildLanguageDropdown() {
-        // Find existing language selector containers in navbar
-        const existingLangContainers = document.querySelectorAll(
-            '.language-selector, [data-language-selector], #language-dropdown, .lang-selector'
-        );
-
-        // Build dropdown HTML
-        const currentLang = localStorage.getItem('dfs_language') || 'en';
-        const currentLangObj = LANGUAGES.find(l => l.code === currentLang) || LANGUAGES[0];
-
-        const dropdownHTML = `
-        <div class="dfs-language-dropdown" id="dfs-lang-wrapper" style="position:relative;display:inline-block;">
-            <button id="dfs-lang-btn"
-                style="background:transparent;border:1px solid rgba(255,255,255,0.2);
-                       border-radius:8px;padding:6px 12px;cursor:pointer;
-                       color:inherit;display:flex;align-items:center;gap:6px;
-                       font-size:0.875rem;transition:all 0.2s;"
-                onclick="window.DFSLang.toggleDropdown(event)">
-                <span class="lang-flag">${currentLangObj.flag}</span>
-                <span class="lang-name">${currentLangObj.name}</span>
-                <i class="fas fa-chevron-down ms-1" style="font-size:0.7rem;"></i>
-            </button>
-            <div id="dfs-lang-menu"
-                style="display:none;position:absolute;top:calc(100% + 8px);right:0;
-                       background:var(--bg-secondary, #1a1a2e);border:1px solid rgba(255,255,255,0.1);
-                       border-radius:10px;padding:8px;min-width:160px;z-index:9999;
-                       box-shadow:0 8px 32px rgba(0,0,0,0.3);max-height:320px;overflow-y:auto;">
-                ${LANGUAGES.map(lang => `
-                    <div class="dfs-lang-item"
-                        data-lang="${lang.code}"
-                        onclick="window.DFSLang.select('${lang.code}')"
-                        style="padding:8px 12px;cursor:pointer;border-radius:6px;
-                               display:flex;align-items:center;gap:8px;font-size:0.875rem;
-                               transition:background 0.15s;color:inherit;"
-                        onmouseover="this.style.background='rgba(255,255,255,0.08)'"
-                        onmouseout="this.style.background='transparent'">
-                        <span style="font-size:1.1rem;">${lang.flag}</span>
-                        <span>${lang.name}</span>
-                        ${lang.code === currentLang ? '<i class="fas fa-check ms-auto" style="color:#00d4ff;font-size:0.75rem;"></i>' : ''}
-                    </div>
-                `).join('')}
-            </div>
-        </div>`;
-
-        // Replace existing language selectors
-        existingLangContainers.forEach(container => {
-            container.innerHTML = dropdownHTML;
+    function updateDropdowns(code) {
+        const lang = LANGUAGES.find(l => l.code === code) || LANGUAGES[0];
+        document.querySelectorAll('.dfs-lang-btn').forEach(btn => {
+            btn.innerHTML = `${lang.flag} <span class="dfs-lang-name">${lang.name}</span> <i class="fas fa-chevron-down" style="font-size:.65rem;opacity:.7;margin-left:3px;"></i>`;
         });
+        document.querySelectorAll('.dfs-lang-item').forEach(item => {
+            const chk = item.querySelector('.dfs-chk');
+            if (chk) chk.style.display = item.dataset.code === code ? 'inline' : 'none';
+        });
+    }
 
-        // If no existing container found, find the navbar and inject
-        if (existingLangContainers.length === 0) {
-            // Look for common navbar selectors
-            const navbar = document.querySelector(
-                '.navbar-nav, nav .d-flex, .nav-right, #navbarNav .d-flex'
-            );
-            if (navbar) {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'nav-item dfs-lang-nav-item';
-                wrapper.innerHTML = dropdownHTML;
-                // Insert before last item (usually user menu/login button)
-                const lastItem = navbar.lastElementChild;
-                navbar.insertBefore(wrapper, lastItem);
+    function buildDropdown(curCode) {
+        const cur = LANGUAGES.find(l => l.code === curCode) || LANGUAGES[0];
+        return `<div class="dfs-lang-wrapper" style="position:relative;display:inline-flex;align-items:center;">
+  <button class="dfs-lang-btn" onclick="window.DFSi18n.toggle(event)"
+    style="display:inline-flex;align-items:center;gap:5px;background:transparent;
+           border:1px solid rgba(102,126,234,0.3);border-radius:8px;padding:5px 11px;
+           cursor:pointer;color:inherit;font-size:.82rem;font-family:inherit;transition:all .2s;white-space:nowrap;"
+    onmouseover="this.style.borderColor='rgba(102,126,234,.7)';this.style.background='rgba(102,126,234,.08)'"
+    onmouseout="this.style.borderColor='rgba(102,126,234,.3)';this.style.background='transparent'">
+    ${cur.flag} <span class="dfs-lang-name">${cur.name}</span>
+    <i class="fas fa-chevron-down" style="font-size:.65rem;opacity:.7;margin-left:3px;"></i>
+  </button>
+  <div class="dfs-lang-menu" style="display:none;position:absolute;top:calc(100% + 7px);right:0;
+       background:var(--bg-secondary,#0f1123);border:1px solid rgba(102,126,234,.25);
+       border-radius:12px;padding:5px;min-width:152px;z-index:99999;
+       box-shadow:0 16px 48px rgba(0,0,0,.5);max-height:290px;overflow-y:auto;">
+    ${LANGUAGES.map(l => `<div class="dfs-lang-item" data-code="${l.code}"
+      onclick="window.DFSi18n.select('${l.code}')"
+      style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;
+             cursor:pointer;font-size:.82rem;color:inherit;transition:background .15s;"
+      onmouseover="this.style.background='rgba(102,126,234,.14)'"
+      onmouseout="this.style.background='transparent'">
+      <span style="font-size:1rem;">${l.flag}</span>
+      <span style="flex:1;">${l.name}</span>
+      <i class="fas fa-check dfs-chk" style="font-size:.7rem;color:#667eea;display:${l.code===curCode?'inline':'none'};"></i>
+    </div>`).join('')}
+  </div>
+</div>`;
+    }
+
+    function replaceSelectors() {
+        const cur = localStorage.getItem('dfs_lang') || 'en';
+        // Replace .dfs-translate-bar contents
+        document.querySelectorAll('.dfs-translate-bar').forEach(bar => {
+            bar.innerHTML = buildDropdown(cur);
+        });
+        // Replace standalone select.dfs-lang-select
+        document.querySelectorAll('select.dfs-lang-select').forEach(sel => {
+            const tmp = document.createElement('span');
+            tmp.innerHTML = buildDropdown(cur);
+            sel.parentNode.replaceChild(tmp.firstElementChild, sel);
+        });
+        // If none found, inject before user-menu in navbar
+        if (!document.querySelector('.dfs-lang-wrapper')) {
+            const targets = ['.navbar-end','.nav-right','nav .ms-auto','.navbar-nav.ms-auto','.d-flex.align-items-center'];
+            for (const t of targets) {
+                const el = document.querySelector(t);
+                if (el) {
+                    const wrap = document.createElement('div');
+                    wrap.style.cssText = 'display:inline-flex;align-items:center;margin:0 6px;';
+                    wrap.innerHTML = buildDropdown(cur);
+                    el.insertBefore(wrap, el.firstChild);
+                    break;
+                }
             }
         }
     }
 
-    // ── Close dropdown when clicking outside ──
-    document.addEventListener('click', function (e) {
-        const wrapper = document.getElementById('dfs-lang-wrapper');
-        if (wrapper && !wrapper.contains(e.target)) {
-            const menu = document.getElementById('dfs-lang-menu');
-            if (menu) menu.style.display = 'none';
-        }
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dfs-lang-wrapper'))
+            document.querySelectorAll('.dfs-lang-menu').forEach(m => m.style.display='none');
     });
 
-    // ── Public API ──
-    window.DFSLang = {
-        toggleDropdown: function (e) {
-            e.stopPropagation();
-            const menu = document.getElementById('dfs-lang-menu');
-            if (menu) {
-                menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    function applySaved() {
+        const s = localStorage.getItem('dfs_lang');
+        if (s && s !== 'en') {
+            const val = `/en/${s}`;
+            if (!document.cookie.includes(`googtrans=${val}`)) {
+                document.cookie = `googtrans=${val}; path=/`;
+                document.cookie = `googtrans=${val}; path=/; domain=.${location.hostname}`;
             }
+        }
+    }
+
+    window.DFSi18n = {
+        toggle: function(e) {
+            e.stopPropagation();
+            const menu = e.currentTarget.parentElement.querySelector('.dfs-lang-menu');
+            if (!menu) return;
+            const open = menu.style.display === 'block';
+            document.querySelectorAll('.dfs-lang-menu').forEach(m => m.style.display='none');
+            menu.style.display = open ? 'none' : 'block';
         },
-        select: function (langCode) {
-            const menu = document.getElementById('dfs-lang-menu');
-            if (menu) menu.style.display = 'none';
-            changeLanguage(langCode);
+        select: function(code) {
+            document.querySelectorAll('.dfs-lang-menu').forEach(m => m.style.display='none');
+            applyLanguage(code);
         }
     };
 
-    // ── Apply saved language on page load ──
-    function applySavedLanguage() {
-        const saved = localStorage.getItem('dfs_language');
-        if (saved && saved !== 'en') {
-            // Check if cookie is set
-            const cookies = document.cookie;
-            if (!cookies.includes(`googtrans=/en/${saved}`)) {
-                document.cookie = `googtrans=/en/${saved}; path=/`;
-            }
-        }
-    }
+    applySaved();
+    injectHideStyles();
 
-    // ── Init ──
-    document.addEventListener('DOMContentLoaded', function () {
-        applySavedLanguage();
-        injectGoogleTranslate();
-        loadGoogleTranslate();
+    const init = function() {
+        injectGTContainer();
+        loadGT();
+        replaceSelectors();
+    };
 
-        // Build dropdown after a short delay to ensure navbar is rendered
-        setTimeout(buildLanguageDropdown, 300);
+    document.readyState === 'loading'
+        ? document.addEventListener('DOMContentLoaded', init)
+        : setTimeout(init, 50);
 
-        // Update button to show current language
-        const saved = localStorage.getItem('dfs_language') || 'en';
-        setTimeout(() => updateLanguageButton(saved), 400);
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            injectHideStyles();
+            replaceSelectors();
+            const s = localStorage.getItem('dfs_lang');
+            if (s && s !== 'en') updateDropdowns(s);
+        }, 900);
     });
 
 })();
