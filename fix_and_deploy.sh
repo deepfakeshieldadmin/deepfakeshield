@@ -9,7 +9,7 @@ set -e
 
 echo ""
 echo "╔══════════════════════════════════════════════════════╗"
-echo "║   DeepFake Shield — Ubuntu 24.04 Fix & Deploy       ║"
+echo "║   DeepFake Shield — Ubuntu 24.04 Fix & Deploy        ║"
 echo "╚══════════════════════════════════════════════════════╝"
 
 DB_NAME="deepfakeshield"
