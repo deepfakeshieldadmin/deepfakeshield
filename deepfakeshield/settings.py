@@ -143,19 +143,18 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024
 # STEP 4: Add this to settings.py (replaces Gmail email settings):
 
 # Check if Brevo key is available
-# ── Email System (Secure Version) ──
-# This looks for variables in your hosting panel (Azure/Render) or .env file
-BREVO_API_KEY = os.environ.get('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')
+# ── Email System (Simplified) ──
+BREVO_API_KEY = "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"
 
 if BREVO_API_KEY:
     if 'anymail' not in INSTALLED_APPS:
         INSTALLED_APPS.append('anymail')
     
-    EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'
+    EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
     ANYMAIL = {
-        'BREVO_API_KEY': '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',
+        "BREVO_API_KEY": BREVO_API_KEY,
     }
-    DEFAULT_FROM_EMAIL = 'DeepFake Shield <deepfakeshield.admin@gmail.com>'
+    DEFAULT_FROM_EMAIL = "deepfakeshield.admin@gmail.com"
 else:
     # Fallback to Gmail if Brevo Key is missing
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
