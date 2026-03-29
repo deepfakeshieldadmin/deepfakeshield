@@ -144,26 +144,18 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024
 
 # Check if Brevo key is available
 # ── Email System (Simplified) ──
-BREVO_API_KEY = "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"
-
-if BREVO_API_KEY:
-    if 'anymail' not in INSTALLED_APPS:
-        INSTALLED_APPS.append('anymail')
-    
-    EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
-    ANYMAIL = {
-        "BREVO_API_KEY": BREVO_API_KEY,
-    }
-    DEFAULT_FROM_EMAIL = "deepfakeshield.admin@gmail.com"
-else:
-    # Fallback to Gmail if Brevo Key is missing
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_PORT = 587
-    EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'deepfakeshield.admin@gmail.com')
-    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'blolqgkyoydxkbbp') # Set this in your host panel
-    DEFAULT_FROM_EMAIL = f'DeepFake Shield <{EMAIL_HOST_USER}>'
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_TIMEOUT = 10  # Prevents Gunicorn worker timeout
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'deepfakeshield.admin@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'blolqgkyoydxkbbp')
+DEFAULT_FROM_EMAIL = os.environ.get(
+    'DEFAULT_FROM_EMAIL',
+    f'DeepFake Shield <{os.environ.get("EMAIL_HOST_USER", "deepfakeshield.admin@gmail.com")}>'
+)
 # ═══════════════════════════════════════════════════════════════
 # WHY BREVO IS BETTER FOR THIS:
 # - Emails sent via Brevo API — NOT through your Gmail account
