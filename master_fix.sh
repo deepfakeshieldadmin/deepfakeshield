@@ -8,7 +8,7 @@ set -e
 cd ~/deepfakeshield
 
 echo "╔══════════════════════════════════════════════════════╗"
-echo "║   DeepFake Shield — Master Fix Running...           ║"
+echo "║   DeepFake Shield — Master Fix Running...            ║"
 echo "╚══════════════════════════════════════════════════════╝"
 
 # ── FIX 1: Media permissions (image upload failing) ──
@@ -100,7 +100,7 @@ sleep 4
 # ── FIX 10: Complete test ──
 echo ""
 echo "╔══════════════════════════════════════════════════╗"
-echo "║  COMPLETE SYSTEM TEST                           ║"
+echo "║  COMPLETE SYSTEM TEST                            ║"
 echo "╚══════════════════════════════════════════════════╝"
 
 ~/venv/bin/python -c "
@@ -150,5 +150,5 @@ PYEOF
 echo ""
 echo "╔══════════════════════════════════════════════════╗"
 echo "║  ✅ ALL FIXES APPLIED!                          ║"
-echo "║  Website: https://deepfakeshield.tech           ║"
+echo "║  Website: https://deepfakeshield.tech            ║"
 echo "╚══════════════════════════════════════════════════╝"

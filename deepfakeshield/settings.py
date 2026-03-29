@@ -98,7 +98,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = FILE_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024
 if _brevo_key:
     EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'
     ANYMAIL = {'BREVO_API_KEY': _brevo_key}
-    DEFAULT_FROM_EMAIL = SERVER_EMAIL = 'DeepFake Shield <noreply@deepfakeshield.tech>'
+    DEFAULT_FROM_EMAIL = SERVER_EMAIL = 'DeepFake Shield <deepfakeshield.admin@gmail.com>'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = 'smtp.gmail.com'
@@ -107,7 +107,7 @@ else:
     EMAIL_TIMEOUT = 10
     EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER','deepfakeshield.admin@gmail.com')
     EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD','blolqgkyoydxkbbp')
-    DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL','noreply@deepfakeshield.tech')
+    DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL','deepfakeshield.admin@gmail.com')
 
 SITE_URL = os.environ.get('SITE_URL','https://deepfakeshield.tech')
 
