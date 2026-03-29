@@ -24,7 +24,7 @@ for o in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(','):
 if 'WEBSITE_HOSTNAME' in os.environ:
     CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ['WEBSITE_HOSTNAME']}")
 
-_brevo_key = os.environ.get('ANYMAIL_BREVO_API_KEY', '')
+_brevo_key = os.environ.get('ANYMAIL_BREVO_API_KEY', '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')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
