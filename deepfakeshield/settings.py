@@ -155,15 +155,18 @@ if BREVO_API_KEY:
     DEFAULT_FROM_EMAIL = 'DeepFake Shield <deepfakeshield.admin@gmail.com>'
 else:
     # Fallback: Gmail SMTP (emails DO appear in sent folder)
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
     EMAIL_HOST = 'smtp.gmail.com'
     EMAIL_PORT = 587
     EMAIL_USE_TLS = True
-    EMAIL_TIMEOUT = 10
+    EMAIL_USE_SSL = False
+    EMAIL_TIMEOUT = 10  # Prevents Gunicorn worker timeout
     EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'deepfakeshield.admin@gmail.com')
     EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'blolqgkyoydxkbbp')
-    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'deepfakeshield.admin@gmail.com')
-
+    DEFAULT_FROM_EMAIL = os.environ.get(
+        'DEFAULT_FROM_EMAIL',
+        f'DeepFake Shield <{os.environ.get("EMAIL_HOST_USER", "deepfakeshield.admin@gmail.com")}>'
+    )
 # ═══════════════════════════════════════════════════════════════
 # WHY BREVO IS BETTER FOR THIS:
 # - Emails sent via Brevo API — NOT through your Gmail account
