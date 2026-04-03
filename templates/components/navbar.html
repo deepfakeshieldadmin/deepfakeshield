@@ -217,7 +217,19 @@
 
             <div class="mdivider"></div>
 
-            <!-- Language Selector inside drawer -->
+            <!-- Theme Toggle FIRST -->
+            <div class="mobile-drawer-section">
+                <p class="mobile-section-label"><i class="fas fa-adjust"></i> Theme</p>
+                <button class="mobile-theme-btn" id="mobile-theme-toggle" type="button">
+                    <span class="mtheme-icon">🌙</span>
+                    <span class="mtheme-label">Dark Mode</span>
+                    <div class="mtheme-switch">
+                        <div class="mtheme-thumb"></div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Language LAST - dropdown opens down into empty space -->
             <div class="mobile-drawer-section">
                 <p class="mobile-section-label"><i class="fas fa-globe"></i> Language</p>
                 <select class="dfs-lang-select mobile-lang-select" aria-label="Select Language">
@@ -241,18 +253,6 @@
                         <option value="ar">العربية</option>
                     </optgroup>
                 </select>
-            </div>
-
-            <!-- Theme Toggle inside drawer -->
-            <div class="mobile-drawer-section">
-                <p class="mobile-section-label"><i class="fas fa-adjust"></i> Theme</p>
-                <button class="mobile-theme-btn" id="mobile-theme-toggle" type="button">
-                    <span class="mtheme-icon">🌙</span>
-                    <span class="mtheme-label">Dark Mode</span>
-                    <div class="mtheme-switch">
-                        <div class="mtheme-thumb"></div>
-                    </div>
-                </button>
             </div>
 
             <div class="mdivider"></div>
@@ -325,13 +325,9 @@
     margin: 2.5px 0;
     background: var(--text-primary, #e0e0e0);
     border-radius: 3px;
-    transition: all .35s cubic-bezier(.4,0,.2,1);
-    transform-origin: center;
 }
-/* X animation */
-.mobile-menu-toggle.is-open .hamburger-line:nth-child(1){ transform: translateY(8px) rotate(45deg); }
-.mobile-menu-toggle.is-open .hamburger-line:nth-child(2){ opacity:0; transform:scaleX(0); }
-.mobile-menu-toggle.is-open .hamburger-line:nth-child(3){ transform: translateY(-8px) rotate(-45deg); }
+
+/* ❌ REMOVED: Hamburger to X animation completely */
 
 /* ── Overlay ─────────────────────────────────────────── */
 .mobile-drawer-overlay {
@@ -805,7 +801,6 @@ iframe.goog-te-menu-frame {
     function openDrawer() {
         drawer.classList.add('is-open');
         overlay.classList.add('is-open');
-        hamburger.classList.add('is-open');
         hamburger.setAttribute('aria-label', 'Close menu');
         document.body.classList.add('drawer-open');
         drawer.setAttribute('aria-hidden', 'false');
@@ -816,7 +811,6 @@ iframe.goog-te-menu-frame {
     function closeDrawer() {
         drawer.classList.remove('is-open');
         overlay.classList.remove('is-open');
-        hamburger.classList.remove('is-open');
         hamburger.setAttribute('aria-label', 'Open menu');
         document.body.classList.remove('drawer-open');
         drawer.setAttribute('aria-hidden', 'true');
