@@ -102,8 +102,8 @@ EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'
 ANYMAIL = {
     'BREVO_API_KEY': _brevo_key,
 }
-DEFAULT_FROM_EMAIL = 'DeepFake Shield <noreply@deepfakeshield.tech>'
-SERVER_EMAIL = 'noreply@deepfakeshield.tech'
+DEFAULT_FROM_EMAIL = 'DeepFake Shield <deepfakeshield.admin@gmail.com>'
+SERVER_EMAIL = 'deepfakeshield.admin@gmail.com'
 
 # Gmail SMTP fallback settings (used if Brevo fails)
 GMAIL_EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER', 'deepfakeshield.admin@gmail.com')
