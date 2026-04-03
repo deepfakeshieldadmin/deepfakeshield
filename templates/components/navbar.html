@@ -219,7 +219,9 @@
 
             <!-- Theme Toggle FIRST -->
             <div class="mobile-drawer-section">
-                <p class="mobile-section-label"><i class="fas fa-adjust"></i> Theme</p>
+                <p class="mobile-section-label">
+                    <i class="fas fa-adjust"></i> Theme
+                </p>
                 <button class="mobile-theme-btn" id="mobile-theme-toggle" type="button">
                     <span class="mtheme-icon">🌙</span>
                     <span class="mtheme-label">Dark Mode</span>
@@ -229,10 +231,13 @@
                 </button>
             </div>
 
-            <!-- Language LAST - dropdown opens down into empty space -->
-            <div class="mobile-drawer-section">
-                <p class="mobile-section-label"><i class="fas fa-globe"></i> Language</p>
-                <select class="dfs-lang-select mobile-lang-select" aria-label="Select Language">
+            <!-- Language LAST — opens downward into empty space -->
+            <div class="mobile-drawer-section" style="padding-bottom: 24px;">
+                <p class="mobile-section-label">
+                    <i class="fas fa-globe"></i> Language
+                </p>
+                <select class="dfs-lang-select mobile-lang-select"
+                        aria-label="Select Language">
                     <option value="en" selected>🌐 English</option>
                     <optgroup label="─ Indian Languages ─">
                         <option value="hi">हिन्दी (Hindi)</option>
@@ -254,6 +259,11 @@
                     </optgroup>
                 </select>
             </div>
+
+            <!-- Clear visual gap before logout -->
+            <div style="height: 8px;"></div>
+            <div class="mdivider"></div>
+            <div style="height: 8px;"></div>
 
             <div class="mdivider"></div>
 
@@ -282,6 +292,11 @@
 <!-- ═══════════════════════════════════════════════════════
      MOBILE DRAWER  —  Styles
 ═══════════════════════════════════════════════════════ -->
+/* Hide hamburger when drawer is open — X inside drawer is enough */
+body.drawer-open .mobile-menu-toggle {
+    display: none !important;
+}
+
 <style>
 /* ── Hide / show helpers ─────────────────────────────── */
 @media (max-width: 768px) {
@@ -539,37 +554,43 @@ body.drawer-open { overflow: hidden; }
 }
 .mobile-section-label i { font-size: 0.72rem; }
 
-/* ── Language select — fixed overflow ── */
+/* ── Drawer sections ─────────────────────────────────── */
 .mobile-drawer-section {
-    padding: 4px 14px 12px;
-    position: relative;
-    z-index: 99999;          /* above everything in drawer */
+    padding: 6px 14px 16px;
 }
 
+/* ── Language select — fully visible + styled ─────────── */
 .mobile-lang-select {
     width: 100%;
-    padding: 11px 13px;
-    margin-top: 6px;
-    border-radius: 10px;
-    font-size: 0.88rem;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: var(--bg-secondary, #1a1f2e);
+    padding: 13px 14px;
+    margin-top: 8px;
+    margin-bottom: 16px;        /* space before next section */
+    border-radius: 12px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    border: 1.5px solid rgba(102,126,234,0.4);
+    background: rgba(102,126,234,0.08);
     color: var(--text-primary, #e8eaf6);
     outline: none;
     cursor: pointer;
-    /* Allow native dropdown to overflow drawer */
-    position: relative;
-    z-index: 99999;
-    /* Fix for mobile select clipping */
+    box-sizing: border-box;
+    /* Always use native dropdown — works perfectly on mobile */
     -webkit-appearance: menulist;
     appearance: menulist;
+    /* Ensure full width never clips */
     max-width: 100%;
-    box-sizing: border-box;
+    line-height: 1.4;
 }
-
 .mobile-lang-select:focus {
     border-color: var(--accent-primary, #667eea);
-    box-shadow: 0 0 0 2px rgba(102,126,234,0.2);
+    background: rgba(102,126,234,0.13);
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.18);
+}
+/* Light mode fix */
+[data-theme="light"] .mobile-lang-select {
+    background: rgba(102,126,234,0.07);
+    color: #1a1a2e;
+    border-color: rgba(102,126,234,0.35);
 }
 
 /* ── Mobile theme button ─────────────────────────────── */
@@ -801,6 +822,7 @@ iframe.goog-te-menu-frame {
     function openDrawer() {
         drawer.classList.add('is-open');
         overlay.classList.add('is-open');
+        /* DO NOT touch hamburger classes — CSS hides it via body.drawer-open */
         hamburger.setAttribute('aria-label', 'Close menu');
         document.body.classList.add('drawer-open');
         drawer.setAttribute('aria-hidden', 'false');
@@ -811,10 +833,10 @@ iframe.goog-te-menu-frame {
     function closeDrawer() {
         drawer.classList.remove('is-open');
         overlay.classList.remove('is-open');
+        /* DO NOT touch hamburger classes */
         hamburger.setAttribute('aria-label', 'Open menu');
         document.body.classList.remove('drawer-open');
         drawer.setAttribute('aria-hidden', 'true');
-        hamburger.focus();
     }
 
     hamburger.addEventListener('click', function (e) {
