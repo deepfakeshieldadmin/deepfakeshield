@@ -1,4 +1,426 @@
 {% load static %}
+
+<style>
+/* ═══════════════════════════════════════════════
+   NAVBAR MOBILE DRAWER — ALL STYLES IN ONE PLACE
+═══════════════════════════════════════════════ */
+
+/* Hide desktop-only on mobile */
+@media (max-width: 768px) {
+    .dfs-desktop-only { display: none !important; }
+    .nav-links        { display: none !important; }
+}
+
+/* Hide drawer + hamburger on desktop */
+@media (min-width: 769px) {
+    .mobile-menu-toggle    { display: none !important; }
+    .mobile-drawer         { display: none !important; }
+    .mobile-drawer-overlay { display: none !important; }
+}
+
+/* ── Hamburger button — always 3 lines, never changes ── */
+.mobile-menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 8px;
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    cursor: pointer;
+    z-index: 10002;
+    gap: 5px;
+}
+@media (max-width: 768px) {
+    .mobile-menu-toggle { display: flex; }
+}
+/* Hide hamburger when drawer is open — X inside drawer is enough */
+body.drawer-open .mobile-menu-toggle {
+    display: none !important;
+}
+.mobile-menu-toggle:hover {
+    border-color: var(--accent-primary, #667eea);
+    background: rgba(102,126,234,0.08);
+}
+/* 3 plain lines — NO animation, NO transform, NO rotation EVER */
+.hamburger-line {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--text-primary, #e0e0e0);
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+/* ── Overlay ── */
+.mobile-drawer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 9997;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.mobile-drawer-overlay.is-open {
+    display: block;
+    opacity: 1;
+}
+
+/* ── Drawer panel ── */
+.mobile-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 300px;
+    max-width: 88vw;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--bg-primary, #0d1117);
+    border-left: 1px solid rgba(255,255,255,0.07);
+    box-shadow: -8px 0 32px rgba(0,0,0,0.5);
+    z-index: 9998;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+.mobile-drawer.is-open {
+    transform: translateX(0);
+}
+.mobile-drawer-inner {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding-bottom: 32px;
+}
+body.drawer-open {
+    overflow: hidden;
+}
+
+/* ── Drawer header ── */
+.mobile-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    background: var(--bg-primary, #0d1117);
+    z-index: 10;
+}
+.mobile-drawer-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary, #e8eaf6);
+    text-decoration: none;
+}
+.mobile-drawer-brand i {
+    font-size: 1.3rem;
+    color: var(--accent-primary, #667eea);
+}
+/* The ONE and ONLY X button inside drawer */
+.mobile-drawer-close {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: var(--text-secondary, #9aa0b4);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+.mobile-drawer-close:hover {
+    background: rgba(239,68,68,0.12);
+    color: #ef4444;
+    border-color: rgba(239,68,68,0.25);
+}
+
+/* ── User strip ── */
+.mobile-drawer-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: rgba(102,126,234,0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    flex-shrink: 0;
+}
+.mobile-user-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-primary,#667eea), #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+.mobile-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.mobile-user-name {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-primary, #e8eaf6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.mobile-user-email {
+    font-size: 0.73rem;
+    color: var(--text-tertiary, #6b7280);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Divider ── */
+.mdivider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin: 4px 14px;
+    flex-shrink: 0;
+}
+
+/* ── Nav links ── */
+.mobile-drawer-links {
+    padding: 6px 0;
+    flex-shrink: 0;
+}
+.mobile-nav-link {
+    display: flex;
+    align-items: center;
+    margin: 1px 10px;
+    border-radius: 10px;
+    color: var(--text-secondary, #9aa0b4);
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+    border-left: 3px solid transparent;
+    overflow: hidden;
+}
+.mobile-nav-link:hover  { background: rgba(102,126,234,0.1); color: var(--text-primary, #e8eaf6); }
+.mobile-nav-link.active { background: rgba(102,126,234,0.14); color: var(--accent-primary, #667eea); border-left-color: var(--accent-primary, #667eea); }
+
+/* Icon box — always visible, fixed size */
+.mnl-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    font-size: 1.05rem;
+    color: var(--text-tertiary, #6b7280);
+    transition: color 0.2s;
+}
+.mobile-nav-link:hover  .mnl-icon { color: var(--accent-primary, #667eea); }
+.mobile-nav-link.active .mnl-icon { color: var(--accent-primary, #667eea); }
+.mnl-text {
+    flex: 1;
+    padding: 12px 12px 12px 0;
+    line-height: 1.2;
+}
+
+/* Danger (logout) */
+.mobile-nav-danger                 { color: #ef4444 !important; }
+.mobile-nav-danger .mnl-icon       { color: #ef4444 !important; }
+.mobile-nav-danger:hover           { background: rgba(239,68,68,0.1) !important; }
+
+/* ── Section labels ── */
+.mobile-section-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px 4px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-tertiary, #6b7280);
+    margin: 0;
+}
+.mobile-section-label i { font-size: 0.7rem; }
+
+/* ── Drawer sections (theme / language) ── */
+.mobile-drawer-section {
+    padding: 4px 16px 8px;
+    flex-shrink: 0;
+}
+
+/* ── Theme button ── */
+.mobile-theme-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 11px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: var(--text-primary, #e8eaf6);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    font-family: inherit;
+    text-align: left;
+    margin-top: 6px;
+}
+.mobile-theme-btn:hover {
+    border-color: var(--accent-primary, #667eea);
+    background: rgba(102,126,234,0.08);
+}
+.mtheme-icon  { font-size: 1.1rem; flex-shrink: 0; }
+.mtheme-label { flex: 1; }
+.mtheme-switch {
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+    background: rgba(255,255,255,0.12);
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.3s;
+}
+.mtheme-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent-primary, #667eea);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="light"] .mtheme-switch { background: var(--accent-primary, #667eea); }
+[data-theme="light"] .mtheme-thumb  { transform: translateX(18px); background: #fff; }
+
+/* ── Language select ── */
+.mobile-lang-wrap {
+    margin-top: 6px;
+    margin-bottom: 20px;
+    border-radius: 11px;
+    border: 1.5px solid rgba(102,126,234,0.4);
+    background: rgba(102,126,234,0.08);
+    overflow: visible;
+}
+.mobile-lang-select {
+    width: 100%;
+    padding: 13px 14px;
+    border-radius: 11px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: var(--text-primary, #e8eaf6);
+    outline: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    -webkit-appearance: menulist;
+    appearance: menulist;
+}
+.mobile-lang-select:focus {
+    outline: none;
+}
+[data-theme="light"] .mobile-lang-select { color: #1a1a2e; }
+[data-theme="light"] .mobile-lang-wrap   { background: rgba(102,126,234,0.07); }
+
+/* ── Footer auth buttons ── */
+.mobile-drawer-footer {
+    margin-top: auto;
+    padding: 12px 16px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.mobile-auth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 13px;
+    border-radius: 11px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.25s;
+    text-align: center;
+}
+.mobile-auth-btn i { font-size: 1rem; }
+.mobile-auth-ghost {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-primary, #e8eaf6);
+    border: 1px solid rgba(255,255,255,0.12);
+}
+.mobile-auth-ghost:hover {
+    border-color: var(--accent-primary, #667eea);
+    color: var(--accent-primary, #667eea);
+}
+.mobile-auth-primary {
+    background: linear-gradient(135deg, var(--accent-primary,#667eea) 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 14px rgba(102,126,234,0.3);
+}
+.mobile-auth-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ── Hide old mobile-menu ── */
+.mobile-menu { display: none !important; }
+
+/* ══════════════════════════════════════════════
+   HIDE GOOGLE TRANSLATE INJECTED ELEMENTS
+══════════════════════════════════════════════ */
+.goog-te-banner-frame,
+.goog-te-balloon-frame,
+.goog-te-ftab-float,
+.goog-te-menu-frame,
+#goog-gt-tt,
+.goog-close-link,
+.B7vCqd,
+.VIpgJd-ZVi9od-aZ2wEe,
+.VIpgJd-ZVi9od-aZ2wEe-OiiCO,
+.VIpgJd-yAWNEb-L7lbkb,
+.VIpgJd-ZVi9od-xl07Ob-lTBxed,
+.VIpgJd-ZVi9od-SmfZ,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+body > .skiptranslate {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+}
+body {
+    top: 0 !important;
+}
+</style>
+
+{% load static %}
 <nav class="navbar" id="navbar">
     <div class="nav-container">
 
@@ -28,7 +450,8 @@
             {% if user.is_authenticated %}
             <div class="nav-dropdown">
                 <button class="nav-link dropdown-trigger">
-                    <i class="fas fa-search-plus"></i><span>Scan</span><i class="fas fa-chevron-down dropdown-arrow"></i>
+                    <i class="fas fa-search-plus"></i><span>Scan</span>
+                    <i class="fas fa-chevron-down dropdown-arrow"></i>
                 </button>
                 <div class="dropdown-menu">
                     <a href="{% url 'core:upload_image' %}" class="dropdown-item"><i class="fas fa-image"></i><span>Image Scan</span></a>
@@ -51,7 +474,7 @@
         <!-- Desktop Right Side -->
         <div class="nav-right">
 
-            <!-- Desktop Translate (hidden on mobile) -->
+            <!-- Desktop Translate -->
             <div class="dfs-translate-bar dfs-desktop-only">
                 <select class="dfs-lang-select" aria-label="Translate">
                     <option value="en" selected>🌐 EN</option>
@@ -76,8 +499,9 @@
                 </select>
             </div>
 
-            <!-- Desktop Theme Toggle (hidden on mobile) -->
-            <button class="theme-toggle dfs-desktop-only" id="theme-toggle" aria-label="Toggle theme" title="Toggle Dark/Light Mode">
+            <!-- Desktop Theme Toggle -->
+            <button class="theme-toggle dfs-desktop-only" id="theme-toggle"
+                    aria-label="Toggle theme" title="Toggle Dark/Light Mode">
                 <div class="theme-toggle-track">
                     <span class="theme-icon-dark">🌙</span>
                     <span class="theme-icon-light">☀️</span>
@@ -85,7 +509,7 @@
                 </div>
             </button>
 
-            <!-- Desktop User Dropdown (hidden on mobile) -->
+            <!-- Desktop User Dropdown -->
             {% if user.is_authenticated %}
             <div class="nav-dropdown user-dropdown dfs-desktop-only">
                 <button class="user-avatar-btn dropdown-trigger">
@@ -101,23 +525,34 @@
                         </div>
                     </div>
                     <div class="dropdown-divider"></div>
-                    <a href="{% url 'core:dashboard' %}" class="dropdown-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                    <a href="{% url 'core:dashboard' %}" class="dropdown-item">
+                        <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+                    </a>
                     {% if user.is_staff %}
-                    <a href="{% url 'admin:index' %}" class="dropdown-item" target="_blank"><i class="fas fa-cog"></i><span>Admin Panel</span></a>
+                    <a href="{% url 'admin:index' %}" class="dropdown-item" target="_blank">
+                        <i class="fas fa-cog"></i><span>Admin Panel</span>
+                    </a>
                     {% endif %}
                     <div class="dropdown-divider"></div>
-                    <a href="{% url 'core:logout' %}" class="dropdown-item dropdown-item-danger"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+                    <a href="{% url 'core:logout' %}" class="dropdown-item dropdown-item-danger">
+                        <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+                    </a>
                 </div>
             </div>
             {% else %}
             <div class="auth-buttons dfs-desktop-only">
-                <a href="{% url 'core:login' %}" class="btn btn-ghost btn-sm"><i class="fas fa-sign-in-alt"></i><span>Login</span></a>
-                <a href="{% url 'core:signup' %}" class="btn btn-primary btn-sm"><i class="fas fa-user-plus"></i><span>Sign Up</span></a>
+                <a href="{% url 'core:login' %}" class="btn btn-ghost btn-sm">
+                    <i class="fas fa-sign-in-alt"></i><span>Login</span>
+                </a>
+                <a href="{% url 'core:signup' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-user-plus"></i><span>Sign Up</span>
+                </a>
             </div>
             {% endif %}
 
-            <!-- Hamburger Button — mobile only -->
-            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Open menu">
+            <!-- Hamburger — 3 plain lines, NEVER animates -->
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle"
+                    aria-label="Open menu" aria-expanded="false">
                 <span class="hamburger-line"></span>
                 <span class="hamburger-line"></span>
                 <span class="hamburger-line"></span>
@@ -126,29 +561,29 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════
-         MOBILE DRAWER OVERLAY (backdrop)
-    ═══════════════════════════════════ -->
+    <!-- Overlay -->
     <div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
 
-    <!-- ═══════════════════════════════════
-         MOBILE DRAWER — slides from right
-    ═══════════════════════════════════ -->
-    <div class="mobile-drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+    <!-- Drawer -->
+    <div class="mobile-drawer" id="mobile-drawer"
+         role="dialog" aria-modal="true" aria-label="Navigation Menu"
+         aria-hidden="true">
         <div class="mobile-drawer-inner">
 
-            <!-- Drawer Header -->
+            <!-- Header with single X -->
             <div class="mobile-drawer-header">
                 <div class="mobile-drawer-brand">
                     <i class="fas fa-shield-halved"></i>
                     <span>DeepFake<span class="logo-highlight">Shield</span></span>
                 </div>
-                <button class="mobile-drawer-close" id="mobile-drawer-close" aria-label="Close menu">
+                <button class="mobile-drawer-close"
+                        id="mobile-drawer-close"
+                        aria-label="Close menu">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
-            <!-- User Info Strip (authenticated) -->
+            <!-- User strip -->
             {% if user.is_authenticated %}
             <div class="mobile-drawer-user">
                 <div class="mobile-user-avatar">
@@ -163,17 +598,20 @@
 
             <div class="mdivider"></div>
 
-            <!-- Main Nav Links -->
+            <!-- Nav Links -->
             <nav class="mobile-drawer-links">
-                <a href="{% url 'core:home' %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                <a href="{% url 'core:home' %}"
+                   class="mobile-nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
                     <span class="mnl-icon"><i class="fas fa-home"></i></span>
                     <span class="mnl-text">Home</span>
                 </a>
-                <a href="{% url 'core:about' %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+                <a href="{% url 'core:about' %}"
+                   class="mobile-nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
                     <span class="mnl-icon"><i class="fas fa-info-circle"></i></span>
                     <span class="mnl-text">About</span>
                 </a>
-                <a href="{% url 'core:education' %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'education' %}active{% endif %}">
+                <a href="{% url 'core:education' %}"
+                   class="mobile-nav-link {% if request.resolver_match.url_name == 'education' %}active{% endif %}">
                     <span class="mnl-icon"><i class="fas fa-graduation-cap"></i></span>
                     <span class="mnl-text">Learn</span>
                 </a>
@@ -199,10 +637,9 @@
                     <span class="mnl-icon"><i class="fas fa-file-alt"></i></span>
                     <span class="mnl-text">Text Scan</span>
                 </a>
-
                 <div class="mdivider"></div>
-
-                <a href="{% url 'core:dashboard' %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <a href="{% url 'core:dashboard' %}"
+                   class="mobile-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                     <span class="mnl-icon"><i class="fas fa-tachometer-alt"></i></span>
                     <span class="mnl-text">Dashboard</span>
                 </a>
@@ -217,7 +654,7 @@
 
             <div class="mdivider"></div>
 
-            <!-- Theme Toggle FIRST -->
+            <!-- THEME first -->
             <div class="mobile-drawer-section">
                 <p class="mobile-section-label">
                     <i class="fas fa-adjust"></i> Theme
@@ -231,43 +668,43 @@
                 </button>
             </div>
 
-            <!-- Language LAST — opens downward into empty space -->
-            <div class="mobile-drawer-section" style="padding-bottom: 24px;">
+            <!-- LANGUAGE last — dropdown opens downward into free space -->
+            <div class="mobile-drawer-section">
                 <p class="mobile-section-label">
                     <i class="fas fa-globe"></i> Language
                 </p>
-                <select class="dfs-lang-select mobile-lang-select"
-                        aria-label="Select Language">
-                    <option value="en" selected>🌐 English</option>
-                    <optgroup label="─ Indian Languages ─">
-                        <option value="hi">हिन्दी (Hindi)</option>
-                        <option value="te">తెలుగు (Telugu)</option>
-                        <option value="ta">தமிழ் (Tamil)</option>
-                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
-                        <option value="ml">മലയാളം (Malayalam)</option>
-                        <option value="bn">বাংলা (Bengali)</option>
-                        <option value="mr">मराठी (Marathi)</option>
-                        <option value="gu">ગુજરાતી (Gujarati)</option>
-                        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
-                        <option value="ur">اردو (Urdu)</option>
-                    </optgroup>
-                    <optgroup label="─ Other Languages ─">
-                        <option value="es">Español</option>
-                        <option value="fr">Français</option>
-                        <option value="de">Deutsch</option>
-                        <option value="ar">العربية</option>
-                    </optgroup>
-                </select>
+                <div class="mobile-lang-wrap">
+                    <select class="dfs-lang-select mobile-lang-select"
+                            aria-label="Select Language">
+                        <option value="en" selected>🌐 English</option>
+                        <optgroup label="─ Indian Languages ─">
+                            <option value="hi">हिन्दी (Hindi)</option>
+                            <option value="te">తెలుగు (Telugu)</option>
+                            <option value="ta">தமிழ் (Tamil)</option>
+                            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                            <option value="ml">മലയാളം (Malayalam)</option>
+                            <option value="bn">বাংলা (Bengali)</option>
+                            <option value="mr">मराठी (Marathi)</option>
+                            <option value="gu">ગુજરાતી (Gujarati)</option>
+                            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                            <option value="ur">اردو (Urdu)</option>
+                        </optgroup>
+                        <optgroup label="─ Other Languages ─">
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                            <option value="de">Deutsch</option>
+                            <option value="ar">العربية</option>
+                        </optgroup>
+                    </select>
+                </div>
             </div>
 
-            <!-- Clear visual gap before logout -->
-            <div style="height: 8px;"></div>
-            <div class="mdivider"></div>
-            <div style="height: 8px;"></div>
+            <!-- Spacer so language dropdown always has room below -->
+            <div style="min-height: 180px; flex-shrink: 0;"></div>
 
             <div class="mdivider"></div>
 
-            <!-- Auth / Logout at bottom -->
+            <!-- Footer auth / logout -->
             <div class="mobile-drawer-footer">
                 {% if user.is_authenticated %}
                 <a href="{% url 'core:logout' %}" class="mobile-nav-link mobile-nav-danger">
@@ -284,566 +721,48 @@
                 {% endif %}
             </div>
 
-        </div><!-- /.mobile-drawer-inner -->
-    </div><!-- /.mobile-drawer -->
+        </div>
+    </div>
 
 </nav>
 
-<!-- ═══════════════════════════════════════════════════════
-     MOBILE DRAWER  —  Styles
-═══════════════════════════════════════════════════════ -->
-/* Hide hamburger when drawer is open — X inside drawer is enough */
-body.drawer-open .mobile-menu-toggle {
-    display: none !important;
-}
-
-<style>
-/* ── Hide / show helpers ─────────────────────────────── */
-@media (max-width: 768px) {
-    .dfs-desktop-only { display: none !important; }
-    .nav-links        { display: none !important; }
-}
-@media (min-width: 769px) {
-    .mobile-menu-toggle,
-    .mobile-drawer,
-    .mobile-drawer-overlay { display: none !important; }
-}
-
-/* ── Hamburger button ────────────────────────────────── */
-.mobile-menu-toggle {
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 44px;
-    height: 44px;
-    padding: 6px;
-    background: transparent;
-    border: 1.5px solid rgba(255,255,255,0.15);
-    border-radius: 10px;
-    cursor: pointer;
-    z-index: 10002;
-    position: relative;
-    transition: border-color .25s, background .25s;
-}
-@media (max-width: 768px) {
-    .mobile-menu-toggle { display: flex; }
-}
-.mobile-menu-toggle:hover {
-    border-color: var(--accent-primary, #667eea);
-    background: rgba(102,126,234,.08);
-}
-.hamburger-line {
-    display: block;
-    width: 22px;
-    height: 2.5px;
-    margin: 2.5px 0;
-    background: var(--text-primary, #e0e0e0);
-    border-radius: 3px;
-}
-
-/* ❌ REMOVED: Hamburger to X animation completely */
-
-/* ── Overlay ─────────────────────────────────────────── */
-.mobile-drawer-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.6);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    z-index: 9998;
-    opacity: 0;
-    transition: opacity .35s ease;
-}
-.mobile-drawer-overlay.is-open { display:block; opacity:1; }
-
-/* ── Drawer panel ────────────────────────────────────── */
-.mobile-drawer {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 290px;
-    max-width: 88vw;
-    height: 100vh;
-    height: 100dvh;
-    background: var(--bg-primary, #0d1117);
-    border-left: 1px solid rgba(255,255,255,0.07);
-    box-shadow: -12px 0 40px rgba(0,0,0,.5);
-    z-index: 9999;
-    transform: translateX(100%);
-    transition: transform .38s cubic-bezier(.4,0,.2,1);
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-}
-.mobile-drawer.is-open { transform: translateX(0); }
-.mobile-drawer-inner {
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
-    padding-bottom: 24px;
-}
-body.drawer-open { overflow: hidden; }
-
-/* ── Drawer header ───────────────────────────────────── */
-.mobile-drawer-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 18px;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
-    flex-shrink: 0;
-}
-.mobile-drawer-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-primary, #e8eaf6);
-    text-decoration: none;
-}
-.mobile-drawer-brand i {
-    font-size: 1.35rem;
-    color: var(--accent-primary, #667eea);
-}
-.mobile-drawer-close {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 9px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.04);
-    color: var(--text-secondary, #9aa0b4);
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all .2s;
-}
-.mobile-drawer-close:hover {
-    background: rgba(255,60,60,.12);
-    color: #ff5555;
-    border-color: rgba(255,60,60,.25);
-}
-
-/* ── User strip ──────────────────────────────────────── */
-.mobile-drawer-user {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 18px;
-    background: rgba(102,126,234,.06);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.mobile-user-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent-primary,#667eea), #764ba2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #fff;
-    flex-shrink: 0;
-    box-shadow: 0 3px 12px rgba(102,126,234,.35);
-}
-.mobile-user-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-}
-.mobile-user-name {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-primary, #e8eaf6);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.mobile-user-email {
-    font-size: 0.75rem;
-    color: var(--text-tertiary, #6b7280);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* ── Divider ─────────────────────────────────────────── */
-.mdivider {
-    height: 1px;
-    background: rgba(255,255,255,0.06);
-    margin: 6px 14px;
-    flex-shrink: 0;
-}
-
-/* ── Nav links ───────────────────────────────────────── */
-.mobile-drawer-links { padding: 6px 0; }
-
-.mobile-nav-link {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    padding: 0;
-    margin: 2px 10px;
-    border-radius: 10px;
-    color: var(--text-secondary, #9aa0b4);
-    text-decoration: none;
-    font-size: 0.93rem;
-    font-weight: 500;
-    transition: background .2s, color .2s;
-    border-left: 3px solid transparent;
-    overflow: hidden;
-}
-.mobile-nav-link:hover,
-.mobile-nav-link:active {
-    background: rgba(102,126,234,.1);
-    color: var(--text-primary, #e8eaf6);
-}
-.mobile-nav-link.active {
-    background: rgba(102,126,234,.14);
-    color: var(--accent-primary, #667eea);
-    border-left-color: var(--accent-primary, #667eea);
-}
-
-/* Icon box — guarantees icon is always visible */
-.mnl-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    flex-shrink: 0;
-    font-size: 1.1rem;
-    color: var(--text-tertiary, #6b7280);
-    transition: color .2s;
-}
-.mobile-nav-link:hover   .mnl-icon,
-.mobile-nav-link:active  .mnl-icon { color: var(--accent-primary, #667eea); }
-.mobile-nav-link.active  .mnl-icon { color: var(--accent-primary, #667eea); }
-
-.mnl-text {
-    flex: 1;
-    padding: 12px 12px 12px 0;
-    line-height: 1.2;
-}
-
-/* Danger link (logout) */
-.mobile-nav-danger { color: #ef4444 !important; }
-.mobile-nav-danger .mnl-icon { color: #ef4444 !important; }
-.mobile-nav-danger:hover {
-    background: rgba(239,68,68,.1) !important;
-}
-
-/* ── Section labels ──────────────────────────────────── */
-.mobile-section-label {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 10px 18px 4px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.1px;
-    color: var(--text-tertiary, #6b7280);
-    margin: 0;
-}
-.mobile-section-label i { font-size: 0.72rem; }
-
-/* ── Drawer sections ─────────────────────────────────── */
-.mobile-drawer-section {
-    padding: 6px 14px 16px;
-}
-
-/* ── Language select — fully visible + styled ─────────── */
-.mobile-lang-select {
-    width: 100%;
-    padding: 13px 14px;
-    margin-top: 8px;
-    margin-bottom: 16px;        /* space before next section */
-    border-radius: 12px;
-    font-size: 0.92rem;
-    font-weight: 500;
-    border: 1.5px solid rgba(102,126,234,0.4);
-    background: rgba(102,126,234,0.08);
-    color: var(--text-primary, #e8eaf6);
-    outline: none;
-    cursor: pointer;
-    box-sizing: border-box;
-    /* Always use native dropdown — works perfectly on mobile */
-    -webkit-appearance: menulist;
-    appearance: menulist;
-    /* Ensure full width never clips */
-    max-width: 100%;
-    line-height: 1.4;
-}
-.mobile-lang-select:focus {
-    border-color: var(--accent-primary, #667eea);
-    background: rgba(102,126,234,0.13);
-    box-shadow: 0 0 0 3px rgba(102,126,234,0.18);
-}
-/* Light mode fix */
-[data-theme="light"] .mobile-lang-select {
-    background: rgba(102,126,234,0.07);
-    color: #1a1a2e;
-    border-color: rgba(102,126,234,0.35);
-}
-
-/* ── Mobile theme button ─────────────────────────────── */
-.mobile-theme-btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 11px 13px;
-    margin-top: 6px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.05);
-    color: var(--text-primary, #e8eaf6);
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: border-color .2s, background .2s;
-    font-family: var(--font-primary, inherit);
-    text-align: left;
-}
-.mobile-theme-btn:hover {
-    border-color: var(--accent-primary, #667eea);
-    background: rgba(102,126,234,.08);
-}
-.mtheme-icon { font-size: 1.15rem; flex-shrink: 0; }
-.mtheme-label { flex: 1; }
-.mtheme-switch {
-    width: 42px;
-    height: 23px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.12);
-    position: relative;
-    flex-shrink: 0;
-    transition: background .3s;
-}
-.mtheme-thumb {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 17px;
-    height: 17px;
-    border-radius: 50%;
-    background: var(--accent-primary, #667eea);
-    transition: transform .3s cubic-bezier(.4,0,.2,1);
-    box-shadow: 0 2px 6px rgba(0,0,0,.3);
-}
-/* Light mode state */
-[data-theme="light"] .mtheme-switch  { background: var(--accent-primary, #667eea); }
-[data-theme="light"] .mtheme-thumb   { transform: translateX(19px); background:#fff; }
-
-/* ── Footer (auth buttons) ───────────────────────────── */
-.mobile-drawer-footer {
-    margin-top: auto;
-    padding: 10px 14px 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.mobile-auth-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 9px;
-    padding: 13px;
-    border-radius: 11px;
-    font-size: 0.92rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all .25s;
-    text-align: center;
-}
-.mobile-auth-btn i { font-size: 1rem; }
-.mobile-auth-ghost {
-    background: rgba(255,255,255,0.05);
-    color: var(--text-primary, #e8eaf6);
-    border: 1px solid rgba(255,255,255,0.12);
-}
-.mobile-auth-ghost:hover {
-    border-color: var(--accent-primary, #667eea);
-    color: var(--accent-primary, #667eea);
-}
-.mobile-auth-primary {
-    background: linear-gradient(135deg, var(--accent-primary,#667eea) 0%, #764ba2 100%);
-    color: #fff;
-    border: none;
-    box-shadow: 0 4px 14px rgba(102,126,234,.35);
-}
-.mobile-auth-primary:hover {
-    opacity: .9;
-    transform: translateY(-1px);
-}
-
-/* ── Hide old mobile-menu if still referenced ────────── */
-.mobile-menu { display: none !important; }
-
-/* ── Hide Google Translate floating widget completely ── */
-.goog-te-banner-frame,
-.goog-te-balloon-frame,
-.goog-tooltip,
-.goog-tooltip-card,
-#goog-gt-tt,
-.goog-te-ftab-float,
-.goog-te-menu-frame,
-.skiptranslate,
-#google_translate_element,
-#google_translate_element2,
-.goog-te-gadget,
-.goog-te-gadget-icon,
-.VIpgJd-ZVi9od-aZ2wEe,
-.VIpgJd-ZVi9od-aZ2wEe-OiiCO,
-.VIpgJd-yAWNEb-L7lbkb,
-.VIpgJd-ZVi9od-xl07Ob-lTBxed {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    height: 0 !important;
-    width: 0 !important;
-    overflow: hidden !important;
-}
-
-/* Hide the Google Translate top bar that pushes content down */
-body > .skiptranslate {
-    display: none !important;
-}
-
-/* Prevent body shift caused by Google Translate */
-body {
-    top: 0 !important;
-    position: static !important;
-}
-
-/* Force hide translated badge/frame */
-iframe.goog-te-banner-frame {
-    display: none !important;
-}
-
-/* Hide Google Translate injected close/restore button */
-#goog-gt-tt .goog-close-link,
-.goog-te-balloon-frame .B7vCqd,
-.goog-te-balloon-frame [role="button"],
-.VIpgJd-ZVi9od-aZ2wEe .VIpgJd-ZVi9od-aZ2wEe-OiiCO-Ti6hGc {
-    display: none !important;
-}
-
-/* The top-left spinning G× icon */
-.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
-.VIpgJd-ZVi9od-aZ2wEe-wOHMyf-ti6hGc,
-.goog-logo-link,
-.goog-te-gadget span {
-    display: none !important;
-}
-
-/* ══════════════════════════════════════════
-   HIDE GOOGLE TRANSLATE WIDGET — ALL SIGNS
-══════════════════════════════════════════ */
-
-/* The spinning G× floating icon top-left */
-.VIpgJd-ZVi9od-aZ2wEe,
-.VIpgJd-ZVi9od-aZ2wEe-OiiCO,
-.VIpgJd-yAWNEb-L7lbkb,
-.VIpgJd-ZVi9od-xl07Ob-lTBxed,
-.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
-.VIpgJd-ZVi9od-aZ2wEe-wOHMyf-ti6hGc {
-    display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-}
-
-/* Google Translate top banner bar */
-.goog-te-banner-frame,
-.goog-te-balloon-frame,
-.goog-te-ftab-float,
-.goog-te-menu-frame,
-.skiptranslate,
-#goog-gt-tt,
-.goog-te-gadget,
-.goog-te-gadget-icon,
-.goog-logo-link,
-#google_translate_element,
-#google_translate_element2 {
-    display: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-    overflow: hidden !important;
-}
-
-/* Prevent page body from jumping down 40px */
-body {
-    top: 0 !important;
-}
-
-/* Hide any injected iframe from Google */
-iframe[name="googleTranslateFrame"],
-iframe.goog-te-banner-frame,
-iframe.goog-te-menu-frame {
-    display: none !important;
-    height: 0 !important;
-    visibility: hidden !important;
-}
-
-/* Hide the duplicate X close button injected by Google */
-.goog-close-link,
-.B7vCqd {
-    display: none !important;
-}
-</style>
-
-<!-- ═══════════════════════════════════════════════════════
-     MOBILE DRAWER  —  JavaScript
-═══════════════════════════════════════════════════════ -->
 <script>
 (function () {
     'use strict';
 
-    /* ══════════════════════════════════════
-       1. DRAWER LOGIC
-    ══════════════════════════════════════ */
+    /* ── Elements ── */
     var hamburger       = document.getElementById('mobile-menu-toggle');
     var drawer          = document.getElementById('mobile-drawer');
     var overlay         = document.getElementById('mobile-drawer-overlay');
     var closeBtn        = document.getElementById('mobile-drawer-close');
     var mThemeBtn       = document.getElementById('mobile-theme-toggle');
-    var desktopThemeBtn = document.getElementById('theme-toggle');
+    var desktopTheme    = document.getElementById('theme-toggle');
 
     if (!hamburger || !drawer || !overlay) return;
 
+    /* ── Open ── */
     function openDrawer() {
         drawer.classList.add('is-open');
         overlay.classList.add('is-open');
-        /* DO NOT touch hamburger classes — CSS hides it via body.drawer-open */
-        hamburger.setAttribute('aria-label', 'Close menu');
         document.body.classList.add('drawer-open');
         drawer.setAttribute('aria-hidden', 'false');
-        var first = drawer.querySelector('button, a, select');
-        if (first) setTimeout(function () { first.focus(); }, 60);
+        hamburger.setAttribute('aria-expanded', 'true');
     }
 
+    /* ── Close ── */
     function closeDrawer() {
         drawer.classList.remove('is-open');
         overlay.classList.remove('is-open');
-        /* DO NOT touch hamburger classes */
-        hamburger.setAttribute('aria-label', 'Open menu');
         document.body.classList.remove('drawer-open');
         drawer.setAttribute('aria-hidden', 'true');
+        hamburger.setAttribute('aria-expanded', 'false');
     }
 
+    /* ── Events ── */
     hamburger.addEventListener('click', function (e) {
         e.stopPropagation();
         drawer.classList.contains('is-open') ? closeDrawer() : openDrawer();
     });
-
     overlay.addEventListener('click', closeDrawer);
     if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
 
@@ -856,141 +775,82 @@ iframe.goog-te-menu-frame {
     });
 
     /* ── Theme sync ── */
-    function updateMobileThemeUI() {
+    function syncThemeUI() {
         if (!mThemeBtn) return;
-        var isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        var icon    = mThemeBtn.querySelector('.mtheme-icon');
-        var label   = mThemeBtn.querySelector('.mtheme-label');
-        if (icon)  icon.textContent  = isLight ? '☀️' : '🌙';
-        if (label) label.textContent = isLight ? 'Light Mode' : 'Dark Mode';
+        var light = document.documentElement.getAttribute('data-theme') === 'light';
+        var icon  = mThemeBtn.querySelector('.mtheme-icon');
+        var lbl   = mThemeBtn.querySelector('.mtheme-label');
+        if (icon) icon.textContent = light ? '☀️' : '🌙';
+        if (lbl)  lbl.textContent  = light ? 'Light Mode' : 'Dark Mode';
     }
 
     if (mThemeBtn) {
         mThemeBtn.addEventListener('click', function () {
-            if (desktopThemeBtn) desktopThemeBtn.click();
+            if (desktopTheme) desktopTheme.click();
             else {
-                var cur = document.documentElement.getAttribute('data-theme');
-                document.documentElement.setAttribute('data-theme', cur === 'light' ? 'dark' : 'light');
+                var t = document.documentElement.getAttribute('data-theme');
+                document.documentElement.setAttribute('data-theme', t === 'light' ? 'dark' : 'light');
             }
-            updateMobileThemeUI();
+            syncThemeUI();
         });
     }
 
     if (typeof MutationObserver !== 'undefined') {
-        new MutationObserver(updateMobileThemeUI).observe(
+        new MutationObserver(syncThemeUI).observe(
             document.documentElement,
             { attributes: true, attributeFilter: ['data-theme'] }
         );
     }
+    syncThemeUI();
 
     /* ── Language sync ── */
-    var mobileLangSel  = drawer.querySelector('.mobile-lang-select');
-    var desktopLangSel = document.querySelector('.dfs-desktop-only .dfs-lang-select');
-
-    if (mobileLangSel && desktopLangSel) {
-        mobileLangSel.addEventListener('change', function () {
-            desktopLangSel.value = this.value;
-            desktopLangSel.dispatchEvent(new Event('change', { bubbles: true }));
+    var mLang = drawer.querySelector('.mobile-lang-select');
+    var dLang = document.querySelector('.dfs-desktop-only .dfs-lang-select');
+    if (mLang && dLang) {
+        mLang.addEventListener('change', function () {
+            dLang.value = this.value;
+            dLang.dispatchEvent(new Event('change', { bubbles: true }));
         });
     }
 
-    drawer.setAttribute('aria-hidden', 'true');
-    updateMobileThemeUI();
-
-    /* ══════════════════════════════════════
-       2. NUCLEAR GOOGLE TRANSLATE KILLER
-       Removes the injected bar + X button
-       permanently using MutationObserver
-    ══════════════════════════════════════ */
-    var GT_SELECTORS = [
-        '.goog-te-banner-frame',
-        '.goog-te-balloon-frame',
-        '.goog-te-ftab-float',
-        '#goog-gt-tt',
-        '.goog-close-link',
-        '.B7vCqd',
-        '.VIpgJd-ZVi9od-aZ2wEe',
-        '.VIpgJd-ZVi9od-aZ2wEe-OiiCO',
-        '.VIpgJd-yAWNEb-L7lbkb',
-        '.VIpgJd-ZVi9od-xl07Ob-lTBxed',
-        '.VIpgJd-ZVi9od-SmfZ',
-        '.VIpgJd-ZVi9od-aZ2wEe-wOHMyf',
-        '.skiptranslate:not(#dfs-own-translate)',
-        'iframe.goog-te-banner-frame',
-        'iframe.goog-te-menu-frame'
-    ];
-
-    function nukeGoogleTranslate() {
-        /* Hide all injected elements */
-        GT_SELECTORS.forEach(function (sel) {
-            try {
-                document.querySelectorAll(sel).forEach(function (el) {
-                    /* Safety: never hide our own select */
-                    if (el.classList.contains('dfs-lang-select')) return;
-                    if (el.closest('#mobile-drawer'))              return;
-                    if (el.closest('.dfs-desktop-only'))           return;
-                    el.style.cssText =
-                        'display:none!important;' +
-                        'visibility:hidden!important;' +
-                        'height:0!important;' +
-                        'width:0!important;' +
-                        'overflow:hidden!important;' +
-                        'pointer-events:none!important;';
-                });
-            } catch (err) { /* ignore cross-origin iframe errors */ }
+    /* ── Kill Google Translate injected bar ── */
+    function nukeGT() {
+        var sels = [
+            '.goog-te-banner-frame', '.goog-te-balloon-frame',
+            '#goog-gt-tt', '.goog-close-link', '.B7vCqd',
+            '.VIpgJd-ZVi9od-aZ2wEe', '.VIpgJd-ZVi9od-SmfZ',
+            'body > .skiptranslate'
+        ];
+        sels.forEach(function (s) {
+            document.querySelectorAll(s).forEach(function (el) {
+                if (el.closest('#mobile-drawer'))    return;
+                if (el.closest('.dfs-desktop-only')) return;
+                if (el.classList.contains('dfs-lang-select')) return;
+                el.style.cssText = 'display:none!important;height:0!important;visibility:hidden!important;';
+            });
         });
-
-        /* Fix body top shift Google applies */
-        if (document.body) {
-            var bodyTop = document.body.style.top;
-            if (bodyTop && bodyTop !== '' && bodyTop !== '0px') {
-                document.body.style.top = '0px';
-            }
+        if (document.body && document.body.style.top &&
+            document.body.style.top !== '0px') {
+            document.body.style.top = '0px';
         }
-
-        /* Remove injected <style> that shifts body */
-        document.querySelectorAll('style').forEach(function (s) {
-            if (s.textContent && s.textContent.indexOf('body{top:') !== -1) {
-                s.textContent = s.textContent.replace(/body\s*\{\s*top:[^}]+\}/g, '');
-            }
-        });
     }
 
-    /* Run immediately */
-    nukeGoogleTranslate();
+    nukeGT();
+    [300, 800, 1500, 3000].forEach(function (t) { setTimeout(nukeGT, t); });
 
-    /* Watch DOM for Google's late injections */
     if (typeof MutationObserver !== 'undefined') {
-        var gtObserver = new MutationObserver(function (mutations) {
-            var needsNuke = false;
-            mutations.forEach(function (m) {
-                m.addedNodes.forEach(function (node) {
-                    if (node.nodeType === 1) {
-                        var cls = (node.className || '').toString();
-                        if (
-                            cls.indexOf('goog') !== -1 ||
-                            cls.indexOf('VIpgJd') !== -1 ||
-                            cls.indexOf('skiptranslate') !== -1 ||
-                            (node.tagName === 'IFRAME')
-                        ) {
-                            needsNuke = true;
-                        }
+        new MutationObserver(function (muts) {
+            muts.forEach(function (m) {
+                m.addedNodes.forEach(function (n) {
+                    if (n.nodeType === 1) {
+                        var c = (n.className || '').toString();
+                        if (c.indexOf('goog') > -1 || c.indexOf('VIpgJd') > -1 ||
+                            c.indexOf('skiptranslate') > -1) nukeGT();
                     }
                 });
             });
-            if (needsNuke) nukeGoogleTranslate();
-        });
-
-        gtObserver.observe(document.documentElement, {
-            childList: true,
-            subtree: true
-        });
+        }).observe(document.documentElement, { childList: true, subtree: true });
     }
-
-    /* Fallback timeouts for stubborn injection */
-    [200, 500, 1000, 2000, 4000].forEach(function (ms) {
-        setTimeout(nukeGoogleTranslate, ms);
-    });
 
 })();
 </script>
