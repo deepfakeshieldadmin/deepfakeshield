@@ -1,5 +1,5 @@
 """
-DeepFake Shield — settings.py (COMPLETE — Azure VM + Brevo Email)
+DeepFake Shield — settings.py (COMPLETE — Brevo + Gmail fallback)
 """
 import os
 from pathlib import Path
@@ -24,7 +24,9 @@ for o in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(','):
 if 'WEBSITE_HOSTNAME' in os.environ:
     CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ['WEBSITE_HOSTNAME']}")
 
-_brevo_key = os.environ.get('ANYMAIL_BREVO_API_KEY', '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')
+# Check for Brevo key (try env first, then hardcoded new key)
+_brevo_key = os.environ.get('ANYMAIL_BREVO_API_KEY',
+    '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')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -36,9 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'core',
+    'anymail',  # Always include since key is hardcoded
 ]
-if _brevo_key:
-    INSTALLED_APPS.append('anymail')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -94,23 +95,25 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 DATA_UPLOAD_MAX_MEMORY_SIZE = FILE_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024
 
-# ── EMAIL via Brevo ──
-if _brevo_key:
-    EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'
-    ANYMAIL = {'BREVO_API_KEY': _brevo_key}
-    DEFAULT_FROM_EMAIL = SERVER_EMAIL = 'DeepFake Shield <deepfakeshield.admin@gmail.com>'
-else:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_PORT = 587
-    EMAIL_USE_TLS = True
-    EMAIL_TIMEOUT = 10
-    EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER','deepfakeshield.admin@gmail.com')
-    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD','blolqgkyoydxkbbp')
-    DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL','deepfakeshield.admin@gmail.com')
+# ══════════════════════════════════════════════════
+# EMAIL — Brevo primary, Gmail SMTP fallback
+# ══════════════════════════════════════════════════
+EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'
+ANYMAIL = {
+    'BREVO_API_KEY': _brevo_key,
+}
+DEFAULT_FROM_EMAIL = 'DeepFake Shield <noreply@deepfakeshield.tech>'
+SERVER_EMAIL = 'noreply@deepfakeshield.tech'
 
-SITE_URL = os.environ.get('SITE_URL','https://deepfakeshield.tech')
+# Gmail SMTP fallback settings (used if Brevo fails)
+GMAIL_EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER', 'deepfakeshield.admin@gmail.com')
+GMAIL_EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'blolqgkyoydxkbbp')
 
+SITE_URL = os.environ.get('SITE_URL', 'https://deepfakeshield.tech')
+
+# ══════════════════════════════════════════════════
+# DeepFake Shield App Settings
+# ══════════════════════════════════════════════════
 DEEPFAKE_SHIELD = {
     'MAX_IMAGE_SIZE_MB': 20,
     'MAX_VIDEO_SIZE_MB': 100,
