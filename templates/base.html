@@ -126,6 +126,66 @@
         @media(max-width:768px) {
             .dfs-translate-bar select { max-width: 70px; font-size: 0.7rem; }
         }
+
+        /* ══════════════════════════════════════════════
+        NUCLEAR: Hide Google Translate bar + X button
+        The bar appears at TOP of page (browser-level)
+        ══════════════════════════════════════════════ */
+
+        /* The top banner iframe Google injects */
+        .goog-te-banner-frame.skiptranslate {
+            display: none !important;
+        }
+
+        /* The entire skip-translate wrapper */
+        body > .skiptranslate {
+            display: none !important;
+            height: 0 !important;
+            overflow: hidden !important;
+        }
+
+        /* Prevent body being pushed down 40px by Google */
+        body {
+            top: 0 !important;
+            position: static !important;
+        }
+
+        /* The floating spinner / G× widget */
+        .VIpgJd-ZVi9od-aZ2wEe,
+        .VIpgJd-ZVi9od-aZ2wEe-OiiCO,
+        .VIpgJd-yAWNEb-L7lbkb,
+        .VIpgJd-ZVi9od-xl07Ob-lTBxed,
+        .VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+        .VIpgJd-ZVi9od-aZ2wEe-wOHMyf-ti6hGc,
+        .VIpgJd-ZVi9od-SmfZ {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            height: 0 !important;
+            width: 0 !important;
+        }
+
+        /* The X close button Google injects into its bar */
+        .goog-close-link,
+        .B7vCqd,
+        #goog-gt-tt,
+        .goog-te-balloon-frame,
+        .goog-te-balloon-frame * {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        /* Hide any Google translate iframes */
+        iframe.goog-te-banner-frame,
+        iframe.goog-te-menu-frame,
+        iframe[name="googleTranslateFrame"],
+        iframe[id^="google_translate"] {
+            display: none !important;
+            height: 0 !important;
+            width: 0 !important;
+            border: none !important;
+            visibility: hidden !important;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>

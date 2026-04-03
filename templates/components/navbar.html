@@ -1,21 +1,505 @@
 {% load static %}
+
+<style>
+/* ═══════════════════════════════════════════════
+   NAVBAR MOBILE DRAWER — ALL STYLES IN ONE PLACE
+═══════════════════════════════════════════════ */
+
+/* Hide desktop-only on mobile */
+@media (max-width: 768px) {
+    .dfs-desktop-only { display: none !important; }
+    .nav-links        { display: none !important; }
+}
+
+/* Hide drawer + hamburger on desktop */
+@media (min-width: 769px) {
+    .mobile-menu-toggle    { display: none !important; }
+    .mobile-drawer         { display: none !important; }
+    .mobile-drawer-overlay { display: none !important; }
+}
+
+/* ── Hamburger button — always 3 lines, never changes ── */
+.mobile-menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 8px;
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    cursor: pointer;
+    z-index: 10002;
+    gap: 5px;
+}
+@media (max-width: 768px) {
+    .mobile-menu-toggle { display: flex; }
+}
+/* Hide hamburger when drawer is open — X inside drawer is enough */
+body.drawer-open .mobile-menu-toggle {
+    display: none !important;
+}
+.mobile-menu-toggle:hover {
+    border-color: var(--accent-primary, #667eea);
+    background: rgba(102,126,234,0.08);
+}
+/* 3 plain lines — NO animation, NO transform, NO rotation EVER */
+.hamburger-line {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--text-primary, #e0e0e0);
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+/* ── Overlay ── */
+.mobile-drawer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 9997;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.mobile-drawer-overlay.is-open {
+    display: block;
+    opacity: 1;
+}
+
+/* ── Drawer panel ── */
+.mobile-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 300px;
+    max-width: 88vw;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--bg-primary, #0d1117);
+    border-left: 1px solid rgba(255,255,255,0.07);
+    box-shadow: -8px 0 32px rgba(0,0,0,0.5);
+    z-index: 9998;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+.mobile-drawer.is-open {
+    transform: translateX(0);
+}
+.mobile-drawer-inner {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding-bottom: 32px;
+}
+body.drawer-open {
+    overflow: hidden;
+}
+
+/* ── Drawer header ── */
+.mobile-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    background: var(--bg-primary, #0d1117);
+    z-index: 10;
+}
+.mobile-drawer-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary, #e8eaf6);
+    text-decoration: none;
+}
+.mobile-drawer-brand i {
+    font-size: 1.3rem;
+    color: var(--accent-primary, #667eea);
+}
+/* The ONE and ONLY X button inside drawer */
+.mobile-drawer-close {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: var(--text-secondary, #9aa0b4);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+.mobile-drawer-close:hover {
+    background: rgba(239,68,68,0.12);
+    color: #ef4444;
+    border-color: rgba(239,68,68,0.25);
+}
+
+/* ── User strip ── */
+.mobile-drawer-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: rgba(102,126,234,0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    flex-shrink: 0;
+}
+.mobile-user-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-primary,#667eea), #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+.mobile-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.mobile-user-name {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-primary, #e8eaf6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.mobile-user-email {
+    font-size: 0.73rem;
+    color: var(--text-tertiary, #6b7280);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Divider ── */
+.mdivider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin: 4px 14px;
+    flex-shrink: 0;
+}
+
+/* ── Nav links ── */
+.mobile-drawer-links {
+    padding: 6px 0;
+    flex-shrink: 0;
+}
+.mobile-nav-link {
+    display: flex;
+    align-items: center;
+    margin: 1px 10px;
+    border-radius: 10px;
+    color: var(--text-secondary, #9aa0b4);
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+    border-left: 3px solid transparent;
+    overflow: hidden;
+}
+.mobile-nav-link:hover  { background: rgba(102,126,234,0.1); color: var(--text-primary, #e8eaf6); }
+.mobile-nav-link.active { background: rgba(102,126,234,0.14); color: var(--accent-primary, #667eea); border-left-color: var(--accent-primary, #667eea); }
+
+/* Icon box — always visible, fixed size */
+.mnl-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    font-size: 1.05rem;
+    color: var(--text-tertiary, #6b7280);
+    transition: color 0.2s;
+}
+.mobile-nav-link:hover  .mnl-icon { color: var(--accent-primary, #667eea); }
+.mobile-nav-link.active .mnl-icon { color: var(--accent-primary, #667eea); }
+.mnl-text {
+    flex: 1;
+    padding: 12px 12px 12px 0;
+    line-height: 1.2;
+}
+
+/* Danger (logout) */
+.mobile-nav-danger                 { color: #ef4444 !important; }
+.mobile-nav-danger .mnl-icon       { color: #ef4444 !important; }
+.mobile-nav-danger:hover           { background: rgba(239,68,68,0.1) !important; }
+
+/* ── Section labels ── */
+.mobile-section-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px 4px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-tertiary, #6b7280);
+    margin: 0;
+}
+.mobile-section-label i { font-size: 0.7rem; }
+
+/* ── Drawer sections (theme / language) ── */
+.mobile-drawer-section {
+    padding: 4px 16px 8px;
+    flex-shrink: 0;
+}
+
+/* ── Theme button ── */
+.mobile-theme-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 11px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: var(--text-primary, #e8eaf6);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    font-family: inherit;
+    text-align: left;
+    margin-top: 6px;
+}
+.mobile-theme-btn:hover {
+    border-color: var(--accent-primary, #667eea);
+    background: rgba(102,126,234,0.08);
+}
+.mtheme-icon  { font-size: 1.1rem; flex-shrink: 0; }
+.mtheme-label { flex: 1; }
+.mtheme-switch {
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+    background: rgba(255,255,255,0.12);
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.3s;
+}
+.mtheme-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent-primary, #667eea);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="light"] .mtheme-switch { background: var(--accent-primary, #667eea); }
+[data-theme="light"] .mtheme-thumb  { transform: translateX(18px); background: #fff; }
+
+/* ── Language select ── */
+/* ── Language select — centered, flags + names fully visible ── */
+.mobile-lang-wrap {
+    margin-top: 8px;
+    margin-bottom: 20px;
+    border-radius: 11px;
+    border: 1.5px solid rgba(102,126,234,0.4);
+    background: rgba(102,126,234,0.08);
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-lang-select {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 11px;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.6;
+    letter-spacing: 0.3px;
+    border: none;
+    background: transparent;
+    color: var(--text-primary, #e8eaf6);
+    outline: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    /* Native dropdown — best for mobile flags + long names */
+    -webkit-appearance: menulist;
+    appearance: menulist;
+    /* Center the selected text */
+    text-align: center;
+    text-align-last: center;
+    -moz-text-align-last: center;
+}
+
+.mobile-lang-select:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* Light mode */
+[data-theme="light"] .mobile-lang-select {
+    color: #1a1a2e;
+}
+[data-theme="light"] .mobile-lang-wrap {
+    background: rgba(102,126,234,0.07);
+    border-color: rgba(102,126,234,0.35);
+}
+
+/* Also style the desktop translate bar select nicely */
+.dfs-translate-bar .dfs-lang-select {
+    text-align: center;
+    text-align-last: center;
+}
+
+/* Center the "Language" section label above the dropdown */
+.mobile-drawer-section .mobile-section-label {
+    justify-content: center;
+    padding: 10px 20px 6px;
+    font-size: 0.72rem;
+}
+
+/* Default spacer below language dropdown */
+.mobile-lang-spacer {
+    height: 20px;
+    transition: height 0.3s ease;
+    flex-shrink: 0;
+}
+
+/* Expand spacer when dropdown is open/focused */
+.mobile-lang-select:focus ~ .mobile-lang-spacer,
+.mobile-lang-spacer.expanded {
+    height: 220px;
+}
+
+/* ── Footer auth buttons ── */
+.mobile-drawer-footer {
+    margin-top: auto;
+    padding: 12px 16px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.mobile-auth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 13px;
+    border-radius: 11px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.25s;
+    text-align: center;
+}
+.mobile-auth-btn i { font-size: 1rem; }
+.mobile-auth-ghost {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-primary, #e8eaf6);
+    border: 1px solid rgba(255,255,255,0.12);
+}
+.mobile-auth-ghost:hover {
+    border-color: var(--accent-primary, #667eea);
+    color: var(--accent-primary, #667eea);
+}
+.mobile-auth-primary {
+    background: linear-gradient(135deg, var(--accent-primary,#667eea) 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 14px rgba(102,126,234,0.3);
+}
+.mobile-auth-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ── Hide old mobile-menu ── */
+.mobile-menu { display: none !important; }
+
+/* ══════════════════════════════════════════════
+   HIDE GOOGLE TRANSLATE INJECTED ELEMENTS
+══════════════════════════════════════════════ */
+.goog-te-banner-frame,
+.goog-te-balloon-frame,
+.goog-te-ftab-float,
+.goog-te-menu-frame,
+#goog-gt-tt,
+.goog-close-link,
+.B7vCqd,
+.VIpgJd-ZVi9od-aZ2wEe,
+.VIpgJd-ZVi9od-aZ2wEe-OiiCO,
+.VIpgJd-yAWNEb-L7lbkb,
+.VIpgJd-ZVi9od-xl07Ob-lTBxed,
+.VIpgJd-ZVi9od-SmfZ,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+body > .skiptranslate {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+}
+body {
+    top: 0 !important;
+}
+</style>
+
+{% load static %}
 <nav class="navbar" id="navbar">
     <div class="nav-container">
+
+        <!-- Logo -->
         <a href="{% url 'core:landing' %}" class="nav-logo">
-            <div class="logo-icon"><i class="fas fa-shield-halved"></i><div class="logo-pulse"></div></div>
+            <div class="logo-icon">
+                <i class="fas fa-shield-halved"></i>
+                <div class="logo-pulse"></div>
+            </div>
             <div class="logo-text">
                 <span class="logo-title">DeepFake<span class="logo-highlight">Shield</span></span>
                 <span class="logo-subtitle">Media Authenticity</span>
             </div>
         </a>
 
+        <!-- Desktop Nav Links -->
         <div class="nav-links" id="nav-links">
-            <a href="{% url 'core:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"><i class="fas fa-home"></i><span>Home</span></a>
-            <a href="{% url 'core:about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}"><i class="fas fa-info-circle"></i><span>About</span></a>
-            <a href="{% url 'core:education' %}" class="nav-link {% if request.resolver_match.url_name == 'education' %}active{% endif %}"><i class="fas fa-graduation-cap"></i><span>Learn</span></a>
+            <a href="{% url 'core:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                <i class="fas fa-home"></i><span>Home</span>
+            </a>
+            <a href="{% url 'core:about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+                <i class="fas fa-info-circle"></i><span>About</span>
+            </a>
+            <a href="{% url 'core:education' %}" class="nav-link {% if request.resolver_match.url_name == 'education' %}active{% endif %}">
+                <i class="fas fa-graduation-cap"></i><span>Learn</span>
+            </a>
             {% if user.is_authenticated %}
             <div class="nav-dropdown">
-                <button class="nav-link dropdown-trigger"><i class="fas fa-search-plus"></i><span>Scan</span><i class="fas fa-chevron-down dropdown-arrow"></i></button>
+                <button class="nav-link dropdown-trigger">
+                    <i class="fas fa-search-plus"></i><span>Scan</span>
+                    <i class="fas fa-chevron-down dropdown-arrow"></i>
+                </button>
                 <div class="dropdown-menu">
                     <a href="{% url 'core:upload_image' %}" class="dropdown-item"><i class="fas fa-image"></i><span>Image Scan</span></a>
                     <a href="{% url 'core:upload_video' %}" class="dropdown-item"><i class="fas fa-video"></i><span>Video Scan</span></a>
@@ -23,18 +507,24 @@
                     <a href="{% url 'core:text_scan' %}" class="dropdown-item"><i class="fas fa-file-alt"></i><span>Text Scan</span></a>
                 </div>
             </div>
-            <a href="{% url 'core:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
-            {% if user.is_staff %}<a href="{% url 'admin:index' %}" class="nav-link nav-admin" target="_blank"><i class="fas fa-cog"></i><span>Admin</span></a>{% endif %}
+            <a href="{% url 'core:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+            </a>
+            {% if user.is_staff %}
+            <a href="{% url 'admin:index' %}" class="nav-link nav-admin" target="_blank">
+                <i class="fas fa-cog"></i><span>Admin</span>
+            </a>
+            {% endif %}
             {% endif %}
         </div>
 
+        <!-- Desktop Right Side -->
         <div class="nav-right">
-            <!-- BUILT-IN TRANSLATE (works everywhere, no API, no ad-blocker issues) -->
-            <!-- Translate -->
-            <div class="dfs-translate-bar">
-                <span style="font-size:0.95rem;">🌐</span>
+
+            <!-- Desktop Translate -->
+            <div class="dfs-translate-bar dfs-desktop-only">
                 <select class="dfs-lang-select" aria-label="Translate">
-                    <option value="en" selected>English</option>
+                    <option value="en" selected>🌐 EN</option>
                     <optgroup label="─ Indian ─">
                         <option value="hi">हिन्दी</option>
                         <option value="te">తెలుగు</option>
@@ -56,8 +546,9 @@
                 </select>
             </div>
 
-            <!-- Theme Toggle — Clear visible icons -->
-            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Toggle Dark/Light Mode">
+            <!-- Desktop Theme Toggle -->
+            <button class="theme-toggle dfs-desktop-only" id="theme-toggle"
+                    aria-label="Toggle theme" title="Toggle Dark/Light Mode">
                 <div class="theme-toggle-track">
                     <span class="theme-icon-dark">🌙</span>
                     <span class="theme-icon-light">☀️</span>
@@ -65,82 +556,382 @@
                 </div>
             </button>
 
+            <!-- Desktop User Dropdown -->
             {% if user.is_authenticated %}
-            <div class="nav-dropdown user-dropdown">
+            <div class="nav-dropdown user-dropdown dfs-desktop-only">
                 <button class="user-avatar-btn dropdown-trigger">
                     <div class="user-avatar"><span>{{ user.username.0|upper }}</span></div>
                     <span class="user-name-text">{{ user.username }}</span>
                     <i class="fas fa-chevron-down dropdown-arrow"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-right">
-                    <div class="dropdown-header"><div class="dropdown-user-info"><span class="dropdown-user-name">{{ user.username }}</span><span class="dropdown-user-email">{{ user.email }}</span></div></div>
+                    <div class="dropdown-header">
+                        <div class="dropdown-user-info">
+                            <span class="dropdown-user-name">{{ user.username }}</span>
+                            <span class="dropdown-user-email">{{ user.email }}</span>
+                        </div>
+                    </div>
                     <div class="dropdown-divider"></div>
-                    <a href="{% url 'core:dashboard' %}" class="dropdown-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
-                    {% if user.is_staff %}<a href="{% url 'admin:index' %}" class="dropdown-item" target="_blank"><i class="fas fa-cog"></i><span>Admin Panel</span></a>{% endif %}
+                    <a href="{% url 'core:dashboard' %}" class="dropdown-item">
+                        <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+                    </a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'admin:index' %}" class="dropdown-item" target="_blank">
+                        <i class="fas fa-cog"></i><span>Admin Panel</span>
+                    </a>
+                    {% endif %}
                     <div class="dropdown-divider"></div>
-                    <a href="{% url 'core:logout' %}" class="dropdown-item dropdown-item-danger"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+                    <a href="{% url 'core:logout' %}" class="dropdown-item dropdown-item-danger">
+                        <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+                    </a>
                 </div>
             </div>
             {% else %}
-            <div class="auth-buttons">
-                <a href="{% url 'core:login' %}" class="btn btn-ghost btn-sm"><i class="fas fa-sign-in-alt"></i><span>Login</span></a>
-                <a href="{% url 'core:signup' %}" class="btn btn-primary btn-sm"><i class="fas fa-user-plus"></i><span>Sign Up</span></a>
+            <div class="auth-buttons dfs-desktop-only">
+                <a href="{% url 'core:login' %}" class="btn btn-ghost btn-sm">
+                    <i class="fas fa-sign-in-alt"></i><span>Login</span>
+                </a>
+                <a href="{% url 'core:signup' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-user-plus"></i><span>Sign Up</span>
+                </a>
             </div>
             {% endif %}
 
-            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Menu">
-                <span class="hamburger-line"></span><span class="hamburger-line"></span><span class="hamburger-line"></span>
+            <!-- Hamburger — 3 plain lines, NEVER animates -->
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle"
+                    aria-label="Open menu" aria-expanded="false">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
             </button>
+
         </div>
     </div>
 
-    <div class="mobile-menu" id="mobile-menu">
-        <div class="mobile-menu-inner">
-            <!-- Mobile translate -->
-            <div style="padding:8px 12px;">
-                <select class="dfs-lang-select" style="width:100%;padding:10px;border-radius:8px;font-size:0.9rem;" aria-label="Translate">
-                    <option value="en" selected>🌐 Select Language</option>
-                    <optgroup label="─ Indian Languages ─">
-                        <option value="hi">हिन्दी (Hindi)</option>
-                        <option value="te">తెలుగు (Telugu)</option>
-                        <option value="ta">தமிழ் (Tamil)</option>
-                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
-                        <option value="ml">മലയാളം (Malayalam)</option>
-                        <option value="bn">বাংলা (Bengali)</option>
-                        <option value="mr">मराठी (Marathi)</option>
-                        <option value="gu">ગુજરાતી (Gujarati)</option>
-                        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
-                        <option value="ur">اردو (Urdu)</option>
-                    </optgroup>
-                    <optgroup label="─ Other Languages ─">
-                        <option value="es">Español</option>
-                        <option value="fr">Français</option>
-                        <option value="de">Deutsch</option>
-                        <option value="ar">العربية</option>
-                    </optgroup>
-                </select>
+    <!-- Overlay -->
+    <div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
+
+    <!-- Drawer -->
+    <div class="mobile-drawer" id="mobile-drawer"
+         role="dialog" aria-modal="true" aria-label="Navigation Menu"
+         aria-hidden="true">
+        <div class="mobile-drawer-inner">
+
+            <!-- Header with single X -->
+            <div class="mobile-drawer-header">
+                <div class="mobile-drawer-brand">
+                    <i class="fas fa-shield-halved"></i>
+                    <span>DeepFake<span class="logo-highlight">Shield</span></span>
+                </div>
+                <button class="mobile-drawer-close"
+                        id="mobile-drawer-close"
+                        aria-label="Close menu">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="mobile-menu-divider"></div>
-            <a href="{% url 'core:home' %}" class="mobile-nav-link"><i class="fas fa-home"></i><span>Home</span></a>
-            <a href="{% url 'core:about' %}" class="mobile-nav-link"><i class="fas fa-info-circle"></i><span>About</span></a>
-            <a href="{% url 'core:education' %}" class="mobile-nav-link"><i class="fas fa-graduation-cap"></i><span>Learn</span></a>
+
+            <!-- User strip -->
             {% if user.is_authenticated %}
-            <div class="mobile-menu-divider"></div>
-            <p class="mobile-menu-label">Scan Media</p>
-            <a href="{% url 'core:upload_image' %}" class="mobile-nav-link"><i class="fas fa-image"></i><span>Image</span></a>
-            <a href="{% url 'core:upload_video' %}" class="mobile-nav-link"><i class="fas fa-video"></i><span>Video</span></a>
-            <a href="{% url 'core:upload_audio' %}" class="mobile-nav-link"><i class="fas fa-microphone"></i><span>Audio</span></a>
-            <a href="{% url 'core:text_scan' %}" class="mobile-nav-link"><i class="fas fa-file-alt"></i><span>Text</span></a>
-            <div class="mobile-menu-divider"></div>
-            <a href="{% url 'core:dashboard' %}" class="mobile-nav-link"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
-            {% if user.is_staff %}<a href="{% url 'admin:index' %}" class="mobile-nav-link" target="_blank"><i class="fas fa-cog"></i><span>Admin</span></a>{% endif %}
-            <div class="mobile-menu-divider"></div>
-            <a href="{% url 'core:logout' %}" class="mobile-nav-link mobile-nav-link-danger"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
-            {% else %}
-            <div class="mobile-menu-divider"></div>
-            <a href="{% url 'core:login' %}" class="mobile-nav-link"><i class="fas fa-sign-in-alt"></i><span>Login</span></a>
-            <a href="{% url 'core:signup' %}" class="mobile-nav-link"><i class="fas fa-user-plus"></i><span>Sign Up</span></a>
+            <div class="mobile-drawer-user">
+                <div class="mobile-user-avatar">
+                    <span>{{ user.username.0|upper }}</span>
+                </div>
+                <div class="mobile-user-info">
+                    <span class="mobile-user-name">{{ user.username }}</span>
+                    <span class="mobile-user-email">{{ user.email }}</span>
+                </div>
+            </div>
             {% endif %}
+
+            <div class="mdivider"></div>
+
+            <!-- Nav Links -->
+            <nav class="mobile-drawer-links">
+                <a href="{% url 'core:home' %}"
+                   class="mobile-nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    <span class="mnl-icon"><i class="fas fa-home"></i></span>
+                    <span class="mnl-text">Home</span>
+                </a>
+                <a href="{% url 'core:about' %}"
+                   class="mobile-nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+                    <span class="mnl-icon"><i class="fas fa-info-circle"></i></span>
+                    <span class="mnl-text">About</span>
+                </a>
+                <a href="{% url 'core:education' %}"
+                   class="mobile-nav-link {% if request.resolver_match.url_name == 'education' %}active{% endif %}">
+                    <span class="mnl-icon"><i class="fas fa-graduation-cap"></i></span>
+                    <span class="mnl-text">Learn</span>
+                </a>
+
+                {% if user.is_authenticated %}
+                <div class="mdivider"></div>
+                <p class="mobile-section-label">
+                    <i class="fas fa-search-plus"></i> Scan Media
+                </p>
+                <a href="{% url 'core:upload_image' %}" class="mobile-nav-link">
+                    <span class="mnl-icon"><i class="fas fa-image"></i></span>
+                    <span class="mnl-text">Image Scan</span>
+                </a>
+                <a href="{% url 'core:upload_video' %}" class="mobile-nav-link">
+                    <span class="mnl-icon"><i class="fas fa-video"></i></span>
+                    <span class="mnl-text">Video Scan</span>
+                </a>
+                <a href="{% url 'core:upload_audio' %}" class="mobile-nav-link">
+                    <span class="mnl-icon"><i class="fas fa-microphone"></i></span>
+                    <span class="mnl-text">Audio Scan</span>
+                </a>
+                <a href="{% url 'core:text_scan' %}" class="mobile-nav-link">
+                    <span class="mnl-icon"><i class="fas fa-file-alt"></i></span>
+                    <span class="mnl-text">Text Scan</span>
+                </a>
+                <div class="mdivider"></div>
+                <a href="{% url 'core:dashboard' %}"
+                   class="mobile-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <span class="mnl-icon"><i class="fas fa-tachometer-alt"></i></span>
+                    <span class="mnl-text">Dashboard</span>
+                </a>
+                {% if user.is_staff %}
+                <a href="{% url 'admin:index' %}" class="mobile-nav-link" target="_blank">
+                    <span class="mnl-icon"><i class="fas fa-cog"></i></span>
+                    <span class="mnl-text">Admin Panel</span>
+                </a>
+                {% endif %}
+                {% endif %}
+            </nav>
+
+            <div class="mdivider"></div>
+
+            <!-- THEME first -->
+            <div class="mobile-drawer-section">
+                <p class="mobile-section-label">
+                    <i class="fas fa-adjust"></i> Theme
+                </p>
+                <button class="mobile-theme-btn" id="mobile-theme-toggle" type="button">
+                    <span class="mtheme-icon">🌙</span>
+                    <span class="mtheme-label">Dark Mode</span>
+                    <div class="mtheme-switch">
+                        <div class="mtheme-thumb"></div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- LANGUAGE last — dropdown opens downward into free space -->
+            <div class="mobile-drawer-section">
+                <p class="mobile-section-label">
+                    <i class="fas fa-globe"></i> Language
+                </p>
+                <div class="mobile-lang-wrap">
+                    <select class="dfs-lang-select mobile-lang-select"
+                            id="mobile-lang-select"
+                            aria-label="Select Language">
+                        <option value="en" selected>🌐 English</option>
+                        <optgroup label="─ Indian Languages ─">
+                            <option value="hi">हिन्दी (Hindi)</option>
+                            <option value="te">తెలుగు (Telugu)</option>
+                            <option value="ta">தமிழ் (Tamil)</option>
+                            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                            <option value="ml">മലയാളം (Malayalam)</option>
+                            <option value="bn">বাংলা (Bengali)</option>
+                            <option value="mr">मराठी (Marathi)</option>
+                            <option value="gu">ગુજરાતી (Gujarati)</option>
+                            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                            <option value="ur">اردو (Urdu)</option>
+                        </optgroup>
+                        <optgroup label="─ Other Languages ─">
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                            <option value="de">Deutsch</option>
+                            <option value="ar">العربية</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Dynamic spacer — expands when dropdown is clicked -->
+            <div class="mobile-lang-spacer" id="mobile-lang-spacer"></div>
+
+            <div class="mdivider"></div>
+
+            <!-- Footer auth / logout -->
+            <div class="mobile-drawer-footer">
+                {% if user.is_authenticated %}
+                <a href="{% url 'core:logout' %}" class="mobile-nav-link mobile-nav-danger">
+                    <span class="mnl-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    <span class="mnl-text">Logout</span>
+                </a>
+                {% else %}
+                <a href="{% url 'core:login' %}" class="mobile-auth-btn mobile-auth-ghost">
+                    <i class="fas fa-sign-in-alt"></i><span>Login</span>
+                </a>
+                <a href="{% url 'core:signup' %}" class="mobile-auth-btn mobile-auth-primary">
+                    <i class="fas fa-user-plus"></i><span>Sign Up</span>
+                </a>
+                {% endif %}
+            </div>
+
         </div>
     </div>
+
 </nav>
+
+<script>
+(function () {
+    'use strict';
+
+    /* ── Elements ── */
+    var hamburger       = document.getElementById('mobile-menu-toggle');
+    var drawer          = document.getElementById('mobile-drawer');
+    var overlay         = document.getElementById('mobile-drawer-overlay');
+    var closeBtn        = document.getElementById('mobile-drawer-close');
+    var mThemeBtn       = document.getElementById('mobile-theme-toggle');
+    var desktopTheme    = document.getElementById('theme-toggle');
+
+    if (!hamburger || !drawer || !overlay) return;
+
+    /* ── Open ── */
+    function openDrawer() {
+        drawer.classList.add('is-open');
+        overlay.classList.add('is-open');
+        document.body.classList.add('drawer-open');
+        drawer.setAttribute('aria-hidden', 'false');
+        hamburger.setAttribute('aria-expanded', 'true');
+    }
+
+    /* ── Close ── */
+    function closeDrawer() {
+        drawer.classList.remove('is-open');
+        overlay.classList.remove('is-open');
+        document.body.classList.remove('drawer-open');
+        drawer.setAttribute('aria-hidden', 'true');
+        hamburger.setAttribute('aria-expanded', 'false');
+    }
+
+    /* ── Events ── */
+    hamburger.addEventListener('click', function (e) {
+        e.stopPropagation();
+        drawer.classList.contains('is-open') ? closeDrawer() : openDrawer();
+    });
+    overlay.addEventListener('click', closeDrawer);
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+
+    drawer.querySelectorAll('.mobile-nav-link, .mobile-auth-btn').forEach(function (el) {
+        el.addEventListener('click', closeDrawer);
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && drawer.classList.contains('is-open')) closeDrawer();
+    });
+
+    /* ── Theme sync ── */
+    function syncThemeUI() {
+        if (!mThemeBtn) return;
+        var light = document.documentElement.getAttribute('data-theme') === 'light';
+        var icon  = mThemeBtn.querySelector('.mtheme-icon');
+        var lbl   = mThemeBtn.querySelector('.mtheme-label');
+        if (icon) icon.textContent = light ? '☀️' : '🌙';
+        if (lbl)  lbl.textContent  = light ? 'Light Mode' : 'Dark Mode';
+    }
+
+    if (mThemeBtn) {
+        mThemeBtn.addEventListener('click', function () {
+            if (desktopTheme) desktopTheme.click();
+            else {
+                var t = document.documentElement.getAttribute('data-theme');
+                document.documentElement.setAttribute('data-theme', t === 'light' ? 'dark' : 'light');
+            }
+            syncThemeUI();
+        });
+    }
+
+    if (typeof MutationObserver !== 'undefined') {
+        new MutationObserver(syncThemeUI).observe(
+            document.documentElement,
+            { attributes: true, attributeFilter: ['data-theme'] }
+        );
+    }
+    syncThemeUI();
+
+    /* ── Language sync ── */
+    var mLang = drawer.querySelector('.mobile-lang-select');
+    var dLang = document.querySelector('.dfs-desktop-only .dfs-lang-select');
+    if (mLang && dLang) {
+        mLang.addEventListener('change', function () {
+            dLang.value = this.value;
+            dLang.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+    }
+
+    /* ── Kill Google Translate injected bar ── */
+    function nukeGT() {
+        var sels = [
+            '.goog-te-banner-frame', '.goog-te-balloon-frame',
+            '#goog-gt-tt', '.goog-close-link', '.B7vCqd',
+            '.VIpgJd-ZVi9od-aZ2wEe', '.VIpgJd-ZVi9od-SmfZ',
+            'body > .skiptranslate'
+        ];
+        sels.forEach(function (s) {
+            document.querySelectorAll(s).forEach(function (el) {
+                if (el.closest('#mobile-drawer'))    return;
+                if (el.closest('.dfs-desktop-only')) return;
+                if (el.classList.contains('dfs-lang-select')) return;
+                el.style.cssText = 'display:none!important;height:0!important;visibility:hidden!important;';
+            });
+        });
+        if (document.body && document.body.style.top &&
+            document.body.style.top !== '0px') {
+            document.body.style.top = '0px';
+        }
+    }
+
+        /* ── Expand spacer when language dropdown is tapped ── */
+    var langSelect = document.getElementById('mobile-lang-select');
+    var langSpacer = document.getElementById('mobile-lang-spacer');
+
+    if (langSelect && langSpacer) {
+
+        /* When user taps/clicks the dropdown — expand space */
+        langSelect.addEventListener('focus', function () {
+            langSpacer.classList.add('expanded');
+        });
+
+        langSelect.addEventListener('mousedown', function () {
+            langSpacer.classList.add('expanded');
+        });
+
+        langSelect.addEventListener('touchstart', function () {
+            langSpacer.classList.add('expanded');
+        }, { passive: true });
+
+        /* When user picks a language or clicks away — collapse space */
+        langSelect.addEventListener('change', function () {
+            setTimeout(function () {
+                langSpacer.classList.remove('expanded');
+            }, 400);
+        });
+
+        langSelect.addEventListener('blur', function () {
+            setTimeout(function () {
+                langSpacer.classList.remove('expanded');
+            }, 400);
+        });
+    }
+
+    nukeGT();
+    [300, 800, 1500, 3000].forEach(function (t) { setTimeout(nukeGT, t); });
+
+    if (typeof MutationObserver !== 'undefined') {
+        new MutationObserver(function (muts) {
+            muts.forEach(function (m) {
+                m.addedNodes.forEach(function (n) {
+                    if (n.nodeType === 1) {
+                        var c = (n.className || '').toString();
+                        if (c.indexOf('goog') > -1 || c.indexOf('VIpgJd') > -1 ||
+                            c.indexOf('skiptranslate') > -1) nukeGT();
+                    }
+                });
+            });
+        }).observe(document.documentElement, { childList: true, subtree: true });
+    }
+
+})();
+</script>

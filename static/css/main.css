@@ -1590,3 +1590,83 @@ iframe.goog-te-banner-frame { display: none !important; }
     backdrop-filter: blur(var(--glass-blur, 10px));
     -webkit-backdrop-filter: blur(var(--glass-blur, 10px));
 }
+
+/* New CSS */
+/* ═══════════════════════════════════════════════════════════
+   DeepFake Shield — Button Position Fix
+   Add this inside <style> in base.html, OR add to main.css
+   Fixes: scroll-top button hidden behind preferences button
+   ═══════════════════════════════════════════════════════════ */
+
+/* Preferences trigger — bottom RIGHT corner */
+.dfs-prefs-trigger {
+    position: fixed !important;
+    bottom: 24px !important;
+    right: 24px !important;
+    z-index: 99998 !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
+    background: var(--accent-gradient, linear-gradient(135deg,#667eea,#764ba2)) !important;
+    color: #fff !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 1.1rem !important;
+    box-shadow: 0 4px 20px rgba(102,126,234,0.4) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+}
+.dfs-prefs-trigger:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 6px 30px rgba(102,126,234,0.5) !important;
+}
+
+/* Scroll-to-top button — ABOVE preferences button */
+.scroll-top-btn {
+    position: fixed !important;
+    bottom: 84px !important;      /* 24px + 48px + 12px gap = 84px */
+    right: 24px !important;
+    z-index: 99997 !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    background: rgba(102,126,234,0.15) !important;
+    color: var(--text-primary, #e8eaf6) !important;
+    border: 1px solid rgba(102,126,234,0.3) !important;
+    cursor: pointer !important;
+    font-size: 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0 !important;
+    transform: translateY(10px) !important;
+    transition: all 0.3s ease !important;
+    backdrop-filter: blur(10px) !important;
+}
+.scroll-top-btn.visible {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+.scroll-top-btn:hover {
+    background: rgba(102,126,234,0.3) !important;
+    border-color: rgba(102,126,234,0.6) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Preferences panel — pops up ABOVE the trigger button */
+.dfs-prefs-panel {
+    position: fixed !important;
+    bottom: 84px !important;      /* sits above prefs trigger */
+    right: 24px !important;
+    z-index: 99999 !important;
+    width: 280px !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 576px) {
+    .dfs-prefs-trigger { bottom: 16px !important; right: 16px !important; }
+    .scroll-top-btn    { bottom: 76px !important; right: 16px !important; }
+    .dfs-prefs-panel   { bottom: 76px !important; right: 16px !important; width: calc(100vw - 32px) !important; }
+}
