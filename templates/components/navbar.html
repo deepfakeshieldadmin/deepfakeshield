@@ -383,6 +383,19 @@ body.drawer-open {
     font-size: 0.72rem;
 }
 
+/* Default spacer below language dropdown */
+.mobile-lang-spacer {
+    height: 20px;
+    transition: height 0.3s ease;
+    flex-shrink: 0;
+}
+
+/* Expand spacer when dropdown is open/focused */
+.mobile-lang-select:focus ~ .mobile-lang-spacer,
+.mobile-lang-spacer.expanded {
+    height: 220px;
+}
+
 /* ── Footer auth buttons ── */
 .mobile-drawer-footer {
     margin-top: auto;
@@ -709,6 +722,7 @@ body {
                 </p>
                 <div class="mobile-lang-wrap">
                     <select class="dfs-lang-select mobile-lang-select"
+                            id="mobile-lang-select"
                             aria-label="Select Language">
                         <option value="en" selected>🌐 English</option>
                         <optgroup label="─ Indian Languages ─">
@@ -733,8 +747,8 @@ body {
                 </div>
             </div>
 
-            <!-- Spacer so language dropdown always has room below -->
-            <div style="min-height: 180px; flex-shrink: 0;"></div>
+            <!-- Dynamic spacer — expands when dropdown is clicked -->
+            <div class="mobile-lang-spacer" id="mobile-lang-spacer"></div>
 
             <div class="mdivider"></div>
 
@@ -867,6 +881,39 @@ body {
             document.body.style.top !== '0px') {
             document.body.style.top = '0px';
         }
+    }
+
+        /* ── Expand spacer when language dropdown is tapped ── */
+    var langSelect = document.getElementById('mobile-lang-select');
+    var langSpacer = document.getElementById('mobile-lang-spacer');
+
+    if (langSelect && langSpacer) {
+
+        /* When user taps/clicks the dropdown — expand space */
+        langSelect.addEventListener('focus', function () {
+            langSpacer.classList.add('expanded');
+        });
+
+        langSelect.addEventListener('mousedown', function () {
+            langSpacer.classList.add('expanded');
+        });
+
+        langSelect.addEventListener('touchstart', function () {
+            langSpacer.classList.add('expanded');
+        }, { passive: true });
+
+        /* When user picks a language or clicks away — collapse space */
+        langSelect.addEventListener('change', function () {
+            setTimeout(function () {
+                langSpacer.classList.remove('expanded');
+            }, 400);
+        });
+
+        langSelect.addEventListener('blur', function () {
+            setTimeout(function () {
+                langSpacer.classList.remove('expanded');
+            }, 400);
+        });
     }
 
     nukeGT();
