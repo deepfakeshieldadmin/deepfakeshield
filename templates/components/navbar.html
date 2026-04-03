@@ -790,17 +790,18 @@ iframe.goog-te-menu-frame {
 (function () {
     'use strict';
 
-    /* ── Elements ── */
-    var hamburger   = document.getElementById('mobile-menu-toggle');
-    var drawer      = document.getElementById('mobile-drawer');
-    var overlay     = document.getElementById('mobile-drawer-overlay');
-    var closeBtn    = document.getElementById('mobile-drawer-close');
-    var mThemeBtn   = document.getElementById('mobile-theme-toggle');
+    /* ══════════════════════════════════════
+       1. DRAWER LOGIC
+    ══════════════════════════════════════ */
+    var hamburger       = document.getElementById('mobile-menu-toggle');
+    var drawer          = document.getElementById('mobile-drawer');
+    var overlay         = document.getElementById('mobile-drawer-overlay');
+    var closeBtn        = document.getElementById('mobile-drawer-close');
+    var mThemeBtn       = document.getElementById('mobile-theme-toggle');
     var desktopThemeBtn = document.getElementById('theme-toggle');
 
     if (!hamburger || !drawer || !overlay) return;
 
-    /* ── Open / Close helpers ── */
     function openDrawer() {
         drawer.classList.add('is-open');
         overlay.classList.add('is-open');
@@ -808,9 +809,8 @@ iframe.goog-te-menu-frame {
         hamburger.setAttribute('aria-label', 'Close menu');
         document.body.classList.add('drawer-open');
         drawer.setAttribute('aria-hidden', 'false');
-        /* focus first focusable element */
         var first = drawer.querySelector('button, a, select');
-        if (first) setTimeout(function(){ first.focus(); }, 50);
+        if (first) setTimeout(function () { first.focus(); }, 60);
     }
 
     function closeDrawer() {
@@ -823,34 +823,28 @@ iframe.goog-te-menu-frame {
         hamburger.focus();
     }
 
-    /* ── Hamburger click ── */
     hamburger.addEventListener('click', function (e) {
         e.stopPropagation();
         drawer.classList.contains('is-open') ? closeDrawer() : openDrawer();
     });
 
-    /* ── Overlay click ── */
     overlay.addEventListener('click', closeDrawer);
-
-    /* ── Close button ── */
     if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
 
-    /* ── Close on nav/auth link click ── */
     drawer.querySelectorAll('.mobile-nav-link, .mobile-auth-btn').forEach(function (el) {
         el.addEventListener('click', closeDrawer);
     });
 
-    /* ── Escape key ── */
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && drawer.classList.contains('is-open')) closeDrawer();
     });
 
-    /* ── Mobile theme button syncs with desktop toggle ── */
+    /* ── Theme sync ── */
     function updateMobileThemeUI() {
         if (!mThemeBtn) return;
         var isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        var icon  = mThemeBtn.querySelector('.mtheme-icon');
-        var label = mThemeBtn.querySelector('.mtheme-label');
+        var icon    = mThemeBtn.querySelector('.mtheme-icon');
+        var label   = mThemeBtn.querySelector('.mtheme-label');
         if (icon)  icon.textContent  = isLight ? '☀️' : '🌙';
         if (label) label.textContent = isLight ? 'Light Mode' : 'Dark Mode';
     }
@@ -859,7 +853,6 @@ iframe.goog-te-menu-frame {
         mThemeBtn.addEventListener('click', function () {
             if (desktopThemeBtn) desktopThemeBtn.click();
             else {
-                /* fallback: toggle data-theme directly */
                 var cur = document.documentElement.getAttribute('data-theme');
                 document.documentElement.setAttribute('data-theme', cur === 'light' ? 'dark' : 'light');
             }
@@ -867,7 +860,6 @@ iframe.goog-te-menu-frame {
         });
     }
 
-    /* Observe theme changes from desktop toggle */
     if (typeof MutationObserver !== 'undefined') {
         new MutationObserver(updateMobileThemeUI).observe(
             document.documentElement,
@@ -875,7 +867,7 @@ iframe.goog-te-menu-frame {
         );
     }
 
-    /* ── Sync mobile language select → desktop select ── */
+    /* ── Language sync ── */
     var mobileLangSel  = drawer.querySelector('.mobile-lang-select');
     var desktopLangSel = document.querySelector('.dfs-desktop-only .dfs-lang-select');
 
@@ -886,49 +878,103 @@ iframe.goog-te-menu-frame {
         });
     }
 
-    /* ── Init ── */
     drawer.setAttribute('aria-hidden', 'true');
     updateMobileThemeUI();
 
-})();
-
-/* ── Hide Google Translate Widget dynamically ── */
-(function hideGoogleTranslate() {
-    var selectors = [
+    /* ══════════════════════════════════════
+       2. NUCLEAR GOOGLE TRANSLATE KILLER
+       Removes the injected bar + X button
+       permanently using MutationObserver
+    ══════════════════════════════════════ */
+    var GT_SELECTORS = [
         '.goog-te-banner-frame',
-        '.skiptranslate',
+        '.goog-te-balloon-frame',
+        '.goog-te-ftab-float',
         '#goog-gt-tt',
+        '.goog-close-link',
+        '.B7vCqd',
         '.VIpgJd-ZVi9od-aZ2wEe',
-        '.goog-te-balloon-frame'
+        '.VIpgJd-ZVi9od-aZ2wEe-OiiCO',
+        '.VIpgJd-yAWNEb-L7lbkb',
+        '.VIpgJd-ZVi9od-xl07Ob-lTBxed',
+        '.VIpgJd-ZVi9od-SmfZ',
+        '.VIpgJd-ZVi9od-aZ2wEe-wOHMyf',
+        '.skiptranslate:not(#dfs-own-translate)',
+        'iframe.goog-te-banner-frame',
+        'iframe.goog-te-menu-frame'
     ];
 
-    function killWidgets() {
-        selectors.forEach(function(sel) {
-            document.querySelectorAll(sel).forEach(function(el) {
-                el.style.cssText = 'display:none!important;visibility:hidden!important;height:0!important;';
-            });
+    function nukeGoogleTranslate() {
+        /* Hide all injected elements */
+        GT_SELECTORS.forEach(function (sel) {
+            try {
+                document.querySelectorAll(sel).forEach(function (el) {
+                    /* Safety: never hide our own select */
+                    if (el.classList.contains('dfs-lang-select')) return;
+                    if (el.closest('#mobile-drawer'))              return;
+                    if (el.closest('.dfs-desktop-only'))           return;
+                    el.style.cssText =
+                        'display:none!important;' +
+                        'visibility:hidden!important;' +
+                        'height:0!important;' +
+                        'width:0!important;' +
+                        'overflow:hidden!important;' +
+                        'pointer-events:none!important;';
+                });
+            } catch (err) { /* ignore cross-origin iframe errors */ }
         });
-        /* Fix body top offset Google Translate adds */
-        if (document.body.style.top && document.body.style.top !== '0px') {
-            document.body.style.top = '0';
+
+        /* Fix body top shift Google applies */
+        if (document.body) {
+            var bodyTop = document.body.style.top;
+            if (bodyTop && bodyTop !== '' && bodyTop !== '0px') {
+                document.body.style.top = '0px';
+            }
         }
+
+        /* Remove injected <style> that shifts body */
+        document.querySelectorAll('style').forEach(function (s) {
+            if (s.textContent && s.textContent.indexOf('body{top:') !== -1) {
+                s.textContent = s.textContent.replace(/body\s*\{\s*top:[^}]+\}/g, '');
+            }
+        });
     }
 
     /* Run immediately */
-    killWidgets();
+    nukeGoogleTranslate();
 
-    /* Run on DOM changes (Google injects elements after page load) */
+    /* Watch DOM for Google's late injections */
     if (typeof MutationObserver !== 'undefined') {
-        var obs = new MutationObserver(killWidgets);
-        obs.observe(document.body || document.documentElement, {
+        var gtObserver = new MutationObserver(function (mutations) {
+            var needsNuke = false;
+            mutations.forEach(function (m) {
+                m.addedNodes.forEach(function (node) {
+                    if (node.nodeType === 1) {
+                        var cls = (node.className || '').toString();
+                        if (
+                            cls.indexOf('goog') !== -1 ||
+                            cls.indexOf('VIpgJd') !== -1 ||
+                            cls.indexOf('skiptranslate') !== -1 ||
+                            (node.tagName === 'IFRAME')
+                        ) {
+                            needsNuke = true;
+                        }
+                    }
+                });
+            });
+            if (needsNuke) nukeGoogleTranslate();
+        });
+
+        gtObserver.observe(document.documentElement, {
             childList: true,
             subtree: true
         });
     }
 
-    /* Also run after short delays for slow injection */
-    setTimeout(killWidgets, 500);
-    setTimeout(killWidgets, 1500);
-    setTimeout(killWidgets, 3000);
+    /* Fallback timeouts for stubborn injection */
+    [200, 500, 1000, 2000, 4000].forEach(function (ms) {
+        setTimeout(nukeGoogleTranslate, ms);
+    });
+
 })();
 </script>
