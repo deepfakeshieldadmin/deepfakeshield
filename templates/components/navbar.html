@@ -320,34 +320,68 @@ body.drawer-open {
 [data-theme="light"] .mtheme-thumb  { transform: translateX(18px); background: #fff; }
 
 /* ── Language select ── */
+/* ── Language select — centered, flags + names fully visible ── */
 .mobile-lang-wrap {
-    margin-top: 6px;
+    margin-top: 8px;
     margin-bottom: 20px;
     border-radius: 11px;
     border: 1.5px solid rgba(102,126,234,0.4);
     background: rgba(102,126,234,0.08);
     overflow: visible;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
 .mobile-lang-select {
     width: 100%;
-    padding: 13px 14px;
+    padding: 14px 16px;
     border-radius: 11px;
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 500;
+    line-height: 1.6;
+    letter-spacing: 0.3px;
     border: none;
     background: transparent;
     color: var(--text-primary, #e8eaf6);
     outline: none;
     cursor: pointer;
     box-sizing: border-box;
+    /* Native dropdown — best for mobile flags + long names */
     -webkit-appearance: menulist;
     appearance: menulist;
+    /* Center the selected text */
+    text-align: center;
+    text-align-last: center;
+    -moz-text-align-last: center;
 }
+
 .mobile-lang-select:focus {
     outline: none;
+    box-shadow: none;
 }
-[data-theme="light"] .mobile-lang-select { color: #1a1a2e; }
-[data-theme="light"] .mobile-lang-wrap   { background: rgba(102,126,234,0.07); }
+
+/* Light mode */
+[data-theme="light"] .mobile-lang-select {
+    color: #1a1a2e;
+}
+[data-theme="light"] .mobile-lang-wrap {
+    background: rgba(102,126,234,0.07);
+    border-color: rgba(102,126,234,0.35);
+}
+
+/* Also style the desktop translate bar select nicely */
+.dfs-translate-bar .dfs-lang-select {
+    text-align: center;
+    text-align-last: center;
+}
+
+/* Center the "Language" section label above the dropdown */
+.mobile-drawer-section .mobile-section-label {
+    justify-content: center;
+    padding: 10px 20px 6px;
+    font-size: 0.72rem;
+}
 
 /* ── Footer auth buttons ── */
 .mobile-drawer-footer {
