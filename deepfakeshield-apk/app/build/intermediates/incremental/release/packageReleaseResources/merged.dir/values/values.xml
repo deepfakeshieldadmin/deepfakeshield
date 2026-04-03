@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="enableNotification">true</bool>
+    <bool name="enableSiteSettingsShortcut">true</bool>
+    <color name="backgroundColor">#0F111A</color>
+    <color name="colorPrimary">#1A1C2E</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="navigationColor">#000000</color>
+    <color name="navigationColorDark">#000000</color>
+    <color name="navigationDividerColor">#000000</color>
+    <color name="navigationDividerColorDark">#000000</color>
+    <color name="shortcut_background">#F5F5F5</color>
+    <integer name="splashScreenFadeOutDuration">300</integer>
+    <string name="appName" translatable="false">DeepFake Shield</string>
+    <string name="assetStatements">
+    [{
+        \"relation\": [\"delegate_permission/common.handle_all_urls\"],
+        \"target\": {
+            \"namespace\": \"web\",
+            \"site\": \"https://deepfakeshield.tech\"
+        }
+    }]
+    
+  </string>
+    <string name="fallbackType" translatable="false">customtabs</string>
+    <string name="fullScopeUrl" translatable="false">https://deepfakeshield.tech/</string>
+    <string name="generatorApp" translatable="false">bubblewrap-cli</string>
+    <string name="hostName" translatable="false">deepfakeshield.tech</string>
+    <string name="launchUrl" translatable="false">https://deepfakeshield.tech/home/</string>
+    <string name="launcherName" translatable="false">DFShield</string>
+    <string name="orientation" translatable="false">portrait-primary</string>
+    <string name="providerAuthority" translatable="false">tech.deepfakeshield.app.fileprovider</string>
+    <string name="shortcut_name_0" translatable="false">Scan Image</string>
+    <string name="shortcut_name_1" translatable="false">Scan Video</string>
+    <string name="shortcut_name_2" translatable="false">Dashboard</string>
+    <string name="shortcut_short_name_0" translatable="false">Image</string>
+    <string name="shortcut_short_name_1" translatable="false">Video</string>
+    <string name="shortcut_short_name_2" translatable="false">Dashboard</string>
+    <string name="webManifestUrl" translatable="false">https://deepfakeshield.tech/static/manifest.json</string>
+</resources>

@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'core',
+    'anymail',  # Always include since key is hardcoded
 ]
 
 # Add anymail only if Brevo key is set
@@ -146,7 +147,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024   # 100 MB
 # EMAIL — Gmail SMTP (primary)
 # Brevo used only if ANYMAIL_BREVO_API_KEY is set in .env
 # ══════════════════════════════════════════════════════════
-if _brevo_key:
+if False:
     # Brevo transactional email
     EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'
     ANYMAIL = {'BREVO_API_KEY': _brevo_key}

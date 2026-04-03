@@ -1,0 +1,66 @@
+{
+  "packageId": "tech.deepfakeshield.app",
+  "host": "deepfakeshield.tech",
+  "name": "DeepFake Shield",
+  "launcherName": "DFShield",
+  "display": "standalone",
+  "themeColor": "#1A1C2E",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#0F111A",
+  "enableNotifications": true,
+  "startUrl": "/home/",
+  "iconUrl": "https://deepfakeshield.tech/static/img/icon-512.png",
+  "maskableIconUrl": "https://deepfakeshield.tech/static/img/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "E:\\SHANU\\DeepFakeShield\\deepfakeshield-apk\\android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "1",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Scan Image",
+      "shortName": "Image",
+      "url": "https://deepfakeshield.tech/scan/image/",
+      "chosenIconUrl": "https://deepfakeshield.tech/static/img/icon-192.png"
+    },
+    {
+      "name": "Scan Video",
+      "shortName": "Video",
+      "url": "https://deepfakeshield.tech/scan/video/",
+      "chosenIconUrl": "https://deepfakeshield.tech/static/img/icon-192.png"
+    },
+    {
+      "name": "Dashboard",
+      "shortName": "Dashboard",
+      "url": "https://deepfakeshield.tech/dashboard/",
+      "chosenIconUrl": "https://deepfakeshield.tech/static/img/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://deepfakeshield.tech/static/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://deepfakeshield.tech/",
+  "minSdkVersion": 21,
+  "orientation": "portrait-primary",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "1"
+}
