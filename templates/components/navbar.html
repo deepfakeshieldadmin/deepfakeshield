@@ -543,9 +543,11 @@ body.drawer-open { overflow: hidden; }
 }
 .mobile-section-label i { font-size: 0.72rem; }
 
-/* ── Drawer sections (lang / theme) ─────────────────── */
+/* ── Language select — fixed overflow ── */
 .mobile-drawer-section {
     padding: 4px 14px 12px;
+    position: relative;
+    z-index: 99999;          /* above everything in drawer */
 }
 
 .mobile-lang-select {
@@ -554,16 +556,24 @@ body.drawer-open { overflow: hidden; }
     margin-top: 6px;
     border-radius: 10px;
     font-size: 0.88rem;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    background: var(--bg-secondary, #1a1f2e);
     color: var(--text-primary, #e8eaf6);
     outline: none;
     cursor: pointer;
-    appearance: auto;
-    font-family: var(--font-primary, inherit);
+    /* Allow native dropdown to overflow drawer */
+    position: relative;
+    z-index: 99999;
+    /* Fix for mobile select clipping */
+    -webkit-appearance: menulist;
+    appearance: menulist;
+    max-width: 100%;
+    box-sizing: border-box;
 }
+
 .mobile-lang-select:focus {
     border-color: var(--accent-primary, #667eea);
+    box-shadow: 0 0 0 2px rgba(102,126,234,0.2);
 }
 
 /* ── Mobile theme button ─────────────────────────────── */
