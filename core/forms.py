@@ -1,6 +1,8 @@
 """
 Forms for DeepFake Shield — signup, login, uploads, text scan.
 Includes strong image-based CAPTCHA.
+FIXED: Extension check no longer adds dot prefix — was causing
+       "Unsupported image format" even for valid JPG/PNG files.
 """
 import random
 from django import forms
@@ -24,7 +26,6 @@ class StrongCaptchaMixin:
                 'captcha_question': None,
             }
         except Exception:
-            # Fallback to math
             question, answer, _ = generate_math_captcha()
             request.session['captcha_answer'] = str(answer)
             request.session.modified = True
@@ -39,8 +40,7 @@ class StrongCaptchaMixin:
         expected = request.session.get('captcha_answer', '')
         if not expected:
             return False
-        user_clean = str(user_answer).strip().upper()
-        return user_clean == expected.upper()
+        return str(user_answer).strip().upper() == expected.upper()
 
 
 class SignupForm(forms.Form, StrongCaptchaMixin):
@@ -55,7 +55,6 @@ class SignupForm(forms.Form, StrongCaptchaMixin):
         }),
         help_text='3-150 characters.'
     )
-
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={
             'class': 'form-control',
@@ -63,7 +62,6 @@ class SignupForm(forms.Form, StrongCaptchaMixin):
             'autocomplete': 'email',
         })
     )
-
     password1 = forms.CharField(
         label='Password', min_length=8,
         widget=forms.PasswordInput(attrs={
@@ -72,7 +70,6 @@ class SignupForm(forms.Form, StrongCaptchaMixin):
             'autocomplete': 'new-password',
         })
     )
-
     password2 = forms.CharField(
         label='Confirm Password',
         widget=forms.PasswordInput(attrs={
@@ -81,7 +78,6 @@ class SignupForm(forms.Form, StrongCaptchaMixin):
             'autocomplete': 'new-password',
         })
     )
-
     captcha = forms.CharField(
         label='CAPTCHA',
         widget=forms.TextInput(attrs={
@@ -123,7 +119,6 @@ class LoginForm(forms.Form, StrongCaptchaMixin):
             'autocomplete': 'username',
         })
     )
-
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
@@ -131,7 +126,6 @@ class LoginForm(forms.Form, StrongCaptchaMixin):
             'autocomplete': 'current-password',
         })
     )
-
     captcha = forms.CharField(
         label='CAPTCHA',
         widget=forms.TextInput(attrs={
@@ -146,54 +140,96 @@ class LoginForm(forms.Form, StrongCaptchaMixin):
 class ImageUploadForm(forms.Form):
     image = forms.ImageField(
         widget=forms.FileInput(attrs={
-            'class': 'form-control', 'accept': 'image/*', 'id': 'file-input',
+            'class': 'form-control',
+            'accept': 'image/*',
+            'id': 'file-input',
         }),
         help_text='Supported: JPG, PNG, BMP, WebP, TIFF. Max 20MB.'
     )
+
     def clean_image(self):
         f = self.cleaned_data['image']
-        max_size = settings.DEEPFAKE_SHIELD['MAX_IMAGE_SIZE_MB'] * 1024 * 1024
-        if f.size > max_size:
-            raise forms.ValidationError(f'Image too large. Max {settings.DEEPFAKE_SHIELD["MAX_IMAGE_SIZE_MB"]}MB.')
-        ext = '.' + f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
-        if ext not in settings.DEEPFAKE_SHIELD['SUPPORTED_IMAGE_FORMATS']:
-            raise forms.ValidationError('Unsupported image format.')
+
+        # ── Size check ──
+        max_bytes = settings.DEEPFAKE_SHIELD['MAX_IMAGE_SIZE_MB'] * 1024 * 1024
+        if f.size > max_bytes:
+            raise forms.ValidationError(
+                f'Image too large. Maximum size is {settings.DEEPFAKE_SHIELD["MAX_IMAGE_SIZE_MB"]}MB.'
+            )
+
+        # ── Format check (BUG FIX: strip dot before comparing) ──
+        # f.name gives e.g. "photo.JPG"
+        # ext becomes "jpg" (lowercase, no dot)
+        # supported list is ['jpg','jpeg','png',...] — no dots
+        ext = f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
+        supported = [fmt.lower().strip('.') for fmt in settings.DEEPFAKE_SHIELD['SUPPORTED_IMAGE_FORMATS']]
+        if ext not in supported:
+            raise forms.ValidationError(
+                f'Unsupported format ".{ext}". Allowed: {", ".join(supported).upper()}'
+            )
+
         return f
 
 
 class VideoUploadForm(forms.Form):
     video = forms.FileField(
         widget=forms.FileInput(attrs={
-            'class': 'form-control', 'accept': 'video/*', 'id': 'file-input',
+            'class': 'form-control',
+            'accept': 'video/*',
+            'id': 'file-input',
         }),
-        help_text='Supported: MP4, AVI, MOV, MKV, WebM. Max 50MB.'
+        help_text='Supported: MP4, AVI, MOV, MKV, WebM. Max 100MB.'
     )
+
     def clean_video(self):
         f = self.cleaned_data['video']
-        max_size = settings.DEEPFAKE_SHIELD['MAX_VIDEO_SIZE_MB'] * 1024 * 1024
-        if f.size > max_size:
-            raise forms.ValidationError(f'Video too large. Max {settings.DEEPFAKE_SHIELD["MAX_VIDEO_SIZE_MB"]}MB.')
-        ext = '.' + f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
-        if ext not in settings.DEEPFAKE_SHIELD['SUPPORTED_VIDEO_FORMATS']:
-            raise forms.ValidationError('Unsupported video format.')
+
+        # ── Size check ──
+        max_bytes = settings.DEEPFAKE_SHIELD['MAX_VIDEO_SIZE_MB'] * 1024 * 1024
+        if f.size > max_bytes:
+            raise forms.ValidationError(
+                f'Video too large. Maximum size is {settings.DEEPFAKE_SHIELD["MAX_VIDEO_SIZE_MB"]}MB.'
+            )
+
+        # ── Format check (no dot prefix) ──
+        ext = f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
+        supported = [fmt.lower().strip('.') for fmt in settings.DEEPFAKE_SHIELD['SUPPORTED_VIDEO_FORMATS']]
+        if ext not in supported:
+            raise forms.ValidationError(
+                f'Unsupported format ".{ext}". Allowed: {", ".join(supported).upper()}'
+            )
+
         return f
 
 
 class AudioUploadForm(forms.Form):
     audio = forms.FileField(
         widget=forms.FileInput(attrs={
-            'class': 'form-control', 'accept': 'audio/*', 'id': 'file-input',
+            'class': 'form-control',
+            'accept': 'audio/*',
+            'id': 'file-input',
         }),
-        help_text='Supported: WAV, MP3, FLAC, OGG, M4A. Max 30MB.'
+        help_text='Supported: WAV, MP3, FLAC, OGG, M4A. Max 50MB.'
     )
+
     def clean_audio(self):
         f = self.cleaned_data['audio']
-        max_size = settings.DEEPFAKE_SHIELD['MAX_AUDIO_SIZE_MB'] * 1024 * 1024
-        if f.size > max_size:
-            raise forms.ValidationError(f'Audio too large. Max {settings.DEEPFAKE_SHIELD["MAX_AUDIO_SIZE_MB"]}MB.')
-        ext = '.' + f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
-        if ext not in settings.DEEPFAKE_SHIELD['SUPPORTED_AUDIO_FORMATS']:
-            raise forms.ValidationError('Unsupported audio format.')
+
+        # ── Size check ──
+        max_bytes = settings.DEEPFAKE_SHIELD['MAX_AUDIO_SIZE_MB'] * 1024 * 1024
+        if f.size > max_bytes:
+            raise forms.ValidationError(
+                f'Audio too large. Maximum size is {settings.DEEPFAKE_SHIELD["MAX_AUDIO_SIZE_MB"]}MB.'
+            )
+
+        # ── Format check (no dot prefix) ──
+        ext = f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
+        supported = [fmt.lower().strip('.') for fmt in settings.DEEPFAKE_SHIELD['SUPPORTED_AUDIO_FORMATS']]
+        if ext not in supported:
+            raise forms.ValidationError(
+                f'Unsupported format ".{ext}". Allowed: {", ".join(supported).upper()}'
+            )
+
         return f
 
 
@@ -202,9 +238,12 @@ class TextScanForm(forms.Form):
         widget=forms.Textarea(attrs={
             'class': 'form-control',
             'placeholder': 'Paste or type the text you want to analyze...',
-            'rows': 10, 'id': 'text-input', 'maxlength': 50000,
+            'rows': 10,
+            'id': 'text-input',
+            'maxlength': 50000,
         }),
-        max_length=50000, min_length=50,
+        max_length=50000,
+        min_length=50,
         help_text='Minimum 50 characters, maximum 50,000.'
     )
 
