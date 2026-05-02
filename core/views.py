@@ -126,7 +126,7 @@ def signup_view(request):
     # Generate new CAPTCHA
     captcha_ctx = form.setup_captcha(request)
 
-    return render(request, 'signup.html', {
+    return render(request, 'signup.html', {-
         'form': form,
         'captcha_type': captcha_ctx.get('captcha_type', 'math'),
         'captcha_image': captcha_ctx.get('captcha_image'),
@@ -622,3 +622,216 @@ def _clean_list(lst):
             except Exception:
                 pass
     return cleaned
+
+# ══════════════════════════════════════════════════════════════════
+# ADD THESE VIEWS TO core/views.py
+# Paste at the bottom of your existing views.py file
+# ══════════════════════════════════════════════════════════════════
+
+import uuid
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
+
+
+# ── Simple token store in session (no extra DB table needed) ──────
+# For production, use django.contrib.auth built-in password reset views.
+# This is a lightweight custom implementation.
+
+
+@login_required
+def change_password(request):
+    """
+    Change password using current password (POST method=old_password).
+    GET request renders the change password page.
+    """
+    from .forms import ChangePasswordForm
+
+    form = ChangePasswordForm(user=request.user)
+
+    if request.method == 'POST' and request.POST.get('method') == 'old_password':
+        form = ChangePasswordForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            # Keep user logged in after password change
+            update_session_auth_hash(request, request.user)
+            messages.success(
+                request,
+                '✅ Password changed successfully! You are still logged in.'
+            )
+            return redirect('change_password')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+
+    return render(request, 'change_password.html', {
+        'form': form,
+        'page_title': 'Change Password',
+    })
+
+
+def forgot_password(request):
+    """
+    Send password reset link to registered email.
+    Works for both logged-in and logged-out users.
+    """
+    email_sent = None
+    email_error = None
+
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip().lower()
+
+        if not email:
+            email_error = 'Please enter your email address.'
+        else:
+            # Look up user by email (don't reveal if exists — security)
+            try:
+                user = User.objects.get(email__iexact=email)
+
+                # Generate secure reset token
+                token = str(uuid.uuid4())
+
+                # Store token in session with expiry (1 hour)
+                request.session['pw_reset_token'] = token
+                request.session['pw_reset_user_id'] = user.id
+                request.session['pw_reset_expires'] = (
+                    timezone.now() + timedelta(hours=1)
+                ).isoformat()
+
+                # Build reset URL
+                reset_url = f"{settings.SITE_URL}/reset-password/{token}/"
+
+                # Send email
+                html_body = f"""
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#f4f4f4;">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td align="center" style="padding:40px 0;">
+<table width="580" cellpadding="0" cellspacing="0"
+       style="background:#0a0e1a;border-radius:16px;overflow:hidden;">
+<tr><td style="background:linear-gradient(135deg,#1a1a3e,#0d0d2b);padding:36px;text-align:center;">
+    <div style="font-size:2rem;margin-bottom:12px;">🛡️</div>
+    <h1 style="color:#fff;font-size:22px;margin:0 0 6px;">DeepFake Shield</h1>
+    <p style="color:#8892a4;font-size:13px;margin:0;">Real-Time Media Authenticity Verification</p>
+</td></tr>
+<tr><td style="padding:36px;text-align:center;">
+    <h2 style="color:#fff;font-size:20px;margin:0 0 14px;">Password Reset Request 🔐</h2>
+    <p style="color:#8892a4;font-size:15px;line-height:1.6;margin:0 0 28px;">
+        Hello <strong style="color:#fff;">{user.username}</strong>,<br>
+        We received a request to reset your password.<br>
+        Click the button below to set a new password.
+    </p>
+    <a href="{reset_url}"
+       style="display:inline-block;background:linear-gradient(135deg,#6c63ff,#4c46b8);
+              color:#fff;text-decoration:none;padding:15px 36px;border-radius:50px;
+              font-size:15px;font-weight:700;">
+        🔑 Reset My Password
+    </a>
+    <p style="color:#555e6d;font-size:12px;margin:24px 0 0;">
+        This link expires in <strong>1 hour</strong>.<br>
+        If you didn't request this, ignore this email — your password won't change.<br><br>
+        Or copy this link:<br>
+        <a href="{reset_url}" style="color:#6c63ff;word-break:break-all;font-size:11px;">{reset_url}</a>
+    </p>
+</td></tr>
+<tr><td style="background:#080c1a;padding:20px;text-align:center;">
+    <p style="color:#555e6d;font-size:11px;margin:0;">
+        © 2026 DeepFake Shield |
+        <a href="https://deepfakeshield.tech" style="color:#6c63ff;">deepfakeshield.tech</a>
+    </p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
+
+                try:
+                    send_mail(
+                        subject='🔑 Reset Your DeepFake Shield Password',
+                        message=f'Reset your password here: {reset_url}\nLink expires in 1 hour.',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[user.email],
+                        html_message=html_body,
+                        fail_silently=False,
+                    )
+                    email_sent = email
+                except Exception as e:
+                    email_error = f'Failed to send email. Please try again later.'
+
+            except User.DoesNotExist:
+                # Don't reveal that email doesn't exist (security)
+                # Show same success message to prevent user enumeration
+                email_sent = email
+
+    return render(request, 'change_password.html', {
+        'email_sent': email_sent,
+        'email_error': email_error,
+        'page_title': 'Reset Password',
+        'active_tab': 'email',
+    })
+
+
+def reset_password(request, token):
+    """
+    Handle the password reset link from email.
+    Validates token and allows setting new password.
+    """
+    from .forms import ResetPasswordForm
+
+    # Validate token from session
+    stored_token   = request.session.get('pw_reset_token')
+    stored_user_id = request.session.get('pw_reset_user_id')
+    stored_expires = request.session.get('pw_reset_expires')
+
+    # Check token validity
+    token_valid = False
+    user = None
+
+    if stored_token and stored_token == token and stored_user_id and stored_expires:
+        try:
+            from datetime import datetime
+            expires = timezone.datetime.fromisoformat(stored_expires)
+            if timezone.is_naive(expires):
+                expires = timezone.make_aware(expires)
+            if timezone.now() < expires:
+                user = User.objects.get(id=stored_user_id)
+                token_valid = True
+        except Exception:
+            pass
+
+    if not token_valid:
+        messages.error(
+            request,
+            '❌ This reset link is invalid or has expired. Please request a new one.'
+        )
+        return redirect('forgot_password')
+
+    form = ResetPasswordForm(user=user)
+
+    if request.method == 'POST':
+        form = ResetPasswordForm(user=user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            # Clear reset session data
+            for key in ['pw_reset_token', 'pw_reset_user_id', 'pw_reset_expires']:
+                request.session.pop(key, None)
+
+            messages.success(
+                request,
+                '✅ Password reset successfully! Please log in with your new password.'
+            )
+            return redirect('login')
+
+    return render(request, 'reset_password.html', {
+        'form': form,
+        'token': token,
+        'username': user.username,
+        'page_title': 'Set New Password',
+    })
